@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    #article-content h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    #article-content p { margin-bottom: 1rem; }
+    #article-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+    #article-content img { border-radius: 0.5rem; margin: 1.5rem 0; }
+    #article-content a { color: #2563eb; text-decoration: underline; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+   <!-- Header -->
+ <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+       <img src="logo.png" alt="CAPD Logo" class="h-10 w-auto object-contain">
+      <nav class="space-x-6 text-sm font-medium">
+         <a href="index.html" class="hover:text-blue-600">Home</a>
+        <a href="news.html" class="hover:text-blue-600">News</a>
+        <a href="videos.html" class="hover:text-blue-600">Videos</a>
+        <a href="projects.html" class="hover:text-blue-600">Projects</a>
+        <a href="about.html" class="hover:text-blue-600">About</a>
+      </nav>
+    </div>
+  </header>
+
+ <!-- Hero Section -->
+<section class="relative w-full h-[450px]">
+  <!-- Background Image -->
+  <div class="absolute inset-0">
+    <img src="image_fx3.jpg" alt="House" class="w-full h-[450px] object-cover">
+    <div class="absolute inset-0 bg-black/30"></div> <!-- Overlay -->
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 max-w-4xl mx-auto px-6 h-full flex flex-col justify-center items-start text-left">
+  <h1 class="text-white text-5xl font-extrabold leading-tight mb-6">
+    <span id="typewriter"></span><span class="cursor">|</span>
+  </h1>
+
+  <button><a href="news.html"
+    class="inline-flex items-center bg-white hover:bg-orange-400 text-gray-800 text-sm font-medium px-3 py-2 rounded-md transition w-auto">
+    Get Latest News
+  </a></button>
+</div>
+
+<style>
+  .cursor {
+    display: inline-block;
+    margin-left: 2px;
+    width: 2px;
+    background: #fff;
+    animation: blink 0.7s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50%, 100% { background: transparent; }
+    25%, 75% { background: #fff; }
+  }
+</style>
+
+<script>
+  const texts = [
+    "Welcome to",
+    "CAPD Communications",
+    "Keep up with Our Latests News"
+  ];
+
+  let i = 0; // which text
+  let j = 0; // which letter
+  let currentText = "";
+  let isDeleting = false;
+  const speed = 120; // typing speed
+  const delay = 1500; // pause between words
+
+  function typewriter() {
+    const target = document.getElementById("typewriter");
+
+    if (isDeleting) {
+      currentText = texts[i].substring(0, j--);
+    } else {
+      currentText = texts[i].substring(0, j++);
+    }
+
+    target.textContent = currentText;
+
+    if (!isDeleting && j === texts[i].length + 1) {
+      isDeleting = true;
+      setTimeout(typewriter, delay); // wait before deleting
+      return;
+    } else if (isDeleting && j === 0) {
+      isDeleting = false;
+      i = (i + 1) % texts.length; // next phrase
+    }
+
+    setTimeout(typewriter, isDeleting ? speed / 2 : speed);
+  }
+
+  document.addEventListener("DOMContentLoaded", typewriter);
+</script>
+</section>
+  <!-- News List -->
+<section id="news-list" class="px-8 py-12">
+  <h2 class="text-2xl font-semibold mb-8">Recent News</h2>
+  <div id="posts-container" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+</section>
+
+  <!-- Full Article View -->
+  <section id="full-article" class="hidden px-8 py-12 max-w-4xl mx-auto">
+    <button onclick="closePost()" class="mb-6 text-blue-600 hover:underline">← Back to news</button>
+    <img id="article-image" class="rounded-lg mb-6 w-full h-80 object-cover" src="" alt="">
+    <h2 id="article-title" class="text-3xl font-bold mb-4"></h2>
+    <p id="article-meta" class="text-sm text-gray-500 mb-6"></p>
+    <div id="article-content" class="text-lg text-gray-700 leading-relaxed"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-6 mt-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
+      <div class="flex space-x-4 mt-4 md:mt-0">
+        <a href="#" class="hover:text-white">Facebook</a>
+        <a href="#" class="hover:text-white">Twitter</a>
+        <a href="#" class="hover:text-white">YouTube</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script>
+   async function loadNews() {
+  const res = await fetch("news.json");
+  const news = await res.json();
+
+  const postsContainer = document.getElementById("posts-container");
+  const newsList = document.getElementById("news-list");
+  const fullArticle = document.getElementById("full-article");
+
+  const params = new URLSearchParams(window.location.search);
+  const newsId = params.get("id");
+
+  if (newsId) {
+    // Show SINGLE ARTICLE
+    const article = news.find(n => n.id === newsId);
+    if (!article) {
+      fullArticle.innerHTML = `<p class="text-red-600">Article not found.</p>`;
+      fullArticle.classList.remove("hidden");
+      return;
+    }
+
+    document.getElementById("article-image").src = article.image;
+    document.getElementById("article-title").textContent = article.title;
+    document.getElementById("article-meta").textContent = article.date;
+    document.getElementById("article-content").innerHTML = article.content;
+
+    newsList.classList.add("hidden");
+    fullArticle.classList.remove("hidden");
+  } else {
+    // Show LIST
+    postsContainer.innerHTML = news.map(article => `
+      <div class="bg-white shadow rounded-xl overflow-hidden">
+        <img src="${article.image}" alt="${article.title}" class="w-full h-48 object-cover">
+        <div class="p-4">
+          <h2 class="text-xl font-semibold">${article.title}</h2>
+          <p class="text-gray-600 text-sm mb-2">${article.date}</p>
+          <p class="text-gray-700 mb-4">${article.description}</p>
+          <a href="news.html?id=${article.id}" class="text-blue-600 font-medium">Read More →</a>
+        </div>
+      </div>
+    `).join("");
+
+    newsList.classList.remove("hidden");
+    fullArticle.classList.add("hidden");
+  }
+}
+
+function closePost() {
+  if (document.referrer.includes("index.html")) {
+    // They came from homepage → send them back
+    window.location.href = "index.html";
+  } else if (window.history.length > 1) {
+    // They navigated from another page in this session
+    window.history.back();
+  } else {
+    // Fallback → show news list
+    window.location.href = "news.html";
+  }
+}
+
+
+loadNews();
+
+  </script>
+</body>
+</html>
