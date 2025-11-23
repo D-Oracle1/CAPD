@@ -1,0 +1,92 @@
+{
+  "schedule": [
+    {
+      "id": "prog-001",
+      "channelId": "main",
+      "title": "Morning News Brief",
+      "startTime": "06:00",
+      "endTime": "06:30",
+      "duration": 30,
+      "description": "Daily morning news summary",
+      "host": "John Okafor",
+      "image": "assets/images/prog-001.jpg"
+    },
+    {
+      "id": "prog-002",
+      "channelId": "main",
+      "title": "Community Updates",
+      "startTime": "06:30",
+      "endTime": "07:00",
+      "duration": 30,
+      "description": "Latest community developments",
+      "host": "Mary Chioma",
+      "image": "assets/images/prog-002.jpg"
+    },
+    {
+      "id": "prog-003",
+      "channelId": "news",
+      "title": "Breaking News",
+      "startTime": "07:00",
+      "endTime": "08:00",
+      "duration": 60,
+      "description": "In-depth news analysis",
+      "host": "David Okoro",
+      "image": "assets/images/prog-003.jpg"
+    },
+    {
+      "id": "prog-004",
+      "channelId": "education",
+      "title": "Digital Literacy Class",
+      "startTime": "08:00",
+      "endTime": "09:00",
+      "duration": 60,
+      "description": "Learn essential digital skills",
+      "host": "Prof. Amara Eze",
+      "image": "assets/images/prog-004.jpg"
+    },
+    {
+      "id": "prog-005",
+      "channelId": "community",
+      "title": "Town Hall Meeting",
+      "startTime": "09:00",
+      "endTime": "10:30",
+      "duration": 90,
+      "description": "Community feedback session",
+      "host": "Chief Ikechukwu",
+      "image": "assets/images/prog-005.jpg"
+    },
+    {
+      "id": "prog-006",
+      "channelId": "main",
+      "title": "Live Q&A Session",
+      "startTime": "14:00",
+      "endTime": "15:00",
+      "duration": 60,
+      "description": "Ask questions directly to leadership",
+      "host": "Administration Team",
+      "image": "assets/images/prog-006.jpg"
+    },
+    {
+      "id": "prog-007",
+      "channelId": "culture",
+      "title": "Traditional Music Show",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "duration": 60,
+      "description": "Celebrate our cultural heritage",
+      "host": "Emeka & Friends",
+      "image": "assets/images/prog-007.jpg"
+    },
+    {
+      "id": "prog-008",
+      "channelId": "main",
+      "title": "Evening News",
+      "startTime": "18:00",
+      "endTime": "19:00",
+      "duration": 60,
+      "description": "Complete daily news coverage",
+      "host": "Grace Anucha",
+      "image": "assets/images/prog-008.jpg"
+    }
+  ]
+}

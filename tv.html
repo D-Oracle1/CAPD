@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital TV - CAPD Communications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .cursor {
+      display: inline-block;
+      margin-left: 2px;
+      width: 2px;
+      background: #fff;
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { background: transparent; }
+      25%, 75% { background: #fff; }
+    }
+
+    .ticker-scroll {
+      animation: scroll 30s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .channel-active {
+      border: 2px solid #ff6b6b;
+      background-color: #ffe0e0;
+    }
+
+    .live-badge {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <img src="logo.png" alt="CAPD Logo" class="h-10 w-auto object-contain">
+      <nav class="space-x-6 text-sm font-medium">
+        <a href="index.html" class="hover:text-blue-600">Home</a>
+        <a href="news.html" class="hover:text-blue-600">News</a>
+        <a href="tv.html" class="text-blue-600 font-bold">Digital TV</a>
+        <a href="videos.html" class="hover:text-blue-600">Videos</a>
+        <a href="projects.html" class="hover:text-blue-600">Projects</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative w-full h-96 bg-gradient-to-r from-blue-600 to-blue-800">
+    <div class="absolute inset-0 opacity-30" style="background-image: url('banner-02.jpg'); background-size: cover;"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-center">
+      <h1 class="text-white text-5xl font-extrabold mb-4">
+        <span id="typewriter"></span><span class="cursor">|</span>
+      </h1>
+      <p class="text-white text-lg mb-6">Watch live broadcasts, check the program schedule, and stay updated</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Video Player -->
+      <div class="lg:col-span-2">
+        <div class="bg-black rounded-lg overflow-hidden shadow-lg mb-6">
+          <video id="mainVideo" class="w-full aspect-video bg-gray-900" controls>
+            <source src="" type="application/x-mpegURL">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+
+        <!-- Channel Info -->
+        <div class="bg-white rounded-lg p-6 shadow-md mb-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h2 id="channelName" class="text-3xl font-bold mb-2">Loading...</h2>
+              <p id="channelDesc" class="text-gray-600">Channel description</p>
+            </div>
+            <span id="liveIndicator" class="hidden bg-red-600 text-white px-3 py-1 rounded text-sm font-bold live-badge">● LIVE</span>
+          </div>
+          <div class="flex gap-4">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">📺 Watch Live</button>
+            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">📤 Share</button>
+          </div>
+        </div>
+
+        <!-- Current Program -->
+        <div class="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-600">
+          <h3 class="text-xl font-bold mb-4">Current Program</h3>
+          <div id="currentProgramContainer" class="flex gap-4">
+            <div class="flex-shrink-0 w-32 h-24 bg-gray-300 rounded"></div>
+            <div class="flex-grow">
+              <h4 id="progTitle" class="font-bold text-lg mb-2">Checking schedule...</h4>
+              <p id="progInfo" class="text-sm text-gray-600"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div>
+        <!-- Channels List -->
+        <div class="mb-8">
+          <h3 class="text-xl font-bold mb-4">📡 Available Channels</h3>
+          <div id="channelsContainer" class="space-y-2">
+            <div class="bg-gray-200 p-3 rounded animate-pulse">Loading channels...</div>
+          </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
+          <h3 class="font-bold mb-3 text-yellow-800">📢 Announcements</h3>
+          <div id="announcementsContainer" class="space-y-3 text-sm">
+            <div class="text-gray-600">Loading announcements...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Section -->
+    <section class="mt-12">
+      <h2 class="text-3xl font-bold mb-6">📅 Today's Schedule</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="scheduleContainer">
+        <div class="bg-gray-200 p-4 rounded animate-pulse">Loading schedule...</div>
+      </div>
+    </section>
+
+    <!-- News Ticker -->
+    <section class="mt-12 mb-12">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg overflow-hidden">
+        <div class="flex items-center gap-4 mb-2">
+          <span class="font-bold text-lg">📰 BREAKING NEWS</span>
+          <span class="live-badge bg-red-600 px-2 py-1 rounded text-xs font-bold">LIVE</span>
+        </div>
+        <div class="overflow-hidden h-12 flex items-center">
+          <div class="ticker-scroll" id="tickerContainer">
+            <span>CAPD Digital TV - Your Community's Voice</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-6 mt-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
+      <img src="white.png" alt="CAPD Logo" class="h-10 w-auto object-contain">
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Typewriter effect
+    const texts = ["CAPD Digital TV", "Live Broadcasting", "Stay Connected"];
+    let i = 0, j = 0, currentText = "", isDeleting = false;
+    const speed = 120, delay = 1500;
+
+    function typewriter() {
+      const target = document.getElementById("typewriter");
+      if (isDeleting) {
+        currentText = texts[i].substring(0, j--);
+      } else {
+        currentText = texts[i].substring(0, j++);
+      }
+      target.textContent = currentText;
+      if (!isDeleting && j === texts[i].length + 1) {
+        isDeleting = true;
+        setTimeout(typewriter, delay);
+        return;
+      } else if (isDeleting && j === 0) {
+        isDeleting = false;
+        i = (i + 1) % texts.length;
+      }
+      setTimeout(typewriter, isDeleting ? speed / 2 : speed);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      typewriter();
+      loadChannels();
+      loadSchedule();
+      loadAnnouncements();
+      updateCurrentProgram();
+      setInterval(updateCurrentProgram, 60000); // Update every minute
+    });
+
+    // Load channels
+    async function loadChannels() {
+      try {
+        const res = await fetch("data/channels.json");
+        const data = await res.json();
+        const container = document.getElementById("channelsContainer");
+
+        container.innerHTML = data.channels.map((ch, idx) => `
+          <div class="channel-card p-3 rounded cursor-pointer hover:shadow-md transition ${idx === 0 ? 'channel-active' : 'bg-white border'}"
+               onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}')">
+            <div class="font-bold text-sm">${ch.number}. ${ch.name}</div>
+            <div class="text-xs text-gray-600 flex justify-between items-center">
+              <span>${ch.status === 'live' ? '🔴 LIVE' : 'Offline'}</span>
+              <span>${ch.viewers} viewers</span>
+            </div>
+          </div>
+        `).join("");
+
+        // Select first channel
+        if (data.channels.length > 0) {
+          selectChannel(data.channels[0].id, data.channels[0].name, data.channels[0].description, data.channels[0].streamUrl);
+        }
+      } catch (error) {
+        console.error("Error loading channels:", error);
+      }
+    }
+
+    // Select channel
+    function selectChannel(id, name, desc, streamUrl) {
+      document.getElementById("channelName").textContent = name;
+      document.getElementById("channelDesc").textContent = desc;
+      document.getElementById("mainVideo").src = streamUrl;
+      document.getElementById("liveIndicator").classList.remove("hidden");
+
+      // Update active channel
+      document.querySelectorAll(".channel-card").forEach(el => el.classList.remove("channel-active"));
+      event.target.closest(".channel-card").classList.add("channel-active");
+    }
+
+    // Load schedule
+    async function loadSchedule() {
+      try {
+        const res = await fetch("data/schedule.json");
+        const data = await res.json();
+        const container = document.getElementById("scheduleContainer");
+
+        // Get today's programs (first 4)
+        const programs = data.schedule.slice(0, 4);
+
+        container.innerHTML = programs.map(prog => {
+          const now = new Date();
+          const [startHour, startMin] = prog.startTime.split(':').map(Number);
+          const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
+          const isLive = now >= start && now < new Date(start.getTime() + prog.duration * 60000);
+
+          return `
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
+              <img src="${prog.image}" alt="${prog.title}" class="w-full h-32 object-cover">
+              <div class="p-3">
+                <p class="text-xs text-gray-500">${prog.startTime} - ${prog.endTime}</p>
+                <h4 class="font-bold text-sm mb-2 line-clamp-2">${prog.title}</h4>
+                ${isLive ? '<span class="text-xs bg-red-600 text-white px-2 py-1 rounded">🔴 LIVE NOW</span>' : ''}
+                <p class="text-xs text-gray-600 mt-1">🎙️ ${prog.host}</p>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (error) {
+        console.error("Error loading schedule:", error);
+      }
+    }
+
+    // Load announcements
+    async function loadAnnouncements() {
+      try {
+        const res = await fetch("data/announcements.json");
+        const data = await res.json();
+        const container = document.getElementById("announcementsContainer");
+
+        const active = data.announcements
+          .filter(ann => new Date(ann.expiresAt) > new Date())
+          .slice(0, 3);
+
+        container.innerHTML = active.map(ann => `
+          <div class="bg-white p-2 rounded border-l-2 border-yellow-500">
+            <p class="font-bold text-gray-800 text-sm">${ann.title}</p>
+            <p class="text-xs text-gray-600 mt-1">${ann.content.substring(0, 80)}...</p>
+          </div>
+        `).join("") || '<div class="text-gray-600">No active announcements</div>';
+
+        // Update ticker
+        const tickerItems = data.announcements
+          .filter(ann => new Date(ann.expiresAt) > new Date())
+          .map(ann => `<span class="mx-8">${ann.title}</span>`)
+          .join("");
+        document.getElementById("tickerContainer").innerHTML = tickerItems || '<span>CAPD Digital TV - Your Community Voice</span>';
+      } catch (error) {
+        console.error("Error loading announcements:", error);
+      }
+    }
+
+    // Update current program
+    async function updateCurrentProgram() {
+      try {
+        const res = await fetch("data/schedule.json");
+        const data = await res.json();
+
+        const now = new Date();
+        const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const current = data.schedule.find(prog =>
+          currentTimeStr >= prog.startTime && currentTimeStr <= prog.endTime
+        );
+
+        if (current) {
+          document.getElementById("progTitle").textContent = current.title;
+          document.getElementById("progInfo").innerHTML = `
+            <p><strong>Time:</strong> ${current.startTime} - ${current.endTime}</p>
+            <p><strong>Host:</strong> ${current.host}</p>
+            <p class="mt-2">${current.description}</p>
+          `;
+        } else {
+          document.getElementById("progTitle").textContent = "No program airing now";
+          document.getElementById("progInfo").innerHTML = "Check back soon for upcoming programs";
+        }
+      } catch (error) {
+        console.error("Error updating current program:", error);
+      }
+    }
+  </script>
+
+</body>
+</html>

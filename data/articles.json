@@ -1,0 +1,59 @@
+{
+  "articles": [
+    {
+      "id": "art-001",
+      "title": "Oboburu Road Construction Nears Completion",
+      "description": "Major road linking Oboburu to communities is now 95% completed",
+      "image": "assets/images/road-construction.jpg",
+      "date": "2025-11-23",
+      "author": "John Okafor",
+      "category": "Infrastructure",
+      "featured": true,
+      "content": "<p>The road project has entered its final stages with all major construction work nearly complete. The new highway will significantly improve connectivity and trade between Oboburu and neighboring communities.</p><p>Residents are excited about the prospects of improved access and economic opportunities. The project is expected to be fully completed by end of December 2025.</p>"
+    },
+    {
+      "id": "art-002",
+      "title": "CAPD Launches New ICT Center",
+      "description": "A state-of-the-art ICT center has been commissioned to provide digital literacy training",
+      "image": "assets/images/ict-center.jpg",
+      "date": "2025-11-20",
+      "author": "Mary Chioma",
+      "category": "Education",
+      "featured": true,
+      "content": "<p>The new ICT center is part of the government's plan to bridge the digital divide in rural communities. The facility is equipped with 50 modern computers and high-speed internet connectivity.</p><p>Training programs will focus on basic computer skills, internet usage, online communication, and digital entrepreneurship. Enrollment is now open to community members aged 15 and above.</p>"
+    },
+    {
+      "id": "art-003",
+      "title": "Ogbogu Cottage Hospital Renovated",
+      "description": "Residents celebrate the newly renovated hospital with expanded medical services",
+      "image": "assets/images/hospital.jpg",
+      "date": "2025-11-18",
+      "author": "David Okoro",
+      "category": "Healthcare",
+      "featured": false,
+      "content": "<p>The renovation project has transformed the hospital into a modern healthcare facility with improved patient care capabilities. New departments include maternity, outpatient services, and a pharmacy.</p><p>The hospital now employs 15 trained medical professionals and operates 24/7 to serve the community's healthcare needs.</p>"
+    },
+    {
+      "id": "art-004",
+      "title": "Community Feedback Initiative Launched",
+      "description": "CAPD introduces new platform for residents to voice concerns and suggestions",
+      "image": "assets/images/community-meeting.jpg",
+      "date": "2025-11-15",
+      "author": "Grace Anucha",
+      "category": "Community",
+      "featured": false,
+      "content": "<p>Starting this month, monthly town hall meetings will be broadcast live on our digital platform. Residents can now submit questions and feedback through multiple channels including live chat, phone calls, and in-person attendance.</p>"
+    },
+    {
+      "id": "art-005",
+      "title": "Agricultural Training Program Scheduled",
+      "description": "Farmers to receive training on modern farming techniques and sustainable agriculture",
+      "image": "assets/images/agriculture.jpg",
+      "date": "2025-11-10",
+      "author": "Prof. Amara Eze",
+      "category": "Agriculture",
+      "featured": false,
+      "content": "<p>The agricultural training program aims to increase crop yields and promote sustainable farming practices. Expert trainers will cover topics including soil conservation, crop rotation, and pest management.</p>"
+    }
+  ]
+}

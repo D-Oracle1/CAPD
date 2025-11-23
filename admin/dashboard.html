@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAPD Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .nav-active {
+      @apply bg-purple-600 text-white;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Check Authentication -->
+  <script>
+    if (!localStorage.getItem('adminUser')) {
+      window.location.href = 'index.html';
+    }
+  </script>
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold">CAPD Admin Panel</h1>
+        <span class="text-purple-200 text-sm">v1.0</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="username" class="text-purple-100"></span>
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white shadow-lg min-h-screen">
+      <nav class="p-6 space-y-2">
+        <button onclick="showSection('overview')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          📊 Dashboard Overview
+        </button>
+        <button onclick="showSection('news')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          📰 News & Articles
+        </button>
+        <button onclick="showSection('channels')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          📡 Channels
+        </button>
+        <button onclick="showSection('schedule')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          📅 Schedule
+        </button>
+        <button onclick="showSection('announcements')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          📢 Announcements
+        </button>
+        <button onclick="showSection('settings')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
+          ⚙️ Settings
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+
+      <!-- Dashboard Overview -->
+      <section id="overview" class="section fade-in">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-600 text-sm">Total Articles</p>
+            <p class="text-3xl font-bold text-purple-600">5</p>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-600 text-sm">Active Channels</p>
+            <p class="text-3xl font-bold text-blue-600">5</p>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-600 text-sm">Scheduled Programs</p>
+            <p class="text-3xl font-bold text-green-600">8</p>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-600 text-sm">Announcements</p>
+            <p class="text-3xl font-bold text-orange-600">5</p>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button onclick="showSection('news')" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 p-4 rounded-lg transition">
+              <p class="font-semibold text-blue-900">Add News</p>
+              <p class="text-sm text-blue-700">Create new article</p>
+            </button>
+            <button onclick="showSection('channels')" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 p-4 rounded-lg transition">
+              <p class="font-semibold text-purple-900">Manage Channels</p>
+              <p class="text-sm text-purple-700">Update channels</p>
+            </button>
+            <button onclick="showSection('schedule')" class="bg-green-50 hover:bg-green-100 border-2 border-green-200 p-4 rounded-lg transition">
+              <p class="font-semibold text-green-900">Add Program</p>
+              <p class="text-sm text-green-700">Schedule content</p>
+            </button>
+            <button onclick="showSection('announcements')" class="bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 p-4 rounded-lg transition">
+              <p class="font-semibold text-orange-900">Breaking News</p>
+              <p class="text-sm text-orange-700">Post announcement</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">System Information</h3>
+          <div class="space-y-2 text-sm text-gray-600">
+            <p><strong>Admin User:</strong> <span id="adminUsername">admin</span></p>
+            <p><strong>Last Login:</strong> <span id="lastLogin">Today</span></p>
+            <p><strong>Data Storage:</strong> Browser LocalStorage (JSON)</p>
+            <p><strong>Backup:</strong> Export/Import available in Settings</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- News & Articles Management -->
+      <section id="news" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">News & Articles</h2>
+          <button onclick="showNewsForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">+ Add Article</button>
+        </div>
+
+        <!-- News Form -->
+        <div id="newsForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Add/Edit Article</h3>
+          <form id="articleForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Article Title</label>
+                <input type="text" id="articleTitle" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Author</label>
+                <input type="text" id="articleAuthor" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Category</label>
+                <select id="articleCategory" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Infrastructure</option>
+                  <option>Healthcare</option>
+                  <option>Education</option>
+                  <option>Community</option>
+                  <option>Agriculture</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Date</label>
+                <input type="date" id="articleDate" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description</label>
+              <input type="text" id="articleDesc" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Short summary">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Article Content (HTML)</label>
+              <textarea id="articleContent" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 font-mono text-sm"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Featured Image URL</label>
+              <input type="text" id="articleImage" placeholder="assets/images/article.jpg" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Article</button>
+              <button type="button" onclick="hideNewsForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Articles List -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="px-6 py-3 text-left">Title</th>
+                <th class="px-6 py-3 text-left">Author</th>
+                <th class="px-6 py-3 text-left">Category</th>
+                <th class="px-6 py-3 text-left">Date</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="newsTable" class="divide-y">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Channels Management -->
+      <section id="channels" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">Manage Channels</h2>
+          <button onclick="showChannelForm()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">+ Add Channel</button>
+        </div>
+
+        <!-- Channel Form -->
+        <div id="channelForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Add/Edit Channel</h3>
+          <form id="formChannel" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Channel Name</label>
+                <input type="text" id="channelName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Channel Number</label>
+                <input type="number" id="channelNum" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description</label>
+              <input type="text" id="channelDesc" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Stream URL</label>
+              <input type="url" id="streamUrl" placeholder="https://stream-server.com/live/channel" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Status</label>
+                <select id="channelStatus" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option>live</option>
+                  <option>offline</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Viewers</label>
+                <input type="number" id="viewers" value="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Channel</button>
+              <button type="button" onclick="hideChannelForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Channels List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="channelsContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Schedule Management -->
+      <section id="schedule" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">Program Schedule</h2>
+          <button onclick="showScheduleForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">+ Add Program</button>
+        </div>
+
+        <!-- Program Form -->
+        <div id="scheduleForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Add/Edit Program</h3>
+          <form id="formProgram" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Program Title</label>
+                <input type="text" id="progTitle" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Channel</label>
+                <select id="progChannel" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <!-- Populated by JavaScript -->
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Start Time (HH:MM)</label>
+                <input type="time" id="progStart" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">End Time (HH:MM)</label>
+                <input type="time" id="progEnd" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Duration (min)</label>
+                <input type="number" id="progDuration" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description</label>
+              <input type="text" id="progDesc" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Host</label>
+              <input type="text" id="progHost" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Program</button>
+              <button type="button" onclick="hideScheduleForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Programs List -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="px-6 py-3 text-left">Title</th>
+                <th class="px-6 py-3 text-left">Channel</th>
+                <th class="px-6 py-3 text-left">Time</th>
+                <th class="px-6 py-3 text-left">Host</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleTable" class="divide-y">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Announcements Management -->
+      <section id="announcements" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">Announcements</h2>
+          <button onclick="showAnnounceForm()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">+ Add Announcement</button>
+        </div>
+
+        <!-- Announcement Form -->
+        <div id="announceForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Add/Edit Announcement</h3>
+          <form id="formAnnounce" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Title</label>
+                <input type="text" id="annTitle" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Type</label>
+                <select id="annType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>breaking</option>
+                  <option>news</option>
+                  <option>event</option>
+                  <option>update</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Content</label>
+              <textarea id="annContent" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 h-20"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Priority</label>
+                <select id="annPriority" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>high</option>
+                  <option>medium</option>
+                  <option>low</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Expires In (hours)</label>
+                <input type="number" id="annExpire" value="24" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Post Announcement</button>
+              <button type="button" onclick="hideAnnounceForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Announcements List -->
+        <div class="space-y-4" id="announcementsContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="settings" class="section hidden fade-in">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Settings & Tools</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Database Management -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Data Backup</h3>
+            <p class="text-gray-600 mb-4">Export all data as JSON file</p>
+            <button onclick="exportData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-2">
+              ⬇️ Export All Data
+            </button>
+            <p class="text-xs text-gray-500 mt-2">Downloads JSON file with all content</p>
+          </div>
+
+          <!-- Import Data -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Data Import</h3>
+            <p class="text-gray-600 mb-4">Import JSON data file</p>
+            <input type="file" id="importFile" accept=".json" class="w-full mb-2">
+            <button onclick="importData()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+              ⬆️ Import Data
+            </button>
+            <p class="text-xs text-gray-500 mt-2">Select JSON file to import</p>
+          </div>
+
+          <!-- Cache Control -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Cache & Performance</h3>
+            <p class="text-gray-600 mb-4">Clear browser cache</p>
+            <button onclick="clearCache()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg">
+              🗑️ Clear Cache
+            </button>
+          </div>
+
+          <!-- Admin Settings -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Admin Settings</h3>
+            <p class="text-gray-600 mb-4">Manage admin account</p>
+            <button onclick="alert('Feature coming soon')" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+              👤 Change Password
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="cms.js"></script>
+</body>
+</html>

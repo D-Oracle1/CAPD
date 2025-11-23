@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAPD - Community Action and Development Partners</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .hero-text {
+      animation: slideDown 0.8s ease-out;
+    }
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- Navigation -->
+  <nav class="bg-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white font-bold text-xl">C</div>
+        <h1 class="text-2xl font-bold text-gray-800">CAPD</h1>
+      </div>
+      <div class="hidden md:flex gap-8">
+        <a href="#about" class="text-gray-600 hover:text-purple-600 transition">About Us</a>
+        <a href="#services" class="text-gray-600 hover:text-purple-600 transition">Services</a>
+        <a href="#impact" class="text-gray-600 hover:text-purple-600 transition">Our Impact</a>
+        <a href="#media" class="text-gray-600 hover:text-purple-600 transition">Media Center</a>
+      </div>
+      <div class="flex gap-3">
+        <a href="tv.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">📺 Watch TV</a>
+        <a href="admin/index.html" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="gradient-bg text-white py-20 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="hero-text">
+        <h2 class="text-5xl md:text-6xl font-bold mb-6">Community Action & Development Partners</h2>
+        <p class="text-xl md:text-2xl text-purple-100 mb-8 max-w-3xl">
+          Transforming lives through innovative community projects, quality broadcasting, and sustainable development initiatives.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="#impact" class="bg-white text-purple-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition text-center">
+            Learn More
+          </a>
+          <a href="tv.html" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-8 rounded-lg transition text-center">
+            Watch Live Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Stats -->
+  <section class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center">
+          <p class="text-4xl font-bold text-purple-600">4</p>
+          <p class="text-gray-600">Major Projects</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-bold text-purple-600">5</p>
+          <p class="text-gray-600">Broadcasting Channels</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-bold text-purple-600">24/7</p>
+          <p class="text-gray-600">Live Streaming</p>
+        </div>
+        <div class="text-center">
+          <p class="text-4xl font-bold text-purple-600">100%</p>
+          <p class="text-gray-600">Community Focus</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-gray-800 mb-12 text-center">About CAPD</h2>
+      <div class="grid md:grid-cols-2 gap-12">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">Our Mission</h3>
+          <p class="text-gray-600 mb-4">
+            CAPD is committed to fostering sustainable community development through strategic partnerships, innovative programs, and quality communications. We believe in empowering communities to take charge of their own development agenda.
+          </p>
+          <p class="text-gray-600">
+            Our integrated approach combines infrastructure development, education, healthcare, and community engagement through modern digital platforms.
+          </p>
+        </div>
+        <div class="bg-purple-50 p-8 rounded-lg">
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">Our Values</h3>
+          <ul class="space-y-3 text-gray-600">
+            <li class="flex items-start gap-3">
+              <span class="text-purple-600 font-bold mt-1">✓</span>
+              <span><strong>Community-Centric:</strong> Putting communities at the heart of development</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-purple-600 font-bold mt-1">✓</span>
+              <span><strong>Transparency:</strong> Open communication and accountability</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-purple-600 font-bold mt-1">✓</span>
+              <span><strong>Innovation:</strong> Leveraging technology for impact</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-purple-600 font-bold mt-1">✓</span>
+              <span><strong>Sustainability:</strong> Creating lasting positive change</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-gray-800 mb-12 text-center">Our Services</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="feature-card bg-white rounded-lg shadow-md p-6 card-hover">
+          <div class="text-4xl mb-4">🏗️</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Infrastructure</h3>
+          <p class="text-gray-600">Development of community roads, hospitals, and essential facilities for improved accessibility and quality of life.</p>
+        </div>
+        <div class="feature-card bg-white rounded-lg shadow-md p-6 card-hover">
+          <div class="text-4xl mb-4">🎓</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Education</h3>
+          <p class="text-gray-600">Digital literacy programs, skill training, and educational support for community development.</p>
+        </div>
+        <div class="feature-card bg-white rounded-lg shadow-md p-6 card-hover">
+          <div class="text-4xl mb-4">🏥</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Healthcare</h3>
+          <p class="text-gray-600">Quality healthcare services and health awareness programs for improved community wellness.</p>
+        </div>
+        <div class="feature-card bg-white rounded-lg shadow-md p-6 card-hover">
+          <div class="text-4xl mb-4">📡</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Broadcasting</h3>
+          <p class="text-gray-600">24/7 digital TV platform for news, education, entertainment, and community engagement.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact Section -->
+  <section id="impact" class="py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-gray-800 mb-12 text-center">Our Impact</h2>
+      <div class="grid md:grid-cols-2 gap-12">
+        <!-- Project 1 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+          <img src="1.png" alt="Ogbogu Secondary School" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Ogbogu Secondary School</h3>
+            <p class="text-gray-600 mb-4">Quality educational institution providing excellent secondary education to hundreds of students in the community.</p>
+            <span class="text-sm font-semibold text-green-600">✓ Completed</span>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+          <img src="4.png" alt="Ogbogu Cottage Hospital" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Ogbogu Cottage Hospital</h3>
+            <p class="text-gray-600 mb-4">Modern healthcare facility providing 24/7 medical services to residents of Ogbogu and neighboring communities.</p>
+            <span class="text-sm font-semibold text-green-600">✓ Completed</span>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+          <img src="5.png" alt="Oboburu Road Construction" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Oboburu Road Construction</h3>
+            <p class="text-gray-600 mb-4">Major infrastructure project improving connectivity and economic opportunities for the Oboburu community.</p>
+            <span class="text-sm font-semibold text-green-600">✓ Completed</span>
+          </div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+          <img src="3.png" alt="Erema Cooking Gas Plant" class="w-full h-48 object-cover">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Erema Cooking Gas Plant</h3>
+            <p class="text-gray-600 mb-4">Energy project providing safe, reliable LPG supply and promoting clean energy usage in the community.</p>
+            <span class="text-sm font-semibold text-green-600">✓ Completed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Media Center -->
+  <section id="media" class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-gray-800 mb-12 text-center">Media Center</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- News -->
+        <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover">
+          <div class="text-5xl mb-4">📰</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Latest News</h3>
+          <p class="text-gray-600 mb-4">Stay updated with the latest news and developments from CAPD.</p>
+          <a href="news.html" class="text-purple-600 hover:text-purple-700 font-semibold">Read News →</a>
+        </div>
+
+        <!-- Digital TV -->
+        <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover">
+          <div class="text-5xl mb-4">📺</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Live Broadcasting</h3>
+          <p class="text-gray-600 mb-4">Watch our 24/7 digital TV with 5 live channels.</p>
+          <a href="tv.html" class="text-purple-600 hover:text-purple-700 font-semibold">Watch Now →</a>
+        </div>
+
+        <!-- Gallery -->
+        <div class="bg-white rounded-lg shadow-md p-6 text-center card-hover">
+          <div class="text-5xl mb-4">🖼️</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Photo Gallery</h3>
+          <p class="text-gray-600 mb-4">Visual documentation of our community projects and events.</p>
+          <a href="projects.html" class="text-purple-600 hover:text-purple-700 font-semibold">View Gallery →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="gradient-bg text-white py-16">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Get Involved in Community Development</h2>
+      <p class="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+        Join us in transforming communities through collaborative action and sustainable development initiatives.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button class="bg-white text-purple-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition">
+          Become a Partner
+        </button>
+        <button class="border-2 border-white text-white hover:bg-purple-700 font-bold py-3 px-8 rounded-lg transition">
+          Learn More
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h4 class="text-white font-bold mb-4">About</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white transition">Our Mission</a></li>
+            <li><a href="#" class="hover:text-white transition">Our Team</a></li>
+            <li><a href="#" class="hover:text-white transition">Our Impact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Services</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white transition">Infrastructure</a></li>
+            <li><a href="#" class="hover:text-white transition">Education</a></li>
+            <li><a href="#" class="hover:text-white transition">Healthcare</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Media</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="news.html" class="hover:text-white transition">News</a></li>
+            <li><a href="tv.html" class="hover:text-white transition">Digital TV</a></li>
+            <li><a href="projects.html" class="hover:text-white transition">Gallery</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Contact</h4>
+          <p class="text-sm mb-2">📧 info@capd.ng</p>
+          <p class="text-sm mb-2">📱 +234 801 234 5678</p>
+          <p class="text-sm">🕐 24/7 Support</p>
+        </div>
+      </div>
+
+      <hr class="border-gray-700 mb-8">
+
+      <div class="text-center text-sm">
+        <p>&copy; 2025 CAPD Communications. All rights reserved.</p>
+        <p class="mt-2 text-xs">Privacy Policy | Terms of Service | Contact Us</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

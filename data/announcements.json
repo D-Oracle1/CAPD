@@ -1,0 +1,54 @@
+{
+  "announcements": [
+    {
+      "id": "ann-001",
+      "type": "breaking",
+      "title": "BREAKING: Oboburu Road Project 95% Complete",
+      "content": "The major road linking Oboburu to neighboring communities has reached 95% completion. Final touches underway.",
+      "timestamp": "2025-11-23T10:30:00Z",
+      "priority": "high",
+      "expiresAt": "2025-11-24T10:30:00Z",
+      "icon": "alert"
+    },
+    {
+      "id": "ann-002",
+      "type": "news",
+      "title": "CAPD ICT Center Opens for Enrollments",
+      "content": "Register now for our new digital literacy programs. Limited slots available. Visit the center or call 08012345678.",
+      "timestamp": "2025-11-22T14:15:00Z",
+      "priority": "medium",
+      "expiresAt": "2025-11-30T14:15:00Z",
+      "icon": "info"
+    },
+    {
+      "id": "ann-003",
+      "type": "event",
+      "title": "Community Town Hall Meeting Tomorrow",
+      "content": "Join us tomorrow at 9 AM for our monthly community feedback session. Meet with leadership and share your concerns.",
+      "timestamp": "2025-11-22T16:45:00Z",
+      "priority": "high",
+      "expiresAt": "2025-11-23T09:00:00Z",
+      "icon": "calendar"
+    },
+    {
+      "id": "ann-004",
+      "type": "update",
+      "title": "Ogbogu Hospital Now Fully Operational",
+      "content": "Following recent renovations, the hospital is now offering expanded services including maternity and outpatient care.",
+      "timestamp": "2025-11-21T08:20:00Z",
+      "priority": "medium",
+      "expiresAt": "2025-12-21T08:20:00Z",
+      "icon": "check"
+    },
+    {
+      "id": "ann-005",
+      "type": "reminder",
+      "title": "Weekly Schedule: Check Program Guide for Today's Programs",
+      "content": "View our full schedule on the Program Guide. Educational, entertainment, and community programs available throughout the day.",
+      "timestamp": "2025-11-23T06:00:00Z",
+      "priority": "low",
+      "expiresAt": "2025-11-23T23:59:00Z",
+      "icon": "clock"
+    }
+  ]
+}
