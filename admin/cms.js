@@ -542,3 +542,312 @@ function updateAnnouncementsJson(announcements) {
   const data = { announcements: announcements };
   console.log('Updating announcements.json', data);
 }
+
+/**
+ * ==================== STREAMING SETUP ====================
+ */
+
+/**
+ * Select streaming platform and show configuration
+ */
+function selectPlatform(platform) {
+  // Hide all platforms
+  document.getElementById('youtubeSetup').classList.add('hidden');
+  document.getElementById('twitchSetup').classList.add('hidden');
+  document.getElementById('obsSetup').classList.add('hidden');
+  document.getElementById('customSetup').classList.add('hidden');
+
+  // Show selected platform
+  if (platform === 'youtube') {
+    document.getElementById('youtubeSetup').classList.remove('hidden');
+  } else if (platform === 'twitch') {
+    document.getElementById('twitchSetup').classList.remove('hidden');
+  } else if (platform === 'obs') {
+    document.getElementById('obsSetup').classList.remove('hidden');
+  } else if (platform === 'custom') {
+    document.getElementById('customSetup').classList.remove('hidden');
+  }
+
+  // Load existing configuration if any
+  loadStreamingConfig();
+}
+
+/**
+ * Toggle visibility of YouTube stream key
+ */
+function toggleYoutubeKeyVisibility() {
+  const keyInput = document.getElementById('youtubeStreamKey');
+  const keyDisplay = document.getElementById('youtubeKeyDisplay');
+
+  if (keyInput.type === 'password') {
+    keyInput.type = 'text';
+    keyDisplay.textContent = keyInput.value || '••••••••••••••••';
+  } else {
+    keyInput.type = 'password';
+    keyDisplay.textContent = '••••••••••••••••';
+  }
+}
+
+/**
+ * Toggle visibility of Twitch stream key
+ */
+function toggleTwitchKeyVisibility() {
+  const keyInput = document.getElementById('twitchStreamKey');
+  const keyDisplay = document.getElementById('twitchKeyDisplay');
+
+  if (keyInput.type === 'password') {
+    keyInput.type = 'text';
+    keyDisplay.textContent = keyInput.value || '••••••••••••••••';
+  } else {
+    keyInput.type = 'password';
+    keyDisplay.textContent = '••••••••••••••••';
+  }
+}
+
+/**
+ * Toggle visibility of OBS stream key
+ */
+function toggleObsKeyVisibility() {
+  const keyInput = document.getElementById('obsStreamKey');
+
+  if (keyInput.type === 'password') {
+    keyInput.type = 'text';
+  } else {
+    keyInput.type = 'password';
+  }
+}
+
+/**
+ * Toggle visibility of Custom stream key
+ */
+function toggleCustomKeyVisibility() {
+  const keyInput = document.getElementById('customStreamKey');
+
+  if (keyInput.type === 'password') {
+    keyInput.type = 'text';
+  } else {
+    keyInput.type = 'password';
+  }
+}
+
+/**
+ * Copy stream key to clipboard
+ */
+function copyToClipboard(elementId, platform) {
+  const element = document.getElementById(elementId);
+  const text = element.value;
+
+  if (!text) {
+    alert('Please enter your stream key first!');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Stream key copied to clipboard!');
+  }).catch(() => {
+    // Fallback for older browsers
+    element.select();
+    document.execCommand('copy');
+    alert('Stream key copied to clipboard!');
+  });
+}
+
+/**
+ * Generate OBS configuration display
+ */
+function generateObsConfig() {
+  const server = document.getElementById('obsServer').value;
+  const streamKey = document.getElementById('obsStreamKey').value;
+  const bitrate = document.getElementById('obsBitrate').value;
+  const fps = document.getElementById('obsFps').value;
+  const resolution = document.getElementById('obsResolution').value;
+  const preset = document.getElementById('obsPreset').value;
+
+  if (!server || !streamKey) {
+    alert('Please enter server and stream key!');
+    return;
+  }
+
+  const config = `
+OBS Configuration
+================
+
+Server:     ${server}
+Stream Key: ${streamKey}
+
+Output Settings:
+- Bitrate:  ${bitrate} kbps
+- FPS:      ${fps}
+- Resolution: ${resolution}
+- Preset:   ${preset}
+
+Instructions:
+1. Open OBS Studio
+2. File → Settings → Stream
+3. Service: Custom
+4. Server: ${server}
+5. Stream Key: ${streamKey}
+6. Click OK
+7. File → Settings → Output
+8. Set Bitrate to ${bitrate} kbps
+9. Click OK
+10. Click "Start Streaming"
+  `;
+
+  alert(config);
+}
+
+/**
+ * Save streaming configuration
+ */
+function saveStreamingConfig(platform) {
+  let config = {
+    platform: platform,
+    timestamp: new Date().toISOString()
+  };
+
+  if (platform === 'youtube') {
+    const streamKey = document.getElementById('youtubeStreamKey').value;
+    const videoId = document.getElementById('youtubeVideoId').value;
+
+    if (!streamKey && !videoId) {
+      alert('Please enter your YouTube Stream Key or Video ID!');
+      return;
+    }
+
+    config.streamKey = streamKey;
+    config.videoId = videoId;
+    config.server = 'rtmps://a.rtmp.youtube.com/live2';
+  } else if (platform === 'twitch') {
+    const streamKey = document.getElementById('twitchStreamKey').value;
+    const channelName = document.getElementById('twitchChannelName').value;
+
+    if (!streamKey && !channelName) {
+      alert('Please enter your Twitch Stream Key or Channel Name!');
+      return;
+    }
+
+    config.streamKey = streamKey;
+    config.channelName = channelName;
+    config.server = 'rtmp://live-iad.twitch.tv/app';
+  } else if (platform === 'obs') {
+    const server = document.getElementById('obsServer').value;
+    const streamKey = document.getElementById('obsStreamKey').value;
+    const bitrate = document.getElementById('obsBitrate').value;
+    const fps = document.getElementById('obsFps').value;
+    const resolution = document.getElementById('obsResolution').value;
+    const preset = document.getElementById('obsPreset').value;
+
+    if (!server || !streamKey) {
+      alert('Please enter server and stream key!');
+      return;
+    }
+
+    config.server = server;
+    config.streamKey = streamKey;
+    config.bitrate = bitrate;
+    config.fps = fps;
+    config.resolution = resolution;
+    config.preset = preset;
+  } else if (platform === 'custom') {
+    const provider = document.getElementById('customProvider').value;
+    const rtmpServer = document.getElementById('customRtmpServer').value;
+    const streamKey = document.getElementById('customStreamKey').value;
+    const hlsUrl = document.getElementById('customHlsUrl').value;
+    const bitrate = document.getElementById('customBitrate').value;
+    const fps = document.getElementById('customFps').value;
+
+    if (!rtmpServer || !streamKey) {
+      alert('Please enter RTMP server and stream key!');
+      return;
+    }
+
+    config.provider = provider;
+    config.server = rtmpServer;
+    config.streamKey = streamKey;
+    config.hlsUrl = hlsUrl;
+    config.bitrate = bitrate;
+    config.fps = fps;
+  }
+
+  // Save to localStorage
+  localStorage.setItem('streamingConfig', JSON.stringify(config));
+
+  // Display configuration
+  displayStreamingConfig(config);
+
+  alert('✅ Streaming configuration saved successfully!');
+}
+
+/**
+ * Load streaming configuration
+ */
+function loadStreamingConfig() {
+  const config = localStorage.getItem('streamingConfig');
+  if (config) {
+    try {
+      const parsedConfig = JSON.parse(config);
+      displayStreamingConfig(parsedConfig);
+    } catch (e) {
+      console.error('Error loading streaming config:', e);
+    }
+  }
+}
+
+/**
+ * Display current streaming configuration
+ */
+function displayStreamingConfig(config) {
+  const display = document.getElementById('streamingConfigDisplay');
+  let html = '';
+
+  html += `<div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">`;
+  html += `<p class="text-sm text-gray-600"><strong>Platform:</strong> ${config.platform.toUpperCase()}</p>`;
+  html += `<p class="text-xs text-gray-500 mt-2">Last Updated: ${new Date(config.timestamp).toLocaleString()}</p>`;
+  html += `</div>`;
+
+  html += `<div class="bg-white rounded-lg p-4 border border-gray-300">`;
+
+  if (config.platform === 'youtube') {
+    html += `<p class="mb-2"><strong>Platform:</strong> YouTube Live</p>`;
+    if (config.server) html += `<p class="mb-2"><strong>Server:</strong> <code class="bg-gray-100 px-2 py-1">${config.server}</code></p>`;
+    if (config.streamKey) html += `<p class="mb-2"><strong>Stream Key:</strong> <code class="bg-gray-100 px-2 py-1">••••••••••••••••</code></p>`;
+    if (config.videoId) html += `<p class="mb-2"><strong>Video/Stream URL:</strong> <code class="bg-gray-100 px-2 py-1 text-xs">${config.videoId}</code></p>`;
+  } else if (config.platform === 'twitch') {
+    html += `<p class="mb-2"><strong>Platform:</strong> Twitch</p>`;
+    if (config.server) html += `<p class="mb-2"><strong>Server:</strong> <code class="bg-gray-100 px-2 py-1">${config.server}</code></p>`;
+    if (config.streamKey) html += `<p class="mb-2"><strong>Stream Key:</strong> <code class="bg-gray-100 px-2 py-1">••••••••••••••••</code></p>`;
+    if (config.channelName) html += `<p class="mb-2"><strong>Channel:</strong> <code class="bg-gray-100 px-2 py-1">${config.channelName}</code></p>`;
+  } else if (config.platform === 'obs') {
+    html += `<p class="mb-2"><strong>Platform:</strong> OBS Studio (Custom Server)</p>`;
+    if (config.server) html += `<p class="mb-2"><strong>Server:</strong> <code class="bg-gray-100 px-2 py-1 text-xs">${config.server}</code></p>`;
+    if (config.streamKey) html += `<p class="mb-2"><strong>Stream Key:</strong> <code class="bg-gray-100 px-2 py-1">••••••••••••••••</code></p>`;
+    html += `<p class="mb-2"><strong>Output Settings:</strong></p>`;
+    html += `<ul class="list-disc list-inside text-sm text-gray-600">`;
+    if (config.bitrate) html += `<li>Bitrate: ${config.bitrate} kbps</li>`;
+    if (config.fps) html += `<li>FPS: ${config.fps}</li>`;
+    if (config.resolution) html += `<li>Resolution: ${config.resolution}</li>`;
+    if (config.preset) html += `<li>Preset: ${config.preset}</li>`;
+    html += `</ul>`;
+  } else if (config.platform === 'custom') {
+    html += `<p class="mb-2"><strong>Platform:</strong> Custom RTMP/HLS</p>`;
+    if (config.provider) html += `<p class="mb-2"><strong>Provider:</strong> ${config.provider}</p>`;
+    if (config.server) html += `<p class="mb-2"><strong>RTMP Server:</strong> <code class="bg-gray-100 px-2 py-1 text-xs">${config.server}</code></p>`;
+    if (config.streamKey) html += `<p class="mb-2"><strong>Stream Key:</strong> <code class="bg-gray-100 px-2 py-1">••••••••••••••••</code></p>`;
+    if (config.hlsUrl) html += `<p class="mb-2"><strong>HLS URL:</strong> <code class="bg-gray-100 px-2 py-1 text-xs">${config.hlsUrl}</code></p>`;
+    html += `<p class="mb-2"><strong>Parameters:</strong></p>`;
+    html += `<ul class="list-disc list-inside text-sm text-gray-600">`;
+    if (config.bitrate) html += `<li>Bitrate: ${config.bitrate} kbps</li>`;
+    if (config.fps) html += `<li>FPS: ${config.fps}</li>`;
+    html += `</ul>`;
+  }
+
+  html += `<div class="mt-4 pt-4 border-t">`;
+  html += `<button onclick="selectPlatform('${config.platform}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">`;
+  html += `📝 Edit Configuration`;
+  html += `</button>`;
+  html += `</div>`;
+  html += `</div>`;
+
+  display.innerHTML = html;
+}
