@@ -198,14 +198,32 @@
       setInterval(updateCurrentProgram, 60000); // Update every minute
     });
 
-    // Load channels
+    // Load channels from localStorage (CMS) with fallback to JSON
     async function loadChannels() {
       try {
-        const res = await fetch("data/channels.json");
-        const data = await res.json();
+        let channels = [];
+
+        // Try to load from localStorage first (from CMS)
+        const storedChannels = localStorage.getItem('channels');
+        if (storedChannels) {
+          try {
+            const parsed = JSON.parse(storedChannels);
+            channels = parsed;
+          } catch (e) {
+            console.log("Could not parse stored channels, falling back to JSON");
+          }
+        }
+
+        // If no stored channels, load from JSON file
+        if (channels.length === 0) {
+          const res = await fetch("data/channels.json");
+          const data = await res.json();
+          channels = data.channels;
+        }
+
         const container = document.getElementById("channelsContainer");
 
-        container.innerHTML = data.channels.map((ch, idx) => `
+        container.innerHTML = channels.map((ch, idx) => `
           <div class="channel-card p-3 rounded cursor-pointer hover:shadow-md transition ${idx === 0 ? 'channel-active' : 'bg-white border'}"
                onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}')">
             <div class="font-bold text-sm">${ch.number}. ${ch.name}</div>
@@ -217,8 +235,8 @@
         `).join("");
 
         // Select first channel
-        if (data.channels.length > 0) {
-          selectChannel(data.channels[0].id, data.channels[0].name, data.channels[0].description, data.channels[0].streamUrl);
+        if (channels.length > 0) {
+          selectChannel(channels[0].id, channels[0].name, channels[0].description, channels[0].streamUrl);
         }
       } catch (error) {
         console.error("Error loading channels:", error);

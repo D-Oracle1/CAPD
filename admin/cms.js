@@ -23,10 +23,29 @@ function displayUsername() {
  * Load all data from localStorage
  */
 function loadAllData() {
+  // Initialize channels from JSON if empty in localStorage
+  initializeChannelsIfEmpty();
+
   loadNewsArticles();
   loadChannels();
   loadSchedule();
   loadAnnouncements();
+}
+
+/**
+ * Initialize channels from JSON file if not in localStorage
+ */
+async function initializeChannelsIfEmpty() {
+  const stored = localStorage.getItem('channels');
+  if (!stored || JSON.parse(stored).length === 0) {
+    try {
+      const res = await fetch("../data/channels.json");
+      const data = await res.json();
+      localStorage.setItem('channels', JSON.stringify(data.channels));
+    } catch (e) {
+      console.log("Note: channels.json not found, using empty channels array");
+    }
+  }
 }
 
 /**
@@ -148,6 +167,7 @@ function showChannelForm() {
 function hideChannelForm() {
   document.getElementById('channelForm').classList.add('hidden');
   document.getElementById('formChannel').reset();
+  document.getElementById('editChannelIndex').value = '';
 }
 
 function loadChannels() {
@@ -189,8 +209,9 @@ function loadChannels() {
 function saveChannel(e) {
   e.preventDefault();
 
+  const editIndex = document.getElementById('editChannelIndex').value;
   const channel = {
-    id: 'ch-' + Date.now(),
+    id: editIndex !== '' ? JSON.parse(localStorage.getItem('channels'))[editIndex].id : 'ch-' + Date.now(),
     name: document.getElementById('channelName').value,
     number: parseInt(document.getElementById('channelNum').value),
     description: document.getElementById('channelDesc').value,
@@ -201,7 +222,15 @@ function saveChannel(e) {
   };
 
   let channels = JSON.parse(localStorage.getItem('channels')) || [];
-  channels.push(channel);
+
+  if (editIndex !== '') {
+    // Update existing channel
+    channels[parseInt(editIndex)] = channel;
+  } else {
+    // Add new channel
+    channels.push(channel);
+  }
+
   localStorage.setItem('channels', JSON.stringify(channels));
 
   updateChannelsJson(channels);
@@ -231,6 +260,7 @@ function editChannel(idx) {
   document.getElementById('streamUrl').value = channel.streamUrl;
   document.getElementById('channelStatus').value = channel.status;
   document.getElementById('viewers').value = channel.viewers;
+  document.getElementById('editChannelIndex').value = idx;
 
   showChannelForm();
 }
