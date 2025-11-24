@@ -328,15 +328,49 @@
         // Twitch embedded stream
         loadTwitchStream(streamUrl);
       } else if (streamUrl.startsWith('rtmp')) {
-        // RTMP Stream (requires special handling)
-        alert('RTMP streams require a specialized player. Please use YouTube, Twitch, or HLS streams.');
+        // RTMP Stream - Route through CORS proxy
+        loadProxyStream(streamUrl);
         return;
       } else {
-        // Assume it's a regular video file or progressive stream
-        video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
+        // Check if it's a direct stream URL (not embedded)
+        if (streamUrl.includes('http') && !streamUrl.includes('embed')) {
+          // Route through CORS proxy to avoid CORS issues
+          loadProxyStream(streamUrl);
+        } else {
+          // Regular video file
+          video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
+        }
       }
 
       console.log('Stream loaded:', streamUrl);
+    }
+
+    // Load stream through CORS proxy
+    function loadProxyStream(streamUrl) {
+      const video = document.getElementById("mainVideo");
+      const encodedUrl = encodeURIComponent(streamUrl);
+      const proxyUrl = `/api/stream?url=${encodedUrl}`;
+
+      // Try to determine content type
+      let mimeType = 'video/mp4';
+      if (streamUrl.includes('.m3u8')) {
+        mimeType = 'application/x-mpegURL';
+      } else if (streamUrl.includes('.ts')) {
+        mimeType = 'video/mp2t';
+      } else if (streamUrl.includes('.webm')) {
+        mimeType = 'video/webm';
+      } else if (streamUrl.includes('.mkv')) {
+        mimeType = 'video/x-matroska';
+      }
+
+      video.innerHTML = `<source src="${proxyUrl}" type="${mimeType}">`;
+      video.play().catch(err => {
+        console.error('Playback error:', err);
+        // Try as HLS if regular playback fails
+        if (streamUrl.includes('.m3u8')) {
+          loadHLSStream(streamUrl);
+        }
+      });
     }
 
     // Load HLS stream (m3u8)
