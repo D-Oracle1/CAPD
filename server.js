@@ -29,6 +29,22 @@ app.use(express.static(path.join(__dirname), {
   }
 }));
 
+// Serve HLS streams from RTMP server
+app.use('/hls', express.static(path.join(__dirname, 'hls'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    // Proper MIME types for HLS
+    if (filePath.endsWith('.m3u8')) {
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+    } else if (filePath.endsWith('.ts')) {
+      res.setHeader('Content-Type', 'video/mp2t');
+    }
+  }
+}));
+
 // Proxy endpoint for streaming URLs
 // Usage: /api/stream?url=<encoded-url>
 app.get('/api/stream', (req, res) => {
@@ -85,6 +101,47 @@ app.use('/api/proxy', createProxyMiddleware({
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Get active RTMP streams
+app.get('/api/streams', (req, res) => {
+  const fs = require('fs');
+  const streamsFile = path.join(__dirname, '.streams.json');
+
+  try {
+    if (fs.existsSync(streamsFile)) {
+      const streams = JSON.parse(fs.readFileSync(streamsFile, 'utf8'));
+      res.json({ streams: streams, count: Object.keys(streams).length });
+    } else {
+      res.json({ streams: {}, count: 0 });
+    }
+  } catch (error) {
+    res.json({ streams: {}, count: 0, error: error.message });
+  }
+});
+
+// Get specific stream info
+app.get('/api/streams/:name', (req, res) => {
+  const fs = require('fs');
+  const streamsFile = path.join(__dirname, '.streams.json');
+  const streamName = req.params.name;
+
+  try {
+    if (fs.existsSync(streamsFile)) {
+      const streams = JSON.parse(fs.readFileSync(streamsFile, 'utf8'));
+      const stream = streams[streamName];
+
+      if (stream) {
+        res.json(stream);
+      } else {
+        res.status(404).json({ error: 'Stream not found', name: streamName });
+      }
+    } else {
+      res.status(404).json({ error: 'Stream not found', name: streamName });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Start server
