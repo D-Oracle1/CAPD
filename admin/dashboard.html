@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CAPD Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
     .nav-active {
-      @apply bg-purple-600 text-white;
+      @apply bg-white/20 text-white;
     }
     .fade-in {
       animation: fadeIn 0.3s ease-in;
@@ -16,9 +17,27 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    .stat-card {
+      @apply bg-white/10 backdrop-blur-xl text-white rounded-3xl p-6 border border-white/20;
+    }
+    .sidebar-section {
+      @apply text-xs uppercase tracking-wider font-bold text-gray-500 mt-6 mb-3 px-4;
+    }
+    .section {
+      animation: fadeIn 0.3s ease-in;
+    }
+    /* Glassmorphism cards */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
   </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
 
   <!-- Check Authentication -->
   <script>
@@ -28,114 +47,151 @@
   </script>
 
   <!-- Header -->
-  <header class="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold">CAPD Admin Panel</h1>
-        <span class="text-purple-200 text-sm">v1.0</span>
+  <header class="px-6 py-4 md:px-8">
+    <div class="max-w-full flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-white">Welcome back, <span id="username">Admin</span>! 👋</h1>
+        <p class="text-sm text-gray-300 mt-1">All devices are on track</p>
       </div>
-      <div class="flex items-center gap-4">
-        <span id="username" class="text-purple-100"></span>
-        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">Logout</button>
+      <div class="flex items-center gap-3">
+        <button class="text-gray-300 hover:text-white text-xl">⚙️</button>
+        <button class="text-gray-300 hover:text-white text-xl">🔔</button>
+        <button class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-white font-bold flex items-center justify-center">A</button>
       </div>
     </div>
   </header>
 
-  <div class="flex">
+  <div class="flex gap-4 p-6 md:p-8">
     <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-white shadow-lg min-h-screen">
-      <nav class="p-6 space-y-2">
-        <button onclick="showSection('overview')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          📊 Dashboard Overview
-        </button>
-        <button onclick="showSection('news')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          📰 News & Articles
-        </button>
-        <button onclick="showSection('channels')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          📡 Channels
-        </button>
-        <button onclick="showSection('schedule')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          📅 Schedule
-        </button>
-        <button onclick="showSection('announcements')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          📢 Announcements
-        </button>
-        <button onclick="showSection('streaming')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          🎬 Streaming Setup
-        </button>
-        <button onclick="showSection('settings')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-          ⚙️ Settings
-        </button>
-      </nav>
+    <aside class="hidden lg:flex flex-col gap-2 w-20">
+      <!-- Icons for sidebar navigation -->
+      <button onclick="showSection('overview')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Dashboard">📊</button>
+      <button onclick="showSection('news')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="News">📰</button>
+      <button onclick="showSection('media')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Media">🎬</button>
+      <button onclick="showSection('channels')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Channels">📺</button>
+      <button onclick="showSection('schedule')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Schedule">📅</button>
+      <button onclick="showSection('projects')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Projects">🏗️</button>
+      <button onclick="showSection('settings')" class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition flex items-center justify-center text-2xl" title="Settings">⚙️</button>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 p-8">
+    <main class="flex-1">
 
       <!-- Dashboard Overview -->
       <section id="overview" class="section fade-in">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+        <!-- Smart Home Style Dashboard Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div class="bg-white rounded-lg shadow p-6">
-            <p class="text-gray-600 text-sm">Total Articles</p>
-            <p class="text-3xl font-bold text-purple-600">5</p>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6">
-            <p class="text-gray-600 text-sm">Active Channels</p>
-            <p class="text-3xl font-bold text-blue-600">5</p>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6">
-            <p class="text-gray-600 text-sm">Scheduled Programs</p>
-            <p class="text-3xl font-bold text-green-600">8</p>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6">
-            <p class="text-gray-600 text-sm">Announcements</p>
-            <p class="text-3xl font-bold text-orange-600">5</p>
-          </div>
-        </div>
+          <!-- Top Left: Welcome Card -->
+          <div class="lg:col-span-2 bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/15 transition">
+            <h2 class="text-white text-3xl font-bold mb-1">Welcome back, <span id="username">Admin</span></h2>
+            <p class="text-gray-300 text-sm mb-6">All devices are on track</p>
 
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button onclick="showSection('news')" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 p-4 rounded-lg transition">
-              <p class="font-semibold text-blue-900">Add News</p>
-              <p class="text-sm text-blue-700">Create new article</p>
-            </button>
-            <button onclick="showSection('channels')" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 p-4 rounded-lg transition">
-              <p class="font-semibold text-purple-900">Manage Channels</p>
-              <p class="text-sm text-purple-700">Update channels</p>
-            </button>
-            <button onclick="showSection('schedule')" class="bg-green-50 hover:bg-green-100 border-2 border-green-200 p-4 rounded-lg transition">
-              <p class="font-semibold text-green-900">Add Program</p>
-              <p class="text-sm text-green-700">Schedule content</p>
-            </button>
-            <button onclick="showSection('announcements')" class="bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 p-4 rounded-lg transition">
-              <p class="font-semibold text-orange-900">Breaking News</p>
-              <p class="text-sm text-orange-700">Post announcement</p>
-            </button>
+            <!-- Quick Access Tabs -->
+            <div class="flex flex-wrap gap-2">
+              <button onclick="showSection('overview')" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-xs font-medium transition">Dashboard</button>
+              <button onclick="showSection('news')" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-xs font-medium transition">News</button>
+              <button onclick="showSection('media')" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-xs font-medium transition">Media</button>
+              <button onclick="showSection('channels')" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-xs font-medium transition">Channels</button>
+              <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-xs font-medium transition">+</button>
+            </div>
           </div>
-        </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">System Information</h3>
-          <div class="space-y-2 text-sm text-gray-600">
-            <p><strong>Admin User:</strong> <span id="adminUsername">admin</span></p>
-            <p><strong>Last Login:</strong> <span id="lastLogin">Today</span></p>
-            <p><strong>Data Storage:</strong> Browser LocalStorage (JSON)</p>
-            <p><strong>Backup:</strong> Export/Import available in Settings</p>
+          <!-- Top Right: Date/Time Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition flex flex-col justify-center items-center">
+            <div class="text-center">
+              <div class="text-white text-4xl font-bold mb-1" id="currentDay">22</div>
+              <div class="text-gray-300 text-sm" id="currentDayName">Friday</div>
+            </div>
+            <div class="border-t border-white/20 my-4 w-full"></div>
+            <div class="text-center">
+              <div class="text-white text-3xl font-bold mb-1" id="currentTime">9:00</div>
+              <div class="text-gray-300 text-sm" id="currentAMPM">AM</div>
+            </div>
           </div>
+
+          <!-- News Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition cursor-pointer" onclick="showSection('news')">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-3xl">📰</span>
+              <span class="bg-white/20 px-2 py-1 rounded-full text-xs text-white">Manage</span>
+            </div>
+            <h3 class="text-white text-lg font-semibold mb-2">News Articles</h3>
+            <p class="text-4xl font-bold text-white" id="newsCount">0</p>
+            <p class="text-gray-400 text-xs mt-2">Click to manage</p>
+          </div>
+
+          <!-- Media Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition cursor-pointer" onclick="showSection('media')">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-3xl">🎬</span>
+              <span class="bg-white/20 px-2 py-1 rounded-full text-xs text-white">Manage</span>
+            </div>
+            <h3 class="text-white text-lg font-semibold mb-2">Media Files</h3>
+            <p class="text-4xl font-bold text-white" id="mediaCount">0</p>
+            <p class="text-gray-400 text-xs mt-2">Upload & organize</p>
+          </div>
+
+          <!-- Channels Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition cursor-pointer" onclick="showSection('channels')">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-3xl">📺</span>
+              <span class="bg-white/20 px-2 py-1 rounded-full text-xs text-white">Manage</span>
+            </div>
+            <h3 class="text-white text-lg font-semibold mb-2">TV Channels</h3>
+            <p class="text-4xl font-bold text-white" id="channelCount">0</p>
+            <p class="text-gray-400 text-xs mt-2">Manage channels</p>
+          </div>
+
+          <!-- Projects Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition cursor-pointer" onclick="showSection('projects')">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-3xl">🏗️</span>
+              <span class="bg-white/20 px-2 py-1 rounded-full text-xs text-white">Manage</span>
+            </div>
+            <h3 class="text-white text-lg font-semibold mb-2">Projects</h3>
+            <p class="text-4xl font-bold text-white" id="projectCount">0</p>
+            <p class="text-gray-400 text-xs mt-2">Track progress</p>
+          </div>
+
+          <!-- Status Card -->
+          <div class="lg:col-span-2 bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition">
+            <h3 class="text-white font-semibold mb-4">✅ System Status</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300 text-sm">CMS Status</span>
+                <span class="text-green-400 text-sm font-bold">● Active</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300 text-sm">Data Synced</span>
+                <span class="text-green-400 text-sm font-bold">● Yes</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300 text-sm">Total Content</span>
+                <span class="text-white text-sm font-bold" id="totalContentCount">0 items</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Card -->
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition">
+            <h3 class="text-white font-semibold mb-4">Quick Actions</h3>
+            <button onclick="showSection('news')" class="w-full bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg text-xs font-medium transition mb-2">
+              + Add Article
+            </button>
+            <button onclick="showSection('settings')" class="w-full bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg text-xs font-medium transition">
+              ⚙️ Settings
+            </button>
+          </div>
+
         </div>
       </section>
 
       <!-- News & Articles Management -->
       <section id="news" class="section hidden fade-in">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-3xl font-bold text-gray-800">News & Articles</h2>
-          <button onclick="showNewsForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">+ Add Article</button>
+          <h2 class="text-3xl font-bold text-white">📰 News & Articles</h2>
+          <button onclick="showNewsForm()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg">+ Add Article</button>
         </div>
 
         <!-- News Form -->
@@ -390,6 +446,118 @@
         </div>
       </section>
 
+      <!-- Media Library Management -->
+      <section id="media" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">Media Library</h2>
+          <button onclick="showMediaUploadForm()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">+ Upload Media</button>
+        </div>
+
+        <!-- Media Upload Form -->
+        <div id="mediaUploadForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Upload Media File</h3>
+          <form id="formMediaUpload" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">File Type</label>
+              <select id="mediaType" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option>Image (JPG, PNG)</option>
+                <option>Video (MP4, WebM)</option>
+                <option>Document (PDF)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Media Title</label>
+              <input type="text" id="mediaTitle" required placeholder="e.g., School Opening Ceremony" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description</label>
+              <textarea id="mediaDescription" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 h-20" placeholder="Brief description of the media..."></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">File URL or Path</label>
+              <input type="text" id="mediaUrl" required placeholder="https://example.com/image.jpg or assets/media/file.mp4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Category/Project (Optional)</label>
+              <input type="text" id="mediaCategory" placeholder="e.g., Infrastructure, Healthcare, Education" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Media</button>
+              <button type="button" onclick="hideMediaUploadForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Media Library Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="mediaContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Projects Management -->
+      <section id="projects" class="section hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800">Project Updates</h2>
+          <button onclick="showProjectForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">+ Add Project</button>
+        </div>
+
+        <!-- Project Form -->
+        <div id="projectForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-bold mb-4">Add/Edit Project</h3>
+          <input type="hidden" id="editProjectIndex">
+          <form id="formProject" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Project Name</label>
+                <input type="text" id="projectName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Category</label>
+                <select id="projectCategory" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option>Infrastructure</option>
+                  <option>Healthcare</option>
+                  <option>Education</option>
+                  <option>Agriculture</option>
+                  <option>Community</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description</label>
+              <textarea id="projectDescription" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 h-20" placeholder="Detailed description of the project..."></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Status</label>
+                <select id="projectStatus" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option>Planning</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>On Hold</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">Progress (%)</label>
+                <input type="number" id="projectProgress" min="0" max="100" value="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Featured Image URL</label>
+              <input type="text" id="projectImage" placeholder="https://example.com/image.jpg" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex gap-4">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Project</button>
+              <button type="button" onclick="hideProjectForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
       <!-- Streaming Setup -->
       <section id="streaming" class="section hidden fade-in">
         <h2 class="text-3xl font-bold text-gray-800 mb-6">🎬 Streaming Setup & Configuration</h2>
@@ -638,6 +806,110 @@
       <!-- Settings -->
       <section id="settings" class="section hidden fade-in">
         <h2 class="text-3xl font-bold text-gray-800 mb-6">Settings & Tools</h2>
+
+        <!-- Streaming Server Settings -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6 mb-6">
+          <h3 class="text-2xl font-bold text-blue-900 mb-4">🎬 Streaming Server Settings</h3>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <!-- Local RTMP Server -->
+            <div class="bg-white rounded-lg shadow p-4">
+              <h4 class="font-bold text-gray-800 mb-3">Local RTMP Server</h4>
+              <div class="space-y-3 text-sm">
+                <div>
+                  <span class="font-semibold text-gray-700">RTMP Address:</span>
+                  <div class="flex items-center gap-2 mt-1">
+                    <code class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800">rtmp://localhost:1935/live</code>
+                    <button onclick="copyToClipboard('rtmp://localhost:1935/live')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                  </div>
+                </div>
+                <div>
+                  <span class="font-semibold text-gray-700">Stream Key:</span>
+                  <div class="flex items-center gap-2 mt-1">
+                    <input type="text" id="localStreamKey" placeholder="Enter stream name (e.g., main, news, live)" class="bg-gray-100 px-3 py-2 rounded flex-1">
+                    <button onclick="copyToClipboard(document.getElementById('localStreamKey').value)" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Use any name as stream key for local server</p>
+                </div>
+                <div>
+                  <span class="font-semibold text-gray-700">Full RTMP URL:</span>
+                  <div class="flex items-center gap-2 mt-1">
+                    <input type="text" id="fullRtmpUrl" readonly class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800" value="rtmp://localhost:1935/live/[stream-key]">
+                    <button onclick="copyToClipboard(document.getElementById('fullRtmpUrl').value)" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-blue-100 border border-blue-400 rounded p-3 mt-4 text-xs text-blue-900">
+                <strong>Status:</strong> ✅ Online at localhost:1935
+              </div>
+            </div>
+
+            <!-- HLS Stream -->
+            <div class="bg-white rounded-lg shadow p-4">
+              <h4 class="font-bold text-gray-800 mb-3">HLS Streaming</h4>
+              <div class="space-y-3 text-sm">
+                <div>
+                  <span class="font-semibold text-gray-700">HLS URL:</span>
+                  <div class="flex items-center gap-2 mt-1">
+                    <code class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800 text-xs">http://localhost:8000/live/[key]/index.m3u8</code>
+                    <button onclick="copyToClipboard('http://localhost:8000/live/[key]/index.m3u8')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                  </div>
+                </div>
+                <div>
+                  <span class="font-semibold text-gray-700">HTTP Server:</span>
+                  <div class="flex items-center gap-2 mt-1">
+                    <code class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800">http://localhost:8000</code>
+                    <button onclick="copyToClipboard('http://localhost:8000')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                  </div>
+                </div>
+                <div>
+                  <span class="font-semibold text-gray-700">Stream Key:</span>
+                  <p class="text-xs text-gray-600 mt-1">Use the same stream key as RTMP (same name)</p>
+                </div>
+              </div>
+              <div class="bg-green-100 border border-green-400 rounded p-3 mt-4 text-xs text-green-900">
+                <strong>Status:</strong> ✅ Online at port 8000
+              </div>
+            </div>
+          </div>
+
+          <!-- Stream Key Generator -->
+          <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <h4 class="font-bold text-gray-800 mb-3">Generate Stream Key</h4>
+            <div class="flex gap-2">
+              <input type="text" id="streamKeyInput" placeholder="Enter stream name (e.g., main_channel, news_live, etc.)" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <button onclick="generateStreamKey()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">🔑 Generate</button>
+            </div>
+            <div id="generatedKeyDisplay" class="hidden mt-4 bg-green-50 border border-green-300 rounded p-4">
+              <p class="text-sm font-semibold text-gray-700 mb-2">Your Stream Configuration:</p>
+              <div class="space-y-2 text-xs">
+                <div class="bg-white p-2 rounded border border-green-200">
+                  <strong>RTMP URL:</strong> <code id="genRtmpUrl" class="text-green-700">rtmp://localhost:1935/live/</code>
+                </div>
+                <div class="bg-white p-2 rounded border border-green-200">
+                  <strong>Stream Key:</strong> <code id="genStreamKey" class="text-green-700"></code>
+                </div>
+                <div class="bg-white p-2 rounded border border-green-200">
+                  <strong>HLS URL:</strong> <code id="genHlsUrl" class="text-green-700">http://localhost:8000/live//index.m3u8</code>
+                </div>
+                <button onclick="saveStreamingSettings()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded font-medium text-xs">
+                  💾 Save Settings
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved Streaming Settings -->
+          <div class="bg-white rounded-lg shadow p-4">
+            <h4 class="font-bold text-gray-800 mb-3">Saved Streaming Settings</h4>
+            <div id="savedSettingsDisplay" class="text-sm">
+              <p class="text-gray-500">No saved streaming settings yet</p>
+            </div>
+            <button onclick="clearStreamingSettings()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium">
+              🗑️ Clear Saved Settings
+            </button>
+          </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Database Management -->

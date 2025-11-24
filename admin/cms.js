@@ -8,7 +8,31 @@ document.addEventListener('DOMContentLoaded', function() {
   displayUsername();
   loadAllData();
   setupEventListeners();
+  updateDateTime();
+  setInterval(updateDateTime, 1000); // Update time every second
 });
+
+/**
+ * Update date and time on dashboard
+ */
+function updateDateTime() {
+  const now = new Date();
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = days[now.getDay()];
+  const dayNum = String(now.getDate()).padStart(2, '0');
+
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const timeStr = String(hours).padStart(2, '0') + ':' + minutes;
+
+  if (document.getElementById('currentDay')) document.getElementById('currentDay').textContent = dayNum;
+  if (document.getElementById('currentDayName')) document.getElementById('currentDayName').textContent = dayName;
+  if (document.getElementById('currentTime')) document.getElementById('currentTime').textContent = timeStr;
+  if (document.getElementById('currentAMPM')) document.getElementById('currentAMPM').textContent = ampm;
+}
 
 /**
  * Display username in header
@@ -16,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function displayUsername() {
   const user = localStorage.getItem('adminUser');
   document.getElementById('username').textContent = user;
-  document.getElementById('adminUsername').textContent = user;
 }
 
 /**
@@ -30,6 +53,9 @@ function loadAllData() {
   loadChannels();
   loadSchedule();
   loadAnnouncements();
+  loadMediaLibrary();
+  loadProjects();
+  updateDashboardCounts();
 }
 
 /**
@@ -63,6 +89,12 @@ function setupEventListeners() {
 
   // Announcements Form
   document.getElementById('formAnnounce').addEventListener('submit', saveAnnouncement);
+
+  // Media Upload Form
+  document.getElementById('formMediaUpload').addEventListener('submit', saveMedia);
+
+  // Project Form
+  document.getElementById('formProject').addEventListener('submit', saveProject);
 }
 
 /**
@@ -881,3 +913,374 @@ function displayStreamingConfig(config) {
 
   display.innerHTML = html;
 }
+
+/**
+ * ==================== MEDIA LIBRARY MANAGEMENT ====================
+ */
+
+function showMediaUploadForm() {
+  document.getElementById('mediaUploadForm').classList.remove('hidden');
+  document.getElementById('mediaTitle').focus();
+}
+
+function hideMediaUploadForm() {
+  document.getElementById('mediaUploadForm').classList.add('hidden');
+  document.getElementById('formMediaUpload').reset();
+}
+
+function loadMediaLibrary() {
+  const media = JSON.parse(localStorage.getItem('mediaLibrary')) || [];
+  const container = document.getElementById('mediaContainer');
+
+  if (media.length === 0) {
+    container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No media files yet. Upload your first media file!</div>';
+    updateDashboardCounts();
+    return;
+  }
+
+  container.innerHTML = media.map((item, idx) => {
+    const iconMap = {
+      'Image': '🖼️',
+      'Video': '🎬',
+      'Document': '📄'
+    };
+    const icon = Object.keys(iconMap).find(key => item.type.includes(key))
+      ? iconMap[Object.keys(iconMap).find(key => item.type.includes(key))]
+      : '📁';
+
+    return `
+      <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
+        <div class="bg-gray-900 h-40 flex items-center justify-center text-5xl">
+          ${icon}
+        </div>
+        <div class="p-4">
+          <h3 class="font-bold text-gray-900 mb-1 truncate">${item.title}</h3>
+          <p class="text-xs text-gray-500 mb-2">${item.type}</p>
+          ${item.category ? `<p class="text-xs bg-purple-100 text-purple-700 inline-block px-2 py-1 rounded mb-3">${item.category}</p>` : ''}
+          <p class="text-sm text-gray-600 line-clamp-2 mb-3">${item.description || 'No description'}</p>
+          <div class="flex gap-2">
+            <button onclick="deleteMedia(${idx})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  updateDashboardCounts();
+}
+
+function saveMedia(e) {
+  e.preventDefault();
+
+  const media = JSON.parse(localStorage.getItem('mediaLibrary')) || [];
+  const newMedia = {
+    type: document.getElementById('mediaType').value,
+    title: document.getElementById('mediaTitle').value,
+    description: document.getElementById('mediaDescription').value,
+    url: document.getElementById('mediaUrl').value,
+    category: document.getElementById('mediaCategory').value,
+    uploadDate: new Date().toLocaleDateString()
+  };
+
+  media.push(newMedia);
+  localStorage.setItem('mediaLibrary', JSON.stringify(media));
+
+  hideMediaUploadForm();
+  loadMediaLibrary();
+  alert('Media file added successfully!');
+}
+
+function deleteMedia(idx) {
+  if (confirm('Delete this media file?')) {
+    const media = JSON.parse(localStorage.getItem('mediaLibrary')) || [];
+    media.splice(idx, 1);
+    localStorage.setItem('mediaLibrary', JSON.stringify(media));
+    loadMediaLibrary();
+  }
+}
+
+/**
+ * ==================== PROJECTS MANAGEMENT ====================
+ */
+
+function showProjectForm() {
+  document.getElementById('projectForm').classList.remove('hidden');
+  document.getElementById('projectName').focus();
+  document.getElementById('editProjectIndex').value = '';
+}
+
+function hideProjectForm() {
+  document.getElementById('projectForm').classList.add('hidden');
+  document.getElementById('formProject').reset();
+}
+
+function loadProjects() {
+  const projects = JSON.parse(localStorage.getItem('projects')) || [];
+  const container = document.getElementById('projectsContainer');
+
+  if (projects.length === 0) {
+    container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No projects yet. Add your first project!</div>';
+    updateDashboardCounts();
+    return;
+  }
+
+  container.innerHTML = projects.map((project, idx) => {
+    const statusColors = {
+      'Planning': 'bg-blue-100 text-blue-700',
+      'In Progress': 'bg-yellow-100 text-yellow-700',
+      'Completed': 'bg-green-100 text-green-700',
+      'On Hold': 'bg-red-100 text-red-700'
+    };
+
+    return `
+      <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
+        <div class="h-40 bg-gray-300 relative overflow-hidden">
+          ${project.image ? `<img src="${project.image}" alt="${project.name}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center bg-gray-400 text-4xl">🏗️</div>'}
+        </div>
+        <div class="p-4">
+          <h3 class="font-bold text-gray-900 mb-2">${project.name}</h3>
+          <p class="text-xs font-medium mb-2">
+            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded">${project.category}</span>
+          </p>
+          <p class="text-sm text-gray-600 line-clamp-2 mb-3">${project.description}</p>
+
+          <!-- Progress Bar -->
+          <div class="mb-3">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-medium text-gray-700">Progress</span>
+              <span class="text-xs font-bold text-gray-900">${project.progress}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ${project.progress}%"></div>
+            </div>
+          </div>
+
+          <p class="text-xs mb-3">
+            <span class="font-medium">Status:</span>
+            <span class="${statusColors[project.status] || 'bg-gray-100 text-gray-700'} px-2 py-1 rounded text-xs font-medium">${project.status}</span>
+          </p>
+
+          <div class="flex gap-2">
+            <button onclick="editProject(${idx})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Edit</button>
+            <button onclick="deleteProject(${idx})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  updateDashboardCounts();
+}
+
+function saveProject(e) {
+  e.preventDefault();
+
+  const projects = JSON.parse(localStorage.getItem('projects')) || [];
+  const editIdx = document.getElementById('editProjectIndex').value;
+
+  const projectData = {
+    name: document.getElementById('projectName').value,
+    category: document.getElementById('projectCategory').value,
+    description: document.getElementById('projectDescription').value,
+    status: document.getElementById('projectStatus').value,
+    progress: parseInt(document.getElementById('projectProgress').value),
+    image: document.getElementById('projectImage').value,
+    createdDate: new Date().toLocaleDateString()
+  };
+
+  if (editIdx === '' || editIdx === null) {
+    projects.push(projectData);
+  } else {
+    projects[parseInt(editIdx)] = projectData;
+  }
+
+  localStorage.setItem('projects', JSON.stringify(projects));
+  hideProjectForm();
+  loadProjects();
+  alert('Project saved successfully!');
+}
+
+function editProject(idx) {
+  const projects = JSON.parse(localStorage.getItem('projects')) || [];
+  const project = projects[idx];
+
+  document.getElementById('projectName').value = project.name;
+  document.getElementById('projectCategory').value = project.category;
+  document.getElementById('projectDescription').value = project.description;
+  document.getElementById('projectStatus').value = project.status;
+  document.getElementById('projectProgress').value = project.progress;
+  document.getElementById('projectImage').value = project.image;
+  document.getElementById('editProjectIndex').value = idx;
+
+  showProjectForm();
+}
+
+function deleteProject(idx) {
+  if (confirm('Delete this project?')) {
+    const projects = JSON.parse(localStorage.getItem('projects')) || [];
+    projects.splice(idx, 1);
+    localStorage.setItem('projects', JSON.stringify(projects));
+    loadProjects();
+  }
+}
+
+/**
+ * Update dashboard counts
+ */
+function updateDashboardCounts() {
+  const articles = JSON.parse(localStorage.getItem('articles')) || [];
+  const media = JSON.parse(localStorage.getItem('mediaLibrary')) || [];
+  const channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const projects = JSON.parse(localStorage.getItem('projects')) || [];
+
+  document.getElementById('newsCount').textContent = articles.length;
+  document.getElementById('mediaCount').textContent = media.length;
+  document.getElementById('channelCount').textContent = channels.length;
+  document.getElementById('projectCount').textContent = projects.length;
+
+  // Update total content count
+  const totalCount = articles.length + media.length + channels.length + projects.length;
+  if (document.getElementById('totalContentCount')) {
+    document.getElementById('totalContentCount').textContent = totalCount;
+  }
+
+  // Update last updated time
+  if (document.getElementById('lastUpdated')) {
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+/**
+ * ==================== STREAMING SETTINGS ====================
+ */
+
+/**
+ * Copy text to clipboard
+ */
+function copyToClipboard(text) {
+  if (!text) {
+    alert('Nothing to copy!');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Copied to clipboard!');
+  }).catch(() => {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Copied to clipboard!');
+  });
+}
+
+/**
+ * Generate stream key and show configuration
+ */
+function generateStreamKey() {
+  const streamName = document.getElementById('streamKeyInput').value.trim();
+
+  if (!streamName) {
+    alert('Please enter a stream name (e.g., main_channel, news_live)');
+    return;
+  }
+
+  // Update the display
+  const display = document.getElementById('generatedKeyDisplay');
+  const rtmpUrl = document.getElementById('genRtmpUrl');
+  const streamKey = document.getElementById('genStreamKey');
+  const hlsUrl = document.getElementById('genHlsUrl');
+
+  rtmpUrl.textContent = `rtmp://localhost:1935/live/${streamName}`;
+  streamKey.textContent = streamName;
+  hlsUrl.textContent = `http://localhost:8000/live/${streamName}/index.m3u8`;
+
+  display.classList.remove('hidden');
+
+  // Update the local stream key field
+  document.getElementById('localStreamKey').value = streamName;
+  document.getElementById('fullRtmpUrl').value = `rtmp://localhost:1935/live/${streamName}`;
+}
+
+/**
+ * Save streaming settings to localStorage
+ */
+function saveStreamingSettings() {
+  const streamName = document.getElementById('streamKeyInput').value.trim();
+
+  if (!streamName) {
+    alert('Please generate a stream key first');
+    return;
+  }
+
+  const streamingSettings = {
+    streamName: streamName,
+    rtmpUrl: `rtmp://localhost:1935/live/${streamName}`,
+    hlsUrl: `http://localhost:8000/live/${streamName}/index.m3u8`,
+    rtmpServer: 'localhost:1935',
+    httpServer: 'localhost:8000',
+    timestamp: new Date().toLocaleString()
+  };
+
+  localStorage.setItem('streamingSettings', JSON.stringify(streamingSettings));
+  displaySavedSettings();
+  alert('Streaming settings saved successfully!');
+}
+
+/**
+ * Display saved streaming settings
+ */
+function displaySavedSettings() {
+  const settings = JSON.parse(localStorage.getItem('streamingSettings'));
+  const display = document.getElementById('savedSettingsDisplay');
+
+  if (!settings) {
+    display.innerHTML = '<p class="text-gray-500">No saved streaming settings yet</p>';
+    return;
+  }
+
+  display.innerHTML = `
+    <div class="space-y-3 text-sm">
+      <div class="bg-blue-50 border border-blue-200 rounded p-3">
+        <strong class="text-blue-900">Stream Name:</strong>
+        <code class="text-blue-700">${settings.streamName}</code>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded p-3">
+        <strong class="text-green-900">RTMP URL:</strong>
+        <code class="text-green-700 break-all">${settings.rtmpUrl}</code>
+        <button onclick="copyToClipboard('${settings.rtmpUrl}')" class="ml-2 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
+      </div>
+      <div class="bg-purple-50 border border-purple-200 rounded p-3">
+        <strong class="text-purple-900">HLS URL:</strong>
+        <code class="text-purple-700 break-all">${settings.hlsUrl}</code>
+        <button onclick="copyToClipboard('${settings.hlsUrl}')" class="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
+      </div>
+      <div class="bg-gray-50 border border-gray-200 rounded p-3 text-xs">
+        <strong>Saved:</strong> ${settings.timestamp}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Clear saved streaming settings
+ */
+function clearStreamingSettings() {
+  if (confirm('Are you sure you want to clear saved streaming settings?')) {
+    localStorage.removeItem('streamingSettings');
+    displaySavedSettings();
+    document.getElementById('generatedKeyDisplay').classList.add('hidden');
+    document.getElementById('streamKeyInput').value = '';
+    document.getElementById('localStreamKey').value = '';
+    alert('Streaming settings cleared');
+  }
+}
+
+// Load saved settings when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  displaySavedSettings();
+}, { once: true });
