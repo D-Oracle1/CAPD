@@ -144,11 +144,21 @@ app.get('/api/streams/:name', (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server with error handling
+const server = app.listen(PORT, '127.0.0.1', () => {
   console.log(`🚀 CAPD Streaming Proxy Server running on http://localhost:${PORT}`);
   console.log(`📺 Serve your TV page at http://localhost:${PORT}/tv.html`);
   console.log(`🔧 API endpoints:`);
   console.log(`   - Stream proxy: http://localhost:${PORT}/api/stream?url=<encoded-url>`);
   console.log(`   - Health check: http://localhost:${PORT}/api/health`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`[Server] Port ${PORT} in use, retrying in 3 seconds...`);
+    setTimeout(() => server.listen(PORT, '127.0.0.1'), 3000);
+  } else {
+    console.error('[Server] Error:', err);
+    process.exit(1);
+  }
 });

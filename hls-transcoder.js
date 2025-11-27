@@ -157,36 +157,13 @@ function stopTranscoding(streamName) {
 }
 
 /**
- * Monitor RTMP streams via HTTP API
- * This polls the streams registry to detect active streams
+ * Monitor RTMP streams - DISABLED in favor of direct API calls
+ * The RTMP server now directly calls /start and /stop on stream lifecycle events
+ * This function is kept for backward compatibility but is not actively used
  */
 function monitorStreams() {
-  const streamsFile = path.join(__dirname, '.streams.json');
-
-  try {
-    if (fs.existsSync(streamsFile)) {
-      const data = JSON.parse(fs.readFileSync(streamsFile, 'utf8'));
-
-      // Get active stream names
-      const activeStreams = Object.keys(data);
-
-      // Start transcoding for new streams
-      activeStreams.forEach(streamName => {
-        if (!STREAMS.has(streamName)) {
-          startTranscoding(streamName);
-        }
-      });
-
-      // Stop transcoding for streams that ended
-      STREAMS.forEach((stream, streamName) => {
-        if (!activeStreams.includes(streamName)) {
-          stopTranscoding(streamName);
-        }
-      });
-    }
-  } catch (e) {
-    // Streams file may not exist yet
-  }
+  // Monitoring via .streams.json file is disabled
+  // Instead, use the HTTP API endpoints: /start?stream=name and /stop?stream=name
 }
 
 /**
@@ -222,7 +199,19 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(3002, () => {
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`[HLS] Port 3002 already in use, retrying in 5 seconds...`);
+    setTimeout(() => {
+      server.close();
+      server.listen(3002);
+    }, 5000);
+  } else {
+    console.error(`[HLS] Server error:`, err);
+  }
+});
+
+server.listen(3002, '127.0.0.1', () => {
   console.log(`[HLS] Control server listening on http://localhost:3002`);
   console.log(`[HLS] API Endpoints:`);
   console.log(`     GET /start?stream=name       - Start transcoding`);
@@ -230,11 +219,9 @@ server.listen(3002, () => {
   console.log(`     GET /status                  - Check active streams\n`);
 });
 
-// Monitor streams every 2 seconds
-setInterval(monitorStreams, 2000);
-
-// Initial check
-monitorStreams();
+// Monitoring via file polling is DISABLED
+// The RTMP server now directly triggers transcoding via HTTP API
+// This prevents premature transcoding attempts and race conditions
 
 // Graceful shutdown
 process.on('SIGINT', () => {
