@@ -15,11 +15,22 @@
 const NodeMediaServer = require('node-media-server');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 // Create HLS output directory if it doesn't exist
 const hlsDir = path.join(__dirname, 'hls');
 if (!fs.existsSync(hlsDir)) {
   fs.mkdirSync(hlsDir, { recursive: true });
+}
+
+// Detect FFmpeg path
+let ffmpegPath = 'ffmpeg';
+try {
+  // Try to find FFmpeg using 'where' command on Windows
+  ffmpegPath = execSync('where ffmpeg', { encoding: 'utf8' }).trim().split('\n')[0];
+  console.log(`[RTMP Server] Found FFmpeg at: ${ffmpegPath}`);
+} catch (e) {
+  console.log('[RTMP Server] FFmpeg not found in PATH, using default');
 }
 
 // RTMP Server Configuration
@@ -37,21 +48,20 @@ const config = {
     allow_origin: '*'
   },
   trans: {
-    ffmpeg: process.env.FFMPEG_PATH || 'ffmpeg',
+    ffmpeg: process.env.FFMPEG_PATH || ffmpegPath,
     tasks: [
       {
         app: 'live',
+        mp4: false,
         hls: true,
-        hlsFlags: '[hls_list_size=10:hls_time=10:hls_variant_names=360p,480p,720p]',
-        dash: false,
-        dashFlags: '[f=dash:window_size=3:extra_window_size=5]'
+        hlsFlags: '[hls_time=2:hls_list_size=6:hls_flags=delete_segments]'
       }
     ]
   },
   logger: {
-    ffmpeg: process.env.LOG_LEVEL || 'warn',
-    api: process.env.LOG_LEVEL || 'warn',
-    app: process.env.LOG_LEVEL || 'warn'
+    ffmpeg: 'debug',
+    api: 'debug',
+    app: 'debug'
   }
 };
 
@@ -90,6 +100,26 @@ nms.on('postPublish', (id, StreamPath, args) => {
     hlsUrl: `http://localhost:${process.env.HTTP_PORT || 8000}/live/${streamName}/index.m3u8`,
     startTime: new Date().toISOString()
   });
+
+  // Trigger HLS transcoding via API
+  try {
+    const http = require('http');
+    const options = {
+      hostname: 'localhost',
+      port: 3002,
+      path: `/start?stream=${encodeURIComponent(streamName)}`,
+      method: 'GET'
+    };
+    const req = http.request(options, (res) => {
+      res.on('data', () => {}); // Consume response
+    });
+    req.on('error', (e) => {
+      console.log(`[RTMP Server] HLS transcoder may not be running: ${e.message}`);
+    });
+    req.end();
+  } catch (e) {
+    console.log(`[RTMP Server] Could not notify HLS transcoder: ${e.message}`);
+  }
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
@@ -103,6 +133,24 @@ nms.on('donePublish', (id, StreamPath, args) => {
     path: StreamPath,
     endTime: new Date().toISOString()
   });
+
+  // Stop HLS transcoding via API
+  try {
+    const http = require('http');
+    const options = {
+      hostname: 'localhost',
+      port: 3002,
+      path: `/stop?stream=${encodeURIComponent(streamName)}`,
+      method: 'GET'
+    };
+    const req = http.request(options, (res) => {
+      res.on('data', () => {}); // Consume response
+    });
+    req.on('error', () => {}); // Silently ignore errors
+    req.end();
+  } catch (e) {
+    // Silently ignore
+  }
 });
 
 nms.on('prePlay', (id, StreamPath, args) => {
