@@ -7,17 +7,86 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    .cursor {
-      display: inline-block;
-      margin-left: 2px;
-      width: 2px;
-      background: #fff;
-      animation: blink 0.7s infinite;
+    .live-pulse {
+      animation: pulse 1.5s infinite;
     }
 
-    @keyframes blink {
-      0%, 50%, 100% { background: transparent; }
-      25%, 75% { background: #fff; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .video-container video,
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-card {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .video-card:hover {
+      transform: scale(1.02);
+    }
+
+    .video-card:hover .duration {
+      opacity: 1;
+    }
+
+    .duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    .channel-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .subscribe-btn {
+      background: #ef4444;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .subscribe-btn:hover {
+      background: #dc2626;
     }
 
     .ticker-scroll {
@@ -29,215 +98,250 @@
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
     }
-
-    .channel-active {
-      border: 2px solid #ff6b6b;
-      background-color: #ffe0e0;
-    }
-
-    .live-badge {
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* 16:9 Aspect Ratio Container */
-    .video-container {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
-      height: 0;
-      overflow: hidden;
-      background: #000;
-      border-radius: 0.5rem;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1.5rem;
-    }
-
-    .video-container > * {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .video-container video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .video-container iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-white text-gray-800">
 
   <!-- Header -->
-  <header class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <img src="logo.png" alt="CAPD Logo" class="h-10 w-auto object-contain">
-      <nav class="space-x-6 text-sm font-medium">
-        <a href="index.html" class="hover:text-blue-600">Home</a>
-        <a href="news.html" class="hover:text-blue-600">News</a>
-        <a href="tv.html" class="text-blue-600 font-bold">Digital TV</a>
-        <a href="videos.html" class="hover:text-blue-600">Videos</a>
-        <a href="projects.html" class="hover:text-blue-600">Projects</a>
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <img src="logo.png" alt="CAPD Logo" class="h-8 w-auto object-contain">
+      <nav class="hidden md:flex space-x-6 text-sm font-medium">
+        <a href="index.html" class="text-gray-600 hover:text-gray-900">Home</a>
+        <a href="news.html" class="text-gray-600 hover:text-gray-900">News</a>
+        <a href="tv.html" class="text-gray-900 font-bold">📺 Digital TV</a>
+        <a href="videos.html" class="text-gray-600 hover:text-gray-900">Videos</a>
+        <a href="projects.html" class="text-gray-600 hover:text-gray-900">Projects</a>
+        <a href="about.html" class="text-gray-600 hover:text-gray-900">About</a>
       </nav>
+      <div class="flex gap-2">
+        <button class="p-2 hover:bg-gray-100 rounded-full">🔔</button>
+        <button class="p-2 hover:bg-gray-100 rounded-full">👤</button>
+      </div>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="relative w-full h-96 bg-gradient-to-r from-blue-600 to-blue-800">
-    <div class="absolute inset-0 opacity-30" style="background-image: url('banner-02.jpg'); background-size: cover;"></div>
-    <div class="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-center">
-      <h1 class="text-white text-5xl font-extrabold mb-4">
-        <span id="typewriter"></span><span class="cursor">|</span>
-      </h1>
-      <p class="text-white text-lg mb-6">Watch live broadcasts, check the program schedule, and stay updated</p>
-    </div>
-  </section>
-
   <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-6 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div class="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-6 py-6">
+    <!-- Left Column - Video Player & Info -->
+    <div class="flex-1 lg:flex-[2]">
       <!-- Video Player -->
-      <div class="lg:col-span-2">
-        <div class="video-container">
-          <video id="mainVideo" controls>
-            <source src="" type="application/x-mpegURL">
-            Your browser does not support HTML5 video.
-          </video>
-        </div>
+      <div class="video-container mb-4 rounded-lg overflow-hidden bg-black">
+        <video id="mainVideo" controls>
+          <source src="" type="application/x-mpegURL">
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
 
-        <!-- Channel Info -->
-        <div class="bg-white rounded-lg p-6 shadow-md mb-6">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h2 id="channelName" class="text-3xl font-bold mb-2">Loading...</h2>
-              <p id="channelDesc" class="text-gray-600">Channel description</p>
-            </div>
-            <span id="liveIndicator" class="hidden bg-red-600 text-white px-3 py-1 rounded text-sm font-bold live-badge">● LIVE</span>
-          </div>
-          <div class="flex gap-4">
-            <button onclick="playCurrentStream()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">📺 Watch Live</button>
-            <button onclick="shareStream()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">📤 Share</button>
-          </div>
-        </div>
+      <!-- Video Title -->
+      <h1 id="videoTitle" class="text-2xl font-bold mb-2">Select a channel to watch</h1>
 
-        <!-- Current Program -->
-        <div class="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-600">
-          <h3 class="text-xl font-bold mb-4">Current Program</h3>
-          <div id="currentProgramContainer" class="flex gap-4">
-            <div class="flex-shrink-0 w-32 h-24 bg-gray-300 rounded"></div>
-            <div class="flex-grow">
-              <h4 id="progTitle" class="font-bold text-lg mb-2">Checking schedule...</h4>
-              <p id="progInfo" class="text-sm text-gray-600"></p>
-            </div>
-          </div>
+      <!-- Video Stats & Actions -->
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+        <div class="flex items-center gap-4">
+          <span id="viewCount" class="text-gray-600 text-sm">0 views</span>
+          <span id="uploadDate" class="text-gray-600 text-sm">Today</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Like">
+            👍 <span id="likeCount">Like</span>
+          </button>
+          <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Dislike">
+            👎 <span id="dislikeCount">Dislike</span>
+          </button>
+          <button onclick="shareStream()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Share">
+            📤 <span>Share</span>
+          </button>
+          <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Save">
+            💾 <span>Save</span>
+          </button>
         </div>
       </div>
 
-      <!-- Sidebar -->
-      <div>
-        <!-- Channels List -->
-        <div class="mb-8">
-          <h3 class="text-xl font-bold mb-4">📡 Available Channels</h3>
-          <div id="channelsContainer" class="space-y-2">
-            <div class="bg-gray-200 p-3 rounded animate-pulse">Loading channels...</div>
+      <!-- Channel Info -->
+      <div class="flex items-start justify-between">
+        <div class="flex gap-4">
+          <div class="channel-avatar" id="channelAvatar">C</div>
+          <div>
+            <h3 id="channelName" class="font-bold text-base">CAPD Communications</h3>
+            <p id="subscriberCount" class="text-gray-600 text-sm">500K subscribers</p>
+            <p id="channelDesc" class="text-gray-700 text-sm mt-2">Select a channel to see description</p>
           </div>
         </div>
+        <button class="subscribe-btn">Subscribe</button>
+      </div>
 
-        <!-- Announcements -->
-        <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
-          <h3 class="font-bold mb-3 text-yellow-800">📢 Announcements</h3>
-          <div id="announcementsContainer" class="space-y-3 text-sm">
-            <div class="text-gray-600">Loading announcements...</div>
-          </div>
-        </div>
+      <!-- Description (Expandable) -->
+      <div class="mt-4 text-gray-700 text-sm">
+        <p id="fullDesc" class="line-clamp-2">Select a channel to view more information</p>
       </div>
     </div>
 
-    <!-- Schedule Section -->
-    <section class="mt-12">
-      <h2 class="text-3xl font-bold mb-6">📅 Today's Schedule</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="scheduleContainer">
-        <div class="bg-gray-200 p-4 rounded animate-pulse">Loading schedule...</div>
-      </div>
-    </section>
+    <!-- Right Column - Recommended Videos -->
+    <div class="w-full lg:w-80">
+      <!-- Channels List Header -->
+      <h3 class="text-lg font-bold mb-4">Channels</h3>
 
-    <!-- News Ticker -->
-    <section class="mt-12 mb-12">
-      <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg overflow-hidden">
-        <div class="flex items-center gap-4 mb-2">
-          <span class="font-bold text-lg">📰 BREAKING NEWS</span>
-          <span class="live-badge bg-red-600 px-2 py-1 rounded text-xs font-bold">LIVE</span>
-        </div>
-        <div class="overflow-hidden h-12 flex items-center">
-          <div class="ticker-scroll" id="tickerContainer">
-            <span>CAPD Digital TV - Your Community's Voice</span>
-          </div>
-        </div>
+      <!-- Channels/Videos List -->
+      <div id="recommendedContainer" class="space-y-3">
+        <!-- Channels will be loaded here -->
+        <div class="bg-gray-200 p-4 rounded animate-pulse h-24"></div>
       </div>
-    </section>
+    </div>
   </div>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-400 py-6 mt-10">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-      <p class="text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
-      <img src="white.png" alt="CAPD Logo" class="h-10 w-auto object-contain">
+  <footer class="bg-gray-900 text-gray-400 py-12 mt-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h4 class="text-white font-bold mb-4">About</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="about.html" class="hover:text-white transition">About Us</a></li>
+            <li><a href="#" class="hover:text-white transition">Our Team</a></li>
+            <li><a href="#" class="hover:text-white transition">Our Impact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Services</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white transition">Infrastructure</a></li>
+            <li><a href="#" class="hover:text-white transition">Education</a></li>
+            <li><a href="#" class="hover:text-white transition">Healthcare</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Media</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="news.html" class="hover:text-white transition">News</a></li>
+            <li><a href="tv.html" class="hover:text-white transition">Digital TV</a></li>
+            <li><a href="projects.html" class="hover:text-white transition">Gallery</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-4">Contact</h4>
+          <p class="text-sm mb-2">📧 info@capd.ng</p>
+          <p class="text-sm mb-2">📱 +234 801 234 5678</p>
+          <p class="text-sm">🕐 24/7 Support</p>
+        </div>
+      </div>
+
+      <hr class="border-gray-700 mb-8">
+
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <p class="text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
+        <img src="white.png" alt="CAPD Logo" class="h-10 w-auto object-contain mt-4 md:mt-0">
+      </div>
     </div>
   </footer>
 
   <!-- Scripts -->
   <script>
-    // Typewriter effect
-    const texts = ["CAPD Digital TV", "Live Broadcasting", "Stay Connected"];
-    let i = 0, j = 0, currentText = "", isDeleting = false;
-    const speed = 120, delay = 1500;
+    // Current stream info
+    let currentStreamInfo = {
+      id: '',
+      name: '',
+      desc: '',
+      streamUrl: '',
+      viewers: 0
+    };
+    let hls = null;
 
-    function typewriter() {
-      const target = document.getElementById("typewriter");
-      if (isDeleting) {
-        currentText = texts[i].substring(0, j--);
-      } else {
-        currentText = texts[i].substring(0, j++);
-      }
-      target.textContent = currentText;
-      if (!isDeleting && j === texts[i].length + 1) {
-        isDeleting = true;
-        setTimeout(typewriter, delay);
-        return;
-      } else if (isDeleting && j === 0) {
-        isDeleting = false;
-        i = (i + 1) % texts.length;
-      }
-      setTimeout(typewriter, isDeleting ? speed / 2 : speed);
-    }
+    // User interaction state
+    let userLikes = JSON.parse(localStorage.getItem('channelLikes') || '{}');
+    let userDislikes = JSON.parse(localStorage.getItem('channelDislikes') || '{}');
+    let userSaves = JSON.parse(localStorage.getItem('channelSaves') || '{}');
+    let viewCountRefreshInterval;
 
     document.addEventListener("DOMContentLoaded", () => {
-      typewriter();
       loadChannels();
-      loadSchedule();
-      loadAnnouncements();
-      updateCurrentProgram();
-      setInterval(updateCurrentProgram, 60000); // Update every minute
+      startViewCountRefresh();
     });
 
-    // Load channels from localStorage (CMS) with fallback to JSON
+    // Start refreshing view counts every 2 seconds
+    function startViewCountRefresh() {
+      viewCountRefreshInterval = setInterval(() => {
+        if (currentStreamInfo.id) {
+          updateViewCount();
+        }
+      }, 2000);
+    }
+
+    // Update view count from admin data
+    function updateViewCount() {
+      try {
+        const channels = JSON.parse(localStorage.getItem('channels') || '[]');
+        const currentChannel = channels.find(ch => ch.id === currentStreamInfo.id);
+        if (currentChannel) {
+          const viewCount = currentChannel.viewers || 0;
+          document.getElementById("viewCount").textContent = `${viewCount.toLocaleString()} views`;
+          currentStreamInfo.viewers = viewCount;
+        }
+      } catch (error) {
+        console.error('Error updating view count:', error);
+      }
+    }
+
+    // Toggle like button
+    function toggleLike() {
+      if (!currentStreamInfo.id) return;
+
+      const likeBtn = document.getElementById('likeBtn');
+      const dislikeBtn = document.getElementById('dislikeBtn');
+
+      if (userLikes[currentStreamInfo.id]) {
+        delete userLikes[currentStreamInfo.id];
+        likeBtn.classList.remove('bg-gray-200');
+      } else {
+        userLikes[currentStreamInfo.id] = true;
+        delete userDislikes[currentStreamInfo.id];
+        likeBtn.classList.add('bg-gray-200');
+        dislikeBtn.classList.remove('bg-gray-200');
+      }
+
+      localStorage.setItem('channelLikes', JSON.stringify(userLikes));
+      localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
+    }
+
+    // Toggle dislike button
+    function toggleDislike() {
+      if (!currentStreamInfo.id) return;
+
+      const likeBtn = document.getElementById('likeBtn');
+      const dislikeBtn = document.getElementById('dislikeBtn');
+
+      if (userDislikes[currentStreamInfo.id]) {
+        delete userDislikes[currentStreamInfo.id];
+        dislikeBtn.classList.remove('bg-gray-200');
+      } else {
+        userDislikes[currentStreamInfo.id] = true;
+        delete userLikes[currentStreamInfo.id];
+        dislikeBtn.classList.add('bg-gray-200');
+        likeBtn.classList.remove('bg-gray-200');
+      }
+
+      localStorage.setItem('channelLikes', JSON.stringify(userLikes));
+      localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
+    }
+
+    // Toggle save button
+    function toggleSave() {
+      if (!currentStreamInfo.id) return;
+
+      const saveBtn = document.getElementById('saveBtn');
+
+      if (userSaves[currentStreamInfo.id]) {
+        delete userSaves[currentStreamInfo.id];
+        saveBtn.classList.remove('bg-yellow-100');
+      } else {
+        userSaves[currentStreamInfo.id] = true;
+        saveBtn.classList.add('bg-yellow-100');
+      }
+
+      localStorage.setItem('channelSaves', JSON.stringify(userSaves));
+    }
+
+    // Load channels from localStorage or JSON
     async function loadChannels() {
       try {
         let channels = [];
@@ -249,7 +353,7 @@
             const parsed = JSON.parse(storedChannels);
             channels = parsed;
           } catch (e) {
-            console.log("Could not parse stored channels, falling back to JSON");
+            console.log("Could not parse stored channels");
           }
         }
 
@@ -260,89 +364,230 @@
           channels = data.channels;
         }
 
-        const container = document.getElementById("channelsContainer");
+        const container = document.getElementById("recommendedContainer");
 
-        container.innerHTML = channels.map((ch, idx) => `
-          <div class="channel-card p-3 rounded cursor-pointer hover:shadow-md transition ${idx === 0 ? 'channel-active' : 'bg-white border'}"
-               onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}')">
-            <div class="font-bold text-sm">${ch.number}. ${ch.name}</div>
-            <div class="text-xs text-gray-600 flex justify-between items-center">
-              <span>${ch.status === 'live' ? '🔴 LIVE' : 'Offline'}</span>
-              <span>${ch.viewers} viewers</span>
+        container.innerHTML = channels.map((ch, idx) => {
+          // Generate a random thumbnail (using gradient background)
+          const gradients = [
+            'from-blue-400 to-blue-600',
+            'from-purple-400 to-purple-600',
+            'from-pink-400 to-pink-600',
+            'from-green-400 to-green-600',
+            'from-red-400 to-red-600',
+            'from-indigo-400 to-indigo-600'
+          ];
+          const gradient = gradients[idx % gradients.length];
+
+          return `
+            <div class="video-card flex gap-3 cursor-pointer group" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0})">
+              <!-- Thumbnail -->
+              <div class="relative w-40 h-24 bg-gradient-to-br ${gradient} rounded-lg flex-shrink-0 overflow-hidden">
+                <div class="w-full h-full flex items-center justify-center text-white text-3xl font-bold">
+                  ${ch.number}
+                </div>
+                <span class="duration">${ch.status === 'live' ? 'LIVE' : 'OFF'}</span>
+              </div>
+
+              <!-- Video Info -->
+              <div class="flex-1 py-2">
+                <h4 class="font-bold text-sm text-gray-900 line-clamp-2 group-hover:text-gray-600">
+                  ${ch.number}. ${ch.name}
+                </h4>
+                <p class="text-xs text-gray-600 mt-1">${ch.description}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                  ${ch.viewers || 0} viewers
+                  <span class="mx-1">•</span>
+                  ${ch.status === 'live' ? '<span class="text-red-600">🔴 LIVE</span>' : 'Offline'}
+                </p>
+              </div>
             </div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
 
-        // Select first channel
+        // Select first channel by default
         if (channels.length > 0) {
-          selectChannel(channels[0].id, channels[0].name, channels[0].description, channels[0].streamUrl);
+          selectChannel(channels[0].id, channels[0].name, channels[0].description, channels[0].streamUrl, channels[0].viewers || 0);
         }
       } catch (error) {
         console.error("Error loading channels:", error);
+        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600">Error loading channels</p>';
       }
     }
 
-    // Store current stream info
-    let currentStreamInfo = {
-      id: '',
-      name: '',
-      desc: '',
-      streamUrl: ''
-    };
-
     // Select channel and load stream
-    function selectChannel(id, name, desc, streamUrl) {
-      currentStreamInfo = { id, name, desc, streamUrl };
-      document.getElementById("channelName").textContent = name;
+    function selectChannel(id, name, desc, streamUrl, viewers) {
+      currentStreamInfo = { id, name, desc, streamUrl, viewers };
+
+      // Update video title and info
+      document.getElementById("videoTitle").textContent = name;
+      document.getElementById("channelName").textContent = "CAPD Communications";
       document.getElementById("channelDesc").textContent = desc;
-      document.getElementById("liveIndicator").classList.remove("hidden");
+      document.getElementById("channelAvatar").textContent = name.charAt(0).toUpperCase();
+      document.getElementById("viewCount").textContent = `${(viewers || 0).toLocaleString()} views`;
+      document.getElementById("subscriberCount").textContent = "500K subscribers";
+      document.getElementById("uploadDate").textContent = "Today";
+      document.getElementById("fullDesc").textContent = desc;
+      document.getElementById("likeCount").textContent = "Like";
+
+      // Reset button states
+      const likeBtn = document.getElementById('likeBtn');
+      const dislikeBtn = document.getElementById('dislikeBtn');
+      const saveBtn = document.getElementById('saveBtn');
+
+      likeBtn.classList.remove('bg-gray-200');
+      dislikeBtn.classList.remove('bg-gray-200');
+      saveBtn.classList.remove('bg-yellow-100');
+
+      // Restore user's previous interactions with this channel
+      if (userLikes[id]) {
+        likeBtn.classList.add('bg-gray-200');
+      }
+      if (userDislikes[id]) {
+        dislikeBtn.classList.add('bg-gray-200');
+      }
+      if (userSaves[id]) {
+        saveBtn.classList.add('bg-yellow-100');
+      }
 
       // Load the stream
       loadStream(streamUrl);
 
-      // Update active channel
-      document.querySelectorAll(".channel-card").forEach(el => el.classList.remove("channel-active"));
-      event.target.closest(".channel-card").classList.add("channel-active");
+      // Scroll to top of page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Load stream with format detection
     function loadStream(streamUrl) {
       if (!streamUrl) {
-        alert('Stream URL not available. Please configure the channel in the admin panel.');
+        console.log('No stream URL available');
         return;
       }
 
       const video = document.getElementById("mainVideo");
 
-      // Clear existing sources
-      video.innerHTML = '';
-
       // Detect stream format and load accordingly
       if (streamUrl.includes('.m3u8')) {
-        // HLS Stream
+        // HLS Stream (m3u8 playlist)
         loadHLSStream(streamUrl);
-      } else if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
-        // YouTube embedded stream
-        loadYouTubeStream(streamUrl);
-      } else if (streamUrl.includes('twitch.tv')) {
-        // Twitch embedded stream
-        loadTwitchStream(streamUrl);
       } else if (streamUrl.startsWith('rtmp')) {
-        // RTMP Stream - Route through CORS proxy
-        loadProxyStream(streamUrl);
-        return;
+        // RTMP Stream - Convert to HLS
+        loadRTMPStream(streamUrl);
+      } else if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
+        // YouTube Stream - Direct URL
+        loadYouTubeStream(streamUrl);
+      } else if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv'))) {
+        // HTTP Direct Video Stream (MP4, MOV, MKV)
+        loadVideoStream(streamUrl);
       } else {
-        // Check if it's a direct stream URL (not embedded)
-        if (streamUrl.includes('http') && !streamUrl.includes('embed')) {
-          // Route through CORS proxy to avoid CORS issues
-          loadProxyStream(streamUrl);
-        } else {
-          // Regular video file
-          video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
-        }
+        // Direct video file or fallback
+        video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
       }
 
       console.log('Stream loaded:', streamUrl);
+    }
+
+    // Load direct video stream (MP4, MOV, MKV)
+    function loadVideoStream(videoUrl) {
+      const video = document.getElementById("mainVideo");
+
+      // Determine MIME type based on file extension
+      let mimeType = 'video/mp4';
+      if (videoUrl.includes('.mov')) {
+        mimeType = 'video/quicktime';
+      } else if (videoUrl.includes('.mkv')) {
+        mimeType = 'video/x-matroska';
+      }
+
+      video.innerHTML = `<source src="${videoUrl}" type="${mimeType}">`;
+      video.play().catch(err => {
+        console.error('Playback error:', err);
+      });
+    }
+
+    // Load YouTube stream
+    function loadYouTubeStream(youtubeUrl) {
+      console.log('Processing YouTube URL:', youtubeUrl);
+
+      // Extract video ID from YouTube URL
+      let videoId = null;
+
+      // Format 1: https://www.youtube.com/watch?v=VIDEO_ID
+      if (youtubeUrl.includes('youtube.com/watch?v=')) {
+        const match = youtubeUrl.match(/v=([^&]+)/);
+        if (match) {
+          videoId = match[1];
+        }
+      }
+      // Format 2: https://youtu.be/VIDEO_ID
+      else if (youtubeUrl.includes('youtu.be/')) {
+        const match = youtubeUrl.match(/youtu\.be\/([^?&]+)/);
+        if (match) {
+          videoId = match[1];
+        }
+      }
+
+      if (!videoId) {
+        console.error('Could not extract video ID from YouTube URL');
+        alert('Invalid YouTube URL. Please use youtube.com/watch?v=ID or youtu.be/ID');
+        return;
+      }
+
+      console.log('YouTube video ID:', videoId);
+
+      // Replace video container with YouTube iframe
+      const video = document.getElementById("mainVideo");
+      const videoContainer = video.parentElement;
+
+      const iframeHtml = `<iframe
+        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>`;
+
+      videoContainer.innerHTML = iframeHtml;
+      console.log('YouTube iframe loaded:', videoId);
+    }
+
+    // Load RTMP stream (convert to HLS)
+    function loadRTMPStream(rtmpUrl) {
+      console.log('Processing RTMP URL:', rtmpUrl);
+
+      // Extract stream name from RTMP URL
+      // Format: rtmp://server:port/app/stream_name
+      let streamName = rtmpUrl.split('/').pop();
+
+      if (!streamName) {
+        console.error('Could not extract stream name from RTMP URL');
+        alert('Invalid RTMP URL format. Expected: rtmp://server:port/live/stream_name');
+        return;
+      }
+
+      console.log('Stream name:', streamName);
+
+      // Show loading status to user
+      const mainVideo = document.getElementById("mainVideo");
+      const videoContainer = mainVideo.parentElement;
+      videoContainer.style.backgroundColor = '#1a1a1a';
+
+      // Determine server host from RTMP URL
+      const serverMatch = rtmpUrl.match(/rtmp:\/\/([^:\/]+)/);
+      let hlsUrl;
+
+      if (serverMatch) {
+        const host = serverMatch[1];
+        // HLS is always served on port 8000 (HTTP server), never the RTMP port
+        hlsUrl = `http://${host}:8000/live/${streamName}/index.m3u8`;
+      } else {
+        // Fallback for localhost
+        hlsUrl = `http://localhost:8000/live/${streamName}/index.m3u8`;
+      }
+
+      console.log('Generated HLS URL:', hlsUrl);
+      console.log('⏳ Initializing HLS stream with transcoding...');
+
+      // Load with optimized retry logic (faster initial attempts)
+      loadHLSStream(hlsUrl);
     }
 
     // Load stream through CORS proxy
@@ -351,101 +596,120 @@
       const encodedUrl = encodeURIComponent(streamUrl);
       const proxyUrl = `/api/stream?url=${encodedUrl}`;
 
-      // Try to determine content type
       let mimeType = 'video/mp4';
       if (streamUrl.includes('.m3u8')) {
         mimeType = 'application/x-mpegURL';
       } else if (streamUrl.includes('.ts')) {
         mimeType = 'video/mp2t';
-      } else if (streamUrl.includes('.webm')) {
-        mimeType = 'video/webm';
-      } else if (streamUrl.includes('.mkv')) {
-        mimeType = 'video/x-matroska';
       }
 
       video.innerHTML = `<source src="${proxyUrl}" type="${mimeType}">`;
       video.play().catch(err => {
         console.error('Playback error:', err);
-        // Try as HLS if regular playback fails
-        if (streamUrl.includes('.m3u8')) {
-          loadHLSStream(streamUrl);
-        }
       });
     }
 
-    // Load HLS stream (m3u8)
-    function loadHLSStream(m3u8Url) {
+    // Load HLS stream (m3u8) with retry logic for RTMP streams
+    function loadHLSStream(m3u8Url, retryCount = 0, maxRetries = 20) {
       const video = document.getElementById("mainVideo");
 
-      // Check if HLS.js is available
+      console.log(`Attempting to load HLS stream (attempt ${retryCount + 1}/${maxRetries + 1}): ${m3u8Url}`);
+
+      // Check if the m3u8 file exists before trying to load it
+      fetch(m3u8Url, { method: 'HEAD', mode: 'cors' })
+        .then(response => {
+          console.log(`HLS manifest status: ${response.status}`);
+          return attemptHLSPlayback(m3u8Url, video);
+        })
+        .catch(error => {
+          console.warn(`HLS file not ready (attempt ${retryCount + 1}): ${error.message}`);
+
+          // If RTMP stream is still starting, retry after delay
+          if (retryCount < maxRetries) {
+            // Use faster retry on first few attempts (0.5s), then slower (1s)
+            const delay = retryCount < 5 ? 500 : 1000;
+            console.log(`Retrying in ${delay}ms...`);
+            setTimeout(() => {
+              loadHLSStream(m3u8Url, retryCount + 1, maxRetries);
+            }, delay);
+          } else {
+            console.error('Max retries reached. HLS stream may not be broadcasting.');
+            alert('Unable to load RTMP stream. Please ensure the RTMP server is running and the stream is actively broadcasting.');
+          }
+        });
+    }
+
+    // Attempt HLS playback with HLS.js
+    function attemptHLSPlayback(m3u8Url, video) {
       if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-        const hls = new Hls();
+        console.log('Using HLS.js library');
+
+        if (hls) hls.destroy();
+
+        hls = new Hls({
+          enableWorker: true,
+          debug: false,
+          lowLatencyMode: false,       // Disable low latency to prevent stuttering
+          backBufferLength: 30,
+          maxBufferLength: 60,
+          maxMaxBufferLength: 90,
+          maxBufferHole: 1.0,          // Increase hole tolerance
+          fragLoadingTimeOut: 20000,
+          fragLoadingMaxRetry: 4,
+          manifestLoadingTimeOut: 10000,
+          manifestLoadingMaxRetry: 3,
+          levelLoadingTimeOut: 10000,
+          levelLoadingMaxRetry: 4,
+          testBitrates: [],            // Disable bitrate test
+          startLevel: undefined        // Auto-select level
+        });
+
         hls.loadSource(m3u8Url);
         hls.attachMedia(video);
+
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play();
+          console.log('HLS manifest loaded successfully');
+          video.muted = false;
+          video.play().catch(err => {
+            console.error('Playback error:', err);
+          });
         });
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS Error:', data);
+          if (data.fatal) {
+            console.error('Fatal HLS error - trying native playback');
+            fallbackToNativePlayback(m3u8Url);
+          }
+        });
+
+        // Prevent excessive reloading
+        hls.on(Hls.Events.BUFFER_APPENDING, () => {
+          // Smooth buffer appending
+        });
+
+        return Promise.resolve();
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari native HLS support
+        console.log('Using native HLS playback (Safari)');
         video.src = m3u8Url;
         video.addEventListener('loadedmetadata', () => {
-          video.play();
+          console.log('Native HLS loaded');
+          video.play().catch(err => console.error('Playback error:', err));
         });
+        return Promise.resolve();
       } else {
-        alert('Your browser does not support HLS streaming. Please use Chrome, Firefox, or Safari.');
+        console.error('HLS not supported by browser');
+        alert('Your browser does not support HLS streaming');
+        return Promise.reject(new Error('HLS not supported'));
       }
     }
 
-    // Load YouTube embedded stream
-    function loadYouTubeStream(youtubeUrl) {
-      let videoId = '';
-
-      // Extract video ID from various YouTube URL formats
-      if (youtubeUrl.includes('youtube.com/embed/')) {
-        videoId = youtubeUrl.split('youtube.com/embed/')[1];
-      } else if (youtubeUrl.includes('youtube.com/watch?v=')) {
-        videoId = youtubeUrl.split('v=')[1];
-      } else if (youtubeUrl.includes('youtu.be/')) {
-        videoId = youtubeUrl.split('youtu.be/')[1];
-      }
-
-      const container = document.getElementById("mainVideo").parentElement;
-      container.innerHTML = `
-        <iframe
-          src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-          frameborder="0"
-          allowfullscreen
-          allow="autoplay; encrypted-media">
-        </iframe>
-      `;
-    }
-
-    // Load Twitch embedded stream
-    function loadTwitchStream(twitchUrl) {
-      let channelName = '';
-
-      if (twitchUrl.includes('twitch.tv/')) {
-        channelName = twitchUrl.split('twitch.tv/')[1];
-      }
-
-      const container = document.getElementById("mainVideo").parentElement;
-      container.innerHTML = `
-        <iframe
-          src="https://player.twitch.tv/?channel=${channelName}&parent=${window.location.hostname}"
-          allowfullscreen>
-        </iframe>
-      `;
-    }
-
-    // Play current stream (Watch Live button)
-    function playCurrentStream() {
-      if (!currentStreamInfo.streamUrl) {
-        alert('No stream URL configured. Please select a channel or configure streaming in the admin panel.');
-        return;
-      }
-      loadStream(currentStreamInfo.streamUrl);
-      // Scroll to video player
-      document.getElementById("mainVideo").scrollIntoView({ behavior: 'smooth' });
+    // Fallback to native playback
+    function fallbackToNativePlayback(m3u8Url) {
+      const video = document.getElementById("mainVideo");
+      console.log('Falling back to native playback for:', m3u8Url);
+      video.src = m3u8Url;
+      video.play().catch(err => console.error('Fallback playback error:', err));
     }
 
     // Share stream function
@@ -464,100 +728,8 @@
           url: window.location.href
         }).catch(err => console.log('Error sharing:', err));
       } else {
-        // Fallback: copy to clipboard
         navigator.clipboard.writeText(shareText);
         alert('Share link copied to clipboard!');
-      }
-    }
-
-    // Load schedule
-    async function loadSchedule() {
-      try {
-        const res = await fetch("data/schedule.json");
-        const data = await res.json();
-        const container = document.getElementById("scheduleContainer");
-
-        // Get today's programs (first 4)
-        const programs = data.schedule.slice(0, 4);
-
-        container.innerHTML = programs.map(prog => {
-          const now = new Date();
-          const [startHour, startMin] = prog.startTime.split(':').map(Number);
-          const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
-          const isLive = now >= start && now < new Date(start.getTime() + prog.duration * 60000);
-
-          return `
-            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
-              <img src="${prog.image}" alt="${prog.title}" class="w-full h-32 object-cover">
-              <div class="p-3">
-                <p class="text-xs text-gray-500">${prog.startTime} - ${prog.endTime}</p>
-                <h4 class="font-bold text-sm mb-2 line-clamp-2">${prog.title}</h4>
-                ${isLive ? '<span class="text-xs bg-red-600 text-white px-2 py-1 rounded">🔴 LIVE NOW</span>' : ''}
-                <p class="text-xs text-gray-600 mt-1">🎙️ ${prog.host}</p>
-              </div>
-            </div>
-          `;
-        }).join("");
-      } catch (error) {
-        console.error("Error loading schedule:", error);
-      }
-    }
-
-    // Load announcements
-    async function loadAnnouncements() {
-      try {
-        const res = await fetch("data/announcements.json");
-        const data = await res.json();
-        const container = document.getElementById("announcementsContainer");
-
-        const active = data.announcements
-          .filter(ann => new Date(ann.expiresAt) > new Date())
-          .slice(0, 3);
-
-        container.innerHTML = active.map(ann => `
-          <div class="bg-white p-2 rounded border-l-2 border-yellow-500">
-            <p class="font-bold text-gray-800 text-sm">${ann.title}</p>
-            <p class="text-xs text-gray-600 mt-1">${ann.content.substring(0, 80)}...</p>
-          </div>
-        `).join("") || '<div class="text-gray-600">No active announcements</div>';
-
-        // Update ticker
-        const tickerItems = data.announcements
-          .filter(ann => new Date(ann.expiresAt) > new Date())
-          .map(ann => `<span class="mx-8">${ann.title}</span>`)
-          .join("");
-        document.getElementById("tickerContainer").innerHTML = tickerItems || '<span>CAPD Digital TV - Your Community Voice</span>';
-      } catch (error) {
-        console.error("Error loading announcements:", error);
-      }
-    }
-
-    // Update current program
-    async function updateCurrentProgram() {
-      try {
-        const res = await fetch("data/schedule.json");
-        const data = await res.json();
-
-        const now = new Date();
-        const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-        const current = data.schedule.find(prog =>
-          currentTimeStr >= prog.startTime && currentTimeStr <= prog.endTime
-        );
-
-        if (current) {
-          document.getElementById("progTitle").textContent = current.title;
-          document.getElementById("progInfo").innerHTML = `
-            <p><strong>Time:</strong> ${current.startTime} - ${current.endTime}</p>
-            <p><strong>Host:</strong> ${current.host}</p>
-            <p class="mt-2">${current.description}</p>
-          `;
-        } else {
-          document.getElementById("progTitle").textContent = "No program airing now";
-          document.getElementById("progInfo").innerHTML = "Check back soon for upcoming programs";
-        }
-      } catch (error) {
-        console.error("Error updating current program:", error);
       }
     }
   </script>
