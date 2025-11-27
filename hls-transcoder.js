@@ -96,20 +96,20 @@ function startTranscoding(streamName) {
     const output = data.toString();
     errorOutput += output;
 
-    // Check for successful connection
-    if (output.includes('Opening') || output.includes('rtmp://')) {
+    // Check for successful connection (look for frame/audio output, not just Opening)
+    if (output.includes('frame=') || output.includes('time=')) {
       isTranscoding = true;
-      console.log(`[HLS] ✓ Connected to RTMP stream: ${streamName}`);
+      console.log(`[HLS] ✓ Actively transcoding: ${streamName}`);
     }
 
-    // Log muxing/segment info
-    if (output.includes('Opening') || output.includes('segment') || output.includes('muxing overhead')) {
-      console.log(`[HLS] FFmpeg: ${output.substring(0, 120).trim()}`);
+    // Log important FFmpeg messages
+    if (output.includes('Opening') || output.includes('segment') || output.includes('muxing') || output.includes('frame=')) {
+      console.log(`[HLS] FFmpeg: ${output.substring(0, 150).trim()}`);
     }
 
     // Check for connection errors
-    if (output.includes('Connection refused') || output.includes('Connection timed out')) {
-      console.error(`[HLS] Connection error for "${streamName}": ${output.substring(0, 150)}`);
+    if (output.includes('Connection refused') || output.includes('Connection timed out') || output.includes('End of stream')) {
+      console.log(`[HLS] Stream info: ${output.substring(0, 150)}`);
     }
   });
 
@@ -121,11 +121,15 @@ function startTranscoding(streamName) {
 
   // Handle FFmpeg exit
   ffmpeg.on('close', (code) => {
-    const status = isTranscoding ? 'stopped' : 'failed to connect';
+    const status = isTranscoding ? 'stopped normally' : 'failed to connect/transcoding';
     console.log(`[HLS] FFmpeg ${status} for "${streamName}" (exit code: ${code})`);
 
-    if (!isTranscoding && code !== 0) {
-      console.log(`[HLS] Error details: ${errorOutput.substring(0, 300)}`);
+    if (code !== 0 || !isTranscoding) {
+      // Log last 400 chars of error output for debugging
+      const lastError = errorOutput.slice(-400);
+      if (lastError.trim()) {
+        console.log(`[HLS] FFmpeg output:\n${lastError}`);
+      }
     }
 
     STREAMS.delete(streamName);
