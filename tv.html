@@ -64,32 +64,35 @@
 
     .channel-card {
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 8px;
       background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 10px;
     }
 
     .channel-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .channel-card-thumbnail {
-      width: 100%;
-      aspect-ratio: 16/9;
+      width: 80px;
+      height: 60px;
+      min-width: 80px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       overflow: hidden;
+      border-radius: 6px;
     }
 
     .channel-card-number {
-      font-size: 48px;
+      font-size: 28px;
       font-weight: 700;
       color: rgba(255, 255, 255, 0.8);
     }
@@ -123,35 +126,40 @@
     }
 
     .channel-card-info {
-      padding: 16px;
+      padding: 8px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
     }
 
     .channel-name {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 600;
       color: #1e293b;
+      line-clamp: 1;
+      margin-bottom: 2px;
+    }
+
+    .channel-desc {
+      font-size: 11px;
+      color: #64748b;
       line-clamp: 1;
       margin-bottom: 4px;
     }
 
-    .channel-desc {
-      font-size: 13px;
-      color: #64748b;
-      line-clamp: 2;
-      margin-bottom: 8px;
-    }
-
     .channel-status {
-      font-size: 12px;
+      font-size: 10px;
       color: #94a3b8;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .status-dot {
-      width: 4px;
-      height: 4px;
+      width: 3px;
+      height: 3px;
       border-radius: 50%;
       background: #94a3b8;
     }
@@ -170,12 +178,6 @@
       font-weight: 700;
       margin-bottom: 20px;
       color: #1e293b;
-    }
-
-    .channel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
     }
 
     .play-btn {
@@ -230,111 +232,108 @@
     </nav>
   </header>
 
-  <!-- Hero Section with Video Player -->
+  <!-- Hero Section with Video Player & Channels -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-    <div class="hero-card">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 sm:p-10">
-        <!-- Left: Video Player -->
-        <div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column: Video & Info -->
+      <div class="lg:col-span-2">
+        <div class="hero-card p-6 sm:p-8">
+          <!-- Video Player -->
           <div class="video-container mb-6">
             <video id="mainVideo" controls>
               <source src="" type="application/x-mpegURL">
               Your browser does not support HTML5 video.
             </video>
           </div>
-        </div>
 
-        <!-- Right: Channel Info -->
-        <div class="flex flex-col justify-between">
-          <div>
-            <h1 id="videoTitle" class="text-3xl sm:text-4xl font-bold mb-4">Select a channel to watch</h1>
-            <p id="channelDesc" class="text-slate-600 text-base mb-6 leading-relaxed">Select a channel to see more details and information</p>
+          <!-- Channel Info -->
+          <h1 id="videoTitle" class="text-2xl sm:text-3xl font-bold mb-3">Select a channel to watch</h1>
+          <p id="channelDesc" class="text-slate-600 text-sm mb-4 leading-relaxed">Select a channel to see more details and information</p>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-3 gap-4 mb-8">
-              <div>
-                <p class="text-sm text-slate-500 mb-1">Viewers</p>
-                <p id="viewCount" class="text-2xl font-bold text-slate-900">0</p>
-              </div>
-              <div>
-                <p class="text-sm text-slate-500 mb-1">Status</p>
-                <p id="statusBadge" class="text-xl font-bold">
-                  <span id="statusText" class="text-slate-600">Offline</span>
-                </p>
-              </div>
-              <div>
-                <p class="text-sm text-slate-500 mb-1">Type</p>
-                <p id="streamType" class="text-xl font-bold text-slate-600">—</p>
-              </div>
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-slate-200">
+            <div>
+              <p class="text-xs text-slate-500 mb-1">Viewers</p>
+              <p id="viewCount" class="text-lg font-bold text-slate-900">0</p>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 mb-1">Status</p>
+              <p id="statusBadge" class="text-lg font-bold">
+                <span id="statusText" class="text-slate-600">Offline</span>
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 mb-1">Type</p>
+              <p id="streamType" class="text-lg font-bold text-slate-600">—</p>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-4 flex-wrap pt-4 border-t border-slate-200">
-            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Like">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Like">
               👍 Like
             </button>
-            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Dislike">
+            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Dislike">
               👎 Dislike
             </button>
-            <button onclick="shareStream()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Share">
+            <button onclick="shareStream()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Share">
               📤 Share
             </button>
-            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Save">
+            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Save">
               💾 Save
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Right Column: Trending Channels -->
+      <div class="lg:col-span-1">
+        <div class="hero-card p-6">
+          <h2 class="text-lg font-bold mb-4 text-slate-900">Trending</h2>
+          <div id="recommendedContainer" class="space-y-3 max-h-96 overflow-y-auto">
+            <!-- Channels will be loaded here -->
+            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
+            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
+            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Featured Channels Section -->
-  <div class="featured-section max-w-7xl mx-auto">
-    <h2 class="section-title">Trending Channels</h2>
-    <div id="recommendedContainer" class="channel-grid">
-      <!-- Channels will be loaded here -->
-      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
-      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
-      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
-    </div>
-  </div>
+  <!-- Comments Section - Small Box Like YouTube -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="hero-card p-4">
+      <h3 class="font-bold text-slate-900 mb-3">Comments</h3>
 
-  <!-- Comments Section -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-    <div class="hero-card p-6 sm:p-10">
-      <h3 class="section-title mb-6">💬 Comments</h3>
-
-      <!-- Comment Input -->
-      <div class="mb-8 p-6 bg-slate-50 rounded-lg">
-        <input
-          type="text"
-          id="guestName"
-          placeholder="Enter your name"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-slate-900"
-          maxlength="50"
-        />
-        <textarea
-          id="commentText"
-          placeholder="Share your thoughts about this stream..."
-          rows="3"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
-          maxlength="500"
-        ></textarea>
-        <div class="flex items-center justify-between mt-3">
-          <span class="text-xs text-slate-500"><span id="charCount">0</span>/500</span>
-          <button
-            onclick="postComment()"
-            class="play-btn"
-          >
-            Post Comment
-          </button>
+      <!-- Comment Input (Compact) -->
+      <div class="mb-4 flex gap-3 items-start">
+        <div class="flex-1">
+          <input
+            type="text"
+            id="guestName"
+            placeholder="Name"
+            class="w-full px-3 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-900 mb-2"
+            maxlength="50"
+          />
+          <div class="flex gap-2">
+            <textarea
+              id="commentText"
+              placeholder="Add a comment..."
+              rows="2"
+              class="flex-1 px-3 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-900 resize-none"
+              maxlength="500"
+            ></textarea>
+            <button onclick="postComment()" class="bg-slate-900 text-white px-3 py-1 rounded text-xs font-medium hover:bg-slate-800 transition">
+              Post
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Comments List -->
-      <div id="commentsList" class="space-y-4 max-h-96 overflow-y-auto">
-        <p class="text-slate-500 text-sm text-center py-8">No comments yet. Be the first to comment!</p>
+      <!-- Comments List (Compact) -->
+      <div id="commentsList" class="space-y-2 max-h-64 overflow-y-auto text-xs">
+        <p class="text-slate-500 text-center py-4">No comments yet</p>
       </div>
     </div>
   </div>
@@ -924,25 +923,25 @@
       const commentsList = document.getElementById('commentsList');
 
       if (comments.length === 0) {
-        commentsList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No comments yet. Be the first to comment!</p>';
+        commentsList.innerHTML = '<p class="text-slate-500 text-center py-4">No comments yet</p>';
         return;
       }
 
       commentsList.innerHTML = comments.map((comment, idx) => `
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                ${comment.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p class="font-semibold text-sm text-gray-900">${comment.name}</p>
-                <p class="text-xs text-gray-500">${formatTime(comment.timestamp)}</p>
-              </div>
+        <div class="border-b border-slate-200 py-2 last:border-b-0">
+          <div class="flex gap-2">
+            <div class="w-6 h-6 rounded-full bg-slate-300 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              ${comment.name.charAt(0).toUpperCase()}
             </div>
-            <button onclick="deleteComment('${currentStreamInfo.id}', ${idx})" class="text-gray-400 hover:text-red-600 text-xs">✕</button>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <p class="font-semibold text-xs text-slate-900">${comment.name}</p>
+                <p class="text-xs text-slate-500">${formatTime(comment.timestamp)}</p>
+                <button onclick="deleteComment('${currentStreamInfo.id}', ${idx})" class="text-slate-400 hover:text-red-600 text-xs ml-auto">✕</button>
+              </div>
+              <p class="text-xs text-slate-700 whitespace-pre-wrap break-words">${escapeHtml(comment.text)}</p>
+            </div>
           </div>
-          <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">${escapeHtml(comment.text)}</p>
         </div>
       `).join('');
     }
