@@ -599,7 +599,7 @@ function updateChannelsJson(channels) {
   // Save channels to backend API
   const API_BASE = window.location.hostname === 'localhost'
     ? 'http://localhost:3001'  // Local development
-    : `${window.location.protocol}//${window.location.host}`; // Production
+    : '';  // Production - use relative path
 
   fetch(`${API_BASE}/api/channels`, {
     method: 'POST',
