@@ -583,7 +583,7 @@ function clearCache() {
 function logout() {
   localStorage.removeItem('adminUser');
   localStorage.removeItem('loginTime');
-  window.location.href = 'index.html';
+  window.location.href = '/admin/index.html';
 }
 
 /**

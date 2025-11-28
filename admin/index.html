@@ -71,8 +71,8 @@
         localStorage.setItem('adminUser', username);
         localStorage.setItem('loginTime', new Date().getTime());
 
-        // Redirect to dashboard
-        window.location.href = 'dashboard.html';
+        // Redirect to dashboard with absolute path
+        window.location.href = '/admin/dashboard.html';
       } else {
         alert('Invalid credentials. Please try again.');
       }
