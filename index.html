@@ -13,7 +13,7 @@
       border-right: 0.15em solid white;
       white-space: normal;
       word-wrap: break-word;
-      animation: typing 4s steps(40, end), blink-caret 0.75s step-end infinite;
+      animation: typing-title 10s steps(40, end) infinite, blink-caret 0.75s step-end infinite;
     }
 
     .typewriter-subtitle {
@@ -22,16 +22,36 @@
       border-right: 0.15em solid rgba(255, 255, 255, 0.7);
       white-space: normal;
       word-wrap: break-word;
-      animation: typing 3.5s steps(60, end) 4.5s forwards, blink-caret 0.75s step-end 4.5s infinite;
-      opacity: 0;
+      animation: typing-subtitle 10s steps(60, end) infinite, blink-caret 0.75s step-end infinite;
     }
 
-    @keyframes typing {
-      from {
+    @keyframes typing-title {
+      0% {
         width: 0;
       }
-      to {
+      25% {
         width: 100%;
+      }
+      75% {
+        width: 100%;
+      }
+      100% {
+        width: 0;
+      }
+    }
+
+    @keyframes typing-subtitle {
+      0% {
+        width: 0;
+      }
+      30% {
+        width: 100%;
+      }
+      70% {
+        width: 100%;
+      }
+      100% {
+        width: 0;
       }
     }
 
@@ -45,18 +65,26 @@
     }
 
     @keyframes fade-in {
-      from {
+      0% {
         opacity: 0;
         transform: translateY(10px);
       }
-      to {
+      20% {
         opacity: 1;
         transform: translateY(0);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(10px);
       }
     }
 
     .animate-fade-in {
-      animation: fade-in 1s ease-out forwards;
+      animation: fade-in 10s ease-out infinite;
     }
 
     .hero-content {
@@ -101,7 +129,7 @@
       Empowering Our Community Through Connection and Service
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0 animate-fade-in" style="animation-delay: 8.5s;">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style="animation-delay: 2.5s;">
       <a href="tv.html" class="border-2 border-white text-white px-8 py-3 rounded-none text-sm font-medium hover:bg-white hover:text-gray-900 transition">
         🎮 OML58 TOURNAMENT
       </a>
