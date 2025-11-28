@@ -1321,14 +1321,14 @@ function updateStreamUrlPlaceholder() {
   const placeholders = {
     rtmp: 'rtmp://localhost:1935/live/stream_name',
     hls: 'https://example.com/live/stream/index.m3u8',
-    youtube: 'https://youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID or https://youtube.com/live/VIDEO_ID',
+    youtube: 'https://youtube.com/live/VIDEO_ID',
     mp4: 'https://example.com/videos/stream.mp4'
   };
 
   const hints = {
     rtmp: 'Example: rtmp://localhost:1935/live/channel_name',
     hls: 'Example: https://example.com/live/stream/index.m3u8',
-    youtube: 'Example: https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ or https://youtube.com/live/Moq6CW60r_U',
+    youtube: 'Example: https://youtube.com/live/dQw4w9WgXcQ',
     mp4: 'Example: https://example.com/videos/livestream.mp4'
   };
 
