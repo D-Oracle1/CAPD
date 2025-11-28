@@ -32,6 +32,52 @@ function initializeStreamsDb() {
   }
 }
 
+// Get all channels (for frontend and admin)
+app.get('/api/channels', (req, res) => {
+  try {
+    const channelsFile = path.join(__dirname, 'data', 'channels.json');
+    let channels = [];
+
+    if (fs.existsSync(channelsFile)) {
+      const data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
+      channels = data.channels || [];
+    }
+
+    res.json({ channels });
+  } catch (error) {
+    console.error('Error fetching channels:', error);
+    res.status(500).json({ error: 'Failed to fetch channels' });
+  }
+});
+
+// Save/Update all channels (from admin panel)
+app.post('/api/channels', (req, res) => {
+  try {
+    const { channels } = req.body;
+
+    if (!Array.isArray(channels)) {
+      return res.status(400).json({ error: 'Channels must be an array' });
+    }
+
+    const channelsFile = path.join(__dirname, 'data', 'channels.json');
+    const dir = path.dirname(channelsFile);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(channelsFile, JSON.stringify({ channels }, null, 2));
+
+    res.json({
+      message: 'Channels updated successfully',
+      channels
+    });
+  } catch (error) {
+    console.error('Error saving channels:', error);
+    res.status(500).json({ error: 'Failed to save channels' });
+  }
+});
+
 // Get all streams (from channels configuration)
 app.get('/api/streams', (req, res) => {
   try {
@@ -224,6 +270,8 @@ const server = app.listen(PORT, '127.0.0.1', () => {
 📺 HLS Server: http://localhost:8000
 
 🔗 Available Endpoints:
+   GET  /api/channels         - Get all channels
+   POST /api/channels         - Save/update all channels
    GET  /api/streams          - List all streams
    POST /api/streams          - Create new stream
    GET  /api/streams/:name    - Get stream status

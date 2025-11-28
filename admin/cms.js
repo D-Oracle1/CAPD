@@ -596,8 +596,29 @@ function updateArticlesJson(articles) {
 }
 
 function updateChannelsJson(channels) {
-  const data = { channels: channels };
-  console.log('Updating channels.json', data);
+  // Save channels to backend API
+  const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:3001'  // Local development
+    : `${window.location.protocol}//${window.location.host}`; // Production
+
+  fetch(`${API_BASE}/api/channels`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ channels: channels })
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Channels saved to backend:', data);
+    })
+    .catch(error => {
+      console.error('Error saving channels to backend:', error);
+      console.log('Channels saved to localStorage only');
+    });
+
+  // Also keep localStorage backup
+  localStorage.setItem('channels', JSON.stringify(channels));
 }
 
 function updateScheduleJson(schedule) {

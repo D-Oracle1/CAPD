@@ -391,27 +391,43 @@
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
     }
 
-    // Load channels from localStorage or JSON
+    // Load channels from backend API, localStorage, or JSON
     async function loadChannels() {
       try {
         let channels = [];
 
-        // Try to load from localStorage first (from CMS)
-        const storedChannels = localStorage.getItem('channels');
-        if (storedChannels) {
-          try {
-            const parsed = JSON.parse(storedChannels);
-            channels = parsed;
-          } catch (e) {
-            console.log("Could not parse stored channels");
+        // Try to load from backend API first (production data)
+        try {
+          const res = await fetch("/api/channels");
+          if (res.ok) {
+            const data = await res.json();
+            channels = data.channels || [];
+            console.log('Loaded channels from backend API');
+          }
+        } catch (apiError) {
+          console.log('Backend API not available, trying alternatives');
+        }
+
+        // If no channels from API, try localStorage (from CMS)
+        if (channels.length === 0) {
+          const storedChannels = localStorage.getItem('channels');
+          if (storedChannels) {
+            try {
+              const parsed = JSON.parse(storedChannels);
+              channels = parsed;
+              console.log('Loaded channels from localStorage');
+            } catch (e) {
+              console.log("Could not parse stored channels");
+            }
           }
         }
 
-        // If no stored channels, load from JSON file
+        // If still no channels, load from JSON file (default)
         if (channels.length === 0) {
           const res = await fetch("data/channels.json");
           const data = await res.json();
           channels = data.channels;
+          console.log('Loaded channels from JSON file');
         }
 
         const container = document.getElementById("recommendedContainer");
