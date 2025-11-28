@@ -103,26 +103,39 @@
 <body class="bg-white text-gray-800">
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-      <img src="logo.png" alt="CAPD Logo" class="h-8 w-auto object-contain">
-      <nav class="hidden md:flex space-x-6 text-sm font-medium">
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+      <img src="logo.png" alt="CAPD Logo" class="h-8 sm:h-10 w-auto object-contain">
+      <nav class="hidden md:flex space-x-3 lg:space-x-6 text-xs sm:text-sm font-medium">
         <a href="index.html" class="text-gray-600 hover:text-gray-900">Home</a>
         <a href="news.html" class="text-gray-600 hover:text-gray-900">News</a>
-        <a href="tv.html" class="text-gray-900 font-bold">📺 Digital TV</a>
+        <a href="tv.html" class="text-gray-900 font-bold">📺 TV</a>
         <a href="videos.html" class="text-gray-600 hover:text-gray-900">Videos</a>
         <a href="projects.html" class="text-gray-600 hover:text-gray-900">Projects</a>
         <a href="about.html" class="text-gray-600 hover:text-gray-900">About</a>
       </nav>
-      <div class="flex gap-2">
-        <button class="p-2 hover:bg-gray-100 rounded-full">🔔</button>
-        <button class="p-2 hover:bg-gray-100 rounded-full">👤</button>
-      </div>
+      <!-- Mobile menu button -->
+      <button id="mobileMenuBtn" class="md:hidden p-2 hover:bg-gray-100 rounded">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
+    <!-- Mobile Navigation -->
+    <nav id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-200">
+      <div class="px-4 py-3 space-y-2">
+        <a href="index.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Home</a>
+        <a href="news.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">News</a>
+        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">📺 Digital TV</a>
+        <a href="videos.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Videos</a>
+        <a href="projects.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Projects</a>
+        <a href="about.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">About</a>
+      </div>
+    </nav>
   </header>
 
   <!-- Main Content -->
-  <div class="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-6 py-6">
+  <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
     <!-- Left Column - Video Player & Info -->
     <div class="flex-1 lg:flex-[2]">
       <!-- Video Player -->
@@ -134,73 +147,73 @@
       </div>
 
       <!-- Video Title -->
-      <h1 id="videoTitle" class="text-2xl font-bold mb-2">Select a channel to watch</h1>
+      <h1 id="videoTitle" class="text-lg sm:text-2xl font-bold mb-2">Select a channel to watch</h1>
 
       <!-- Video Stats & Actions -->
-      <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <div class="flex items-center gap-4">
-          <span id="viewCount" class="text-gray-600 text-sm">0 views</span>
-          <span id="uploadDate" class="text-gray-600 text-sm">Today</span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6 pb-4 border-b border-gray-200">
+        <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+          <span id="viewCount" class="text-gray-600">0 views</span>
+          <span id="uploadDate" class="text-gray-600">Today</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Like">
-            👍 <span id="likeCount">Like</span>
+        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
+          <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Like">
+            👍 <span id="likeCount" class="hidden sm:inline">Like</span>
           </button>
-          <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Dislike">
-            👎 <span id="dislikeCount">Dislike</span>
+          <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Dislike">
+            👎 <span id="dislikeCount" class="hidden sm:inline">Dislike</span>
           </button>
-          <button onclick="shareStream()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Share">
-            📤 <span>Share</span>
+          <button onclick="shareStream()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Share">
+            📤 <span class="hidden sm:inline">Share</span>
           </button>
-          <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-4 py-2 rounded-full hover:bg-gray-100 transition" title="Save">
-            💾 <span>Save</span>
+          <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Save">
+            💾 <span class="hidden sm:inline">Save</span>
           </button>
         </div>
       </div>
 
       <!-- Channel Info -->
-      <div class="flex items-start justify-between">
-        <div class="flex gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+        <div class="flex gap-3 sm:gap-4">
           <div class="channel-avatar" id="channelAvatar">C</div>
           <div>
-            <h3 id="channelName" class="font-bold text-base">CAPD Communications</h3>
-            <p id="subscriberCount" class="text-gray-600 text-sm">500K subscribers</p>
-            <p id="channelDesc" class="text-gray-700 text-sm mt-2">Select a channel to see description</p>
+            <h3 id="channelName" class="font-bold text-sm sm:text-base">CAPD Communications</h3>
+            <p id="subscriberCount" class="text-gray-600 text-xs sm:text-sm">500K subscribers</p>
+            <p id="channelDesc" class="text-gray-700 text-xs sm:text-sm mt-2">Select a channel to see description</p>
           </div>
         </div>
-        <button class="subscribe-btn">Subscribe</button>
+        <button class="subscribe-btn text-sm sm:text-base">Subscribe</button>
       </div>
 
       <!-- Description (Expandable) -->
-      <div class="mt-4 text-gray-700 text-sm">
+      <div class="mt-4 text-gray-700 text-xs sm:text-sm">
         <p id="fullDesc" class="line-clamp-2">Select a channel to view more information</p>
       </div>
 
       <!-- Comments Section -->
-      <div class="mt-8 border-t border-gray-200 pt-6">
-        <h3 class="text-lg font-bold mb-4">💬 Comments</h3>
+      <div class="mt-6 sm:mt-8 border-t border-gray-200 pt-4 sm:pt-6">
+        <h3 class="text-base sm:text-lg font-bold mb-4">💬 Comments</h3>
 
         <!-- Comment Input -->
-        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
           <input
             type="text"
             id="guestName"
             placeholder="Enter your name (guest)"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             maxlength="50"
           />
           <textarea
             id="commentText"
             placeholder="Share your thoughts about this stream..."
             rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             maxlength="500"
           ></textarea>
           <div class="flex items-center justify-between mt-3">
             <span class="text-xs text-gray-500"><span id="charCount">0</span>/500</span>
             <button
               onclick="postComment()"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition"
             >
               Post Comment
             </button>
@@ -208,8 +221,8 @@
         </div>
 
         <!-- Comments List -->
-        <div id="commentsList" class="space-y-4 max-h-96 overflow-y-auto">
-          <p class="text-gray-500 text-sm text-center py-8">No comments yet. Be the first to comment!</p>
+        <div id="commentsList" class="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto">
+          <p class="text-gray-500 text-xs sm:text-sm text-center py-8">No comments yet. Be the first to comment!</p>
         </div>
       </div>
     </div>
@@ -217,7 +230,7 @@
     <!-- Right Column - Recommended Videos -->
     <div class="w-full lg:w-80">
       <!-- Channels List Header -->
-      <h3 class="text-lg font-bold mb-4">Channels</h3>
+      <h3 class="text-base sm:text-lg font-bold mb-4">Channels</h3>
 
       <!-- Channels/Videos List -->
       <div id="recommendedContainer" class="space-y-3">
@@ -228,46 +241,46 @@
   </div>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-400 py-12 mt-16">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+  <footer class="bg-gray-900 text-gray-400 py-8 sm:py-12 mt-12 sm:mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
         <div>
-          <h4 class="text-white font-bold mb-4">About</h4>
-          <ul class="space-y-2 text-sm">
+          <h4 class="text-white font-bold mb-4 text-sm sm:text-base">About</h4>
+          <ul class="space-y-2 text-xs sm:text-sm">
             <li><a href="about.html" class="hover:text-white transition">About Us</a></li>
             <li><a href="#" class="hover:text-white transition">Our Team</a></li>
             <li><a href="#" class="hover:text-white transition">Our Impact</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-bold mb-4">Services</h4>
-          <ul class="space-y-2 text-sm">
+          <h4 class="text-white font-bold mb-4 text-sm sm:text-base">Services</h4>
+          <ul class="space-y-2 text-xs sm:text-sm">
             <li><a href="#" class="hover:text-white transition">Infrastructure</a></li>
             <li><a href="#" class="hover:text-white transition">Education</a></li>
             <li><a href="#" class="hover:text-white transition">Healthcare</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-bold mb-4">Media</h4>
-          <ul class="space-y-2 text-sm">
+          <h4 class="text-white font-bold mb-4 text-sm sm:text-base">Media</h4>
+          <ul class="space-y-2 text-xs sm:text-sm">
             <li><a href="news.html" class="hover:text-white transition">News</a></li>
             <li><a href="tv.html" class="hover:text-white transition">Digital TV</a></li>
             <li><a href="projects.html" class="hover:text-white transition">Gallery</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-bold mb-4">Contact</h4>
-          <p class="text-sm mb-2">📧 info@capd.ng</p>
-          <p class="text-sm mb-2">📱 +234 801 234 5678</p>
-          <p class="text-sm">🕐 24/7 Support</p>
+          <h4 class="text-white font-bold mb-4 text-sm sm:text-base">Contact</h4>
+          <p class="text-xs sm:text-sm mb-2">📧 info@capd.ng</p>
+          <p class="text-xs sm:text-sm mb-2">📱 +234 801 234 5678</p>
+          <p class="text-xs sm:text-sm">🕐 24/7 Support</p>
         </div>
       </div>
 
-      <hr class="border-gray-700 mb-8">
+      <hr class="border-gray-700 mb-6 sm:mb-8">
 
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <p class="text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
-        <img src="white.png" alt="CAPD Logo" class="h-10 w-auto object-contain mt-4 md:mt-0">
+      <div class="flex flex-col text-center sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <p class="text-xs sm:text-sm">&copy; 2025 CAPD Communications. All rights reserved.</p>
+        <img src="white.png" alt="CAPD Logo" class="h-8 sm:h-10 w-auto object-contain">
       </div>
     </div>
   </footer>
@@ -920,6 +933,26 @@
       originalSelectChannel(id, name, desc, streamUrl, viewers);
       loadComments();
     };
+
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when a link is clicked
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+          });
+        });
+      }
+    });
   </script>
 
 </body>
