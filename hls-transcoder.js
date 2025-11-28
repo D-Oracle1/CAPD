@@ -90,16 +90,27 @@ function startTranscoding(streamName) {
 
   let errorOutput = '';
   let isTranscoding = false;
+  let connectionAttempted = false;
 
   // Handle FFmpeg output
   ffmpeg.stderr.on('data', (data) => {
     const output = data.toString();
     errorOutput += output;
 
+    // Check for connection attempt
+    if (output.includes('Opening') || output.includes(streamPath)) {
+      connectionAttempted = true;
+      console.log(`[HLS] Attempting to connect to: ${streamPath}`);
+    }
+
     // Check for successful connection (look for frame/audio output, not just Opening)
     if (output.includes('frame=') || output.includes('time=')) {
       isTranscoding = true;
-      console.log(`[HLS] ✓ Actively transcoding: ${streamName}`);
+      if (!connectionAttempted) {
+        console.log(`[HLS] ✓ Connected to RTMP stream: ${streamName}`);
+      } else {
+        console.log(`[HLS] ✓ Actively transcoding: ${streamName}`);
+      }
     }
 
     // Log important FFmpeg messages
@@ -108,8 +119,8 @@ function startTranscoding(streamName) {
     }
 
     // Check for connection errors
-    if (output.includes('Connection refused') || output.includes('Connection timed out') || output.includes('End of stream')) {
-      console.log(`[HLS] Stream info: ${output.substring(0, 150)}`);
+    if (output.includes('Connection refused') || output.includes('Connection timed out') || output.includes('End of stream') || output.includes('No such file')) {
+      console.log(`[HLS] ⚠️  Stream info: ${output.substring(0, 200)}`);
     }
   });
 
@@ -125,10 +136,16 @@ function startTranscoding(streamName) {
     console.log(`[HLS] FFmpeg ${status} for "${streamName}" (exit code: ${code})`);
 
     if (code !== 0 || !isTranscoding) {
-      // Log last 400 chars of error output for debugging
-      const lastError = errorOutput.slice(-400);
+      // Log comprehensive error details
+      console.log(`[HLS] ⚠️  Stream: ${streamName}`);
+      console.log(`[HLS] ⚠️  Connection attempted: ${connectionAttempted}`);
+      console.log(`[HLS] ⚠️  Is transcoding: ${isTranscoding}`);
+      console.log(`[HLS] ⚠️  Exit code: ${code}`);
+
+      // Log last 500 chars of error output for debugging
+      const lastError = errorOutput.slice(-500);
       if (lastError.trim()) {
-        console.log(`[HLS] FFmpeg output:\n${lastError}`);
+        console.log(`[HLS] FFmpeg stderr output:\n${lastError}`);
       }
     }
 

@@ -1,49 +1,51 @@
 /**
  * CAPD API Server
  * Handles stream management, status checks, and live broadcasting
+ * Database: Supabase PostgreSQL
  *
  * Usage: npm run api-server
  */
 
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
+
+// Supabase Configuration
+const SUPABASE_URL = 'https://yuzqfrybmpxeqqxtewyl.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1enFmcnlibXB4ZXFxeHRld3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzMjE1NzYsImV4cCI6MjA3OTg5NzU3Nn0.m_vwoLx449WZoRWzZsYIUf0MD8G_EMpwUDIpIGZ-Z-8';
+
+// Initialize Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Streams registry file
-const streamsFile = path.join(__dirname, '.streams.json');
-const streamsDbFile = path.join(__dirname, 'data', 'streams.json');
-
-// Initialize streams database
-function initializeStreamsDb() {
-  if (!fs.existsSync(streamsDbFile)) {
-    const dir = path.dirname(streamsDbFile);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(streamsDbFile, JSON.stringify({ streams: [] }, null, 2));
+// Initialize database tables if needed
+async function initializeDatabase() {
+  try {
+    console.log('Initializing Supabase database tables...');
+    // Tables will be created via Supabase dashboard or migrations
+    // This is just a placeholder for future initialization logic
+  } catch (error) {
+    console.error('Error initializing database:', error);
   }
 }
 
 // Get all channels (for frontend and admin)
-app.get('/api/channels', (req, res) => {
+app.get('/api/channels', async (req, res) => {
   try {
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
-    let channels = [];
+    const { data, error } = await supabase
+      .from('channels')
+      .select('*')
+      .order('number', { ascending: true });
 
-    if (fs.existsSync(channelsFile)) {
-      const data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-      channels = data.channels || [];
-    }
+    if (error) throw error;
 
-    res.json({ channels });
+    res.json({ channels: data || [] });
   } catch (error) {
     console.error('Error fetching channels:', error);
     res.status(500).json({ error: 'Failed to fetch channels' });
@@ -51,7 +53,7 @@ app.get('/api/channels', (req, res) => {
 });
 
 // Save/Update all channels (from admin panel)
-app.post('/api/channels', (req, res) => {
+app.post('/api/channels', async (req, res) => {
   try {
     const { channels } = req.body;
 
@@ -59,18 +61,25 @@ app.post('/api/channels', (req, res) => {
       return res.status(400).json({ error: 'Channels must be an array' });
     }
 
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
-    const dir = path.dirname(channelsFile);
+    // Delete all existing channels and insert new ones
+    const { error: deleteError } = await supabase
+      .from('channels')
+      .delete()
+      .neq('id', 'null');
 
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    if (deleteError) throw deleteError;
 
-    fs.writeFileSync(channelsFile, JSON.stringify({ channels }, null, 2));
+    // Insert all channels
+    const { data, error: insertError } = await supabase
+      .from('channels')
+      .insert(channels)
+      .select();
+
+    if (insertError) throw insertError;
 
     res.json({
       message: 'Channels updated successfully',
-      channels
+      channels: data
     });
   } catch (error) {
     console.error('Error saving channels:', error);
@@ -79,19 +88,17 @@ app.post('/api/channels', (req, res) => {
 });
 
 // Get all streams (from channels configuration)
-app.get('/api/streams', (req, res) => {
+app.get('/api/streams', async (req, res) => {
   try {
-    // Read channels from localStorage data
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
-    let channels = [];
+    const { data, error } = await supabase
+      .from('channels')
+      .select('*')
+      .order('number', { ascending: true });
 
-    if (fs.existsSync(channelsFile)) {
-      const data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-      channels = data.channels || [];
-    }
+    if (error) throw error;
 
     // Map channels to streams format
-    const streams = channels.map(ch => ({
+    const streams = (data || []).map(ch => ({
       id: ch.id,
       name: ch.name,
       number: ch.number,
@@ -122,7 +129,7 @@ function detectStreamType(url) {
 }
 
 // Create new stream (for RTMP or custom URL)
-app.post('/api/streams', (req, res) => {
+app.post('/api/streams', async (req, res) => {
   try {
     const { name, number, description, streamUrl, status } = req.body;
 
@@ -130,29 +137,31 @@ app.post('/api/streams', (req, res) => {
       return res.status(400).json({ error: 'Name and stream URL are required' });
     }
 
-    // Read channels file
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
-    const dir = path.dirname(channelsFile);
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    let data = { channels: [] };
-    if (fs.existsSync(channelsFile)) {
-      data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-    }
-
     // Check if channel already exists
-    if (data.channels.some(ch => ch.name === name)) {
+    const { data: existing, error: checkError } = await supabase
+      .from('channels')
+      .select('id')
+      .eq('name', name)
+      .single();
+
+    if (!checkError && existing) {
       return res.status(400).json({ error: 'Channel already exists' });
     }
+
+    // Get max channel number
+    const { data: channels } = await supabase
+      .from('channels')
+      .select('number')
+      .order('number', { ascending: false })
+      .limit(1);
+
+    const maxNumber = channels && channels.length > 0 ? channels[0].number : 0;
 
     // Add new channel
     const newChannel = {
       id: 'ch-' + Date.now(),
       name,
-      number: number || (data.channels.length + 1),
+      number: number || (maxNumber + 1),
       description: description || '',
       streamUrl,
       status: status || 'offline',
@@ -161,12 +170,16 @@ app.post('/api/streams', (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    data.channels.push(newChannel);
-    fs.writeFileSync(channelsFile, JSON.stringify(data, null, 2));
+    const { data, error } = await supabase
+      .from('channels')
+      .insert([newChannel])
+      .select();
+
+    if (error) throw error;
 
     res.status(201).json({
       message: 'Stream created successfully',
-      stream: newChannel
+      stream: data[0]
     });
   } catch (error) {
     console.error('Error creating stream:', error);
@@ -175,43 +188,41 @@ app.post('/api/streams', (req, res) => {
 });
 
 // Get stream status by name or ID
-app.get('/api/streams/:id', (req, res) => {
+app.get('/api/streams/:id', async (req, res) => {
   try {
     const streamId = req.params.id;
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
 
-    if (!fs.existsSync(channelsFile)) {
+    const { data, error } = await supabase
+      .from('channels')
+      .select('*')
+      .or(`id.eq.${streamId},name.eq.${streamId}`)
+      .single();
+
+    if (error || !data) {
       return res.status(404).json({ error: 'Stream not found' });
     }
 
-    const data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-    const channel = data.channels.find(ch => ch.id === streamId || ch.name === streamId);
-
-    if (!channel) {
-      return res.status(404).json({ error: 'Stream not found' });
-    }
-
-    const streamType = detectStreamType(channel.streamUrl);
+    const streamType = detectStreamType(data.streamUrl);
     let hlsUrl = null;
 
     // Generate HLS URL for RTMP streams
     if (streamType === 'rtmp') {
-      const streamName = channel.streamUrl.split('/').pop();
+      const streamName = data.streamUrl.split('/').pop();
       hlsUrl = `http://localhost:8000/live/${streamName}/index.m3u8`;
     } else if (streamType === 'hls') {
-      hlsUrl = channel.streamUrl;
+      hlsUrl = data.streamUrl;
     }
 
     res.json({
-      id: channel.id,
-      name: channel.name,
-      status: channel.status,
-      viewers: channel.viewers,
-      streamUrl: channel.streamUrl,
+      id: data.id,
+      name: data.name,
+      status: data.status,
+      viewers: data.viewers,
+      streamUrl: data.streamUrl,
       type: streamType,
       hlsUrl,
-      rtmpUrl: streamType === 'rtmp' ? channel.streamUrl : null,
-      description: channel.description
+      rtmpUrl: streamType === 'rtmp' ? data.streamUrl : null,
+      description: data.description
     });
   } catch (error) {
     console.error('Error fetching stream status:', error);
@@ -220,25 +231,16 @@ app.get('/api/streams/:id', (req, res) => {
 });
 
 // Delete stream
-app.delete('/api/streams/:id', (req, res) => {
+app.delete('/api/streams/:id', async (req, res) => {
   try {
     const streamId = req.params.id;
-    const channelsFile = path.join(__dirname, 'data', 'channels.json');
 
-    if (!fs.existsSync(channelsFile)) {
-      return res.status(404).json({ error: 'Stream not found' });
-    }
+    const { error } = await supabase
+      .from('channels')
+      .delete()
+      .or(`id.eq.${streamId},name.eq.${streamId}`);
 
-    let data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-    const initialLength = data.channels.length;
-
-    data.channels = data.channels.filter(ch => ch.id !== streamId && ch.name !== streamId);
-
-    if (data.channels.length === initialLength) {
-      return res.status(404).json({ error: 'Stream not found' });
-    }
-
-    fs.writeFileSync(channelsFile, JSON.stringify(data, null, 2));
+    if (error) throw error;
 
     res.json({ message: 'Stream deleted successfully' });
   } catch (error) {
@@ -259,20 +261,23 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server with error handling
-const server = app.listen(PORT, '127.0.0.1', () => {
-  console.log(`
+const server = app.listen(PORT, '127.0.0.1', async () => {
+  try {
+    await initializeDatabase();
+    console.log(`
 ╔════════════════════════════════════════════════════════════════╗
-║           🎬 CAPD API Server Started║
+║           🎬 CAPD API Server Started (Database Mode)           ║
 ╚════════════════════════════════════════════════════════════════╝
 
 📡 API Server: http://localhost:${PORT}
 🎙️ RTMP Server: rtmp://localhost:1935
 📺 HLS Server: http://localhost:8000
+💾 Database: Supabase PostgreSQL
 
 🔗 Available Endpoints:
-   GET  /api/channels         - Get all channels
+   GET  /api/channels         - Get all channels from database
    POST /api/channels         - Save/update all channels
-   GET  /api/streams          - List all streams
+   GET  /api/streams          - List all streams from database
    POST /api/streams          - Create new stream
    GET  /api/streams/:name    - Get stream status
    DEL  /api/streams/:name    - Delete stream
@@ -280,6 +285,10 @@ const server = app.listen(PORT, '127.0.0.1', () => {
 
 ⚠️ To stop server: Press Ctrl+C
 `);
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 });
 
 server.on('error', (err) => {

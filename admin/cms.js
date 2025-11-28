@@ -202,92 +202,152 @@ function hideChannelForm() {
   document.getElementById('editChannelIndex').value = '';
 }
 
-function loadChannels() {
-  const data = JSON.parse(localStorage.getItem('channels')) || [];
-  const container = document.getElementById('channelsContainer');
-  const select = document.getElementById('progChannel');
+async function loadChannels() {
+  try {
+    const apiUrl = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/channels'
+      : '/api/channels';
 
-  // Populate channel selector for schedule
-  select.innerHTML = data.map(ch => `<option value="${ch.id}">${ch.name}</option>`).join('');
+    const response = await fetch(apiUrl);
+    const result = await response.json();
+    const data = result.channels || [];
 
-  if (data.length === 0) {
-    container.innerHTML = '<p class="text-gray-500 col-span-full">No channels yet</p>';
-    return;
-  }
+    // Store in localStorage for backup
+    localStorage.setItem('channels', JSON.stringify(data));
 
-  container.innerHTML = data.map((channel, idx) => `
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h4 class="text-lg font-bold">${channel.number}. ${channel.name}</h4>
-          <p class="text-gray-600 text-sm">${channel.description}</p>
+    const container = document.getElementById('channelsContainer');
+    const select = document.getElementById('progChannel');
+
+    // Populate channel selector for schedule
+    select.innerHTML = data.map(ch => `<option value="${ch.id}">${ch.name}</option>`).join('');
+
+    if (data.length === 0) {
+      container.innerHTML = '<p class="text-gray-500 col-span-full">No channels yet</p>';
+      return;
+    }
+
+    container.innerHTML = data.map((channel) => `
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h4 class="text-lg font-bold">${channel.number}. ${channel.name}</h4>
+            <p class="text-gray-600 text-sm">${channel.description}</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1 rounded ${channel.status === 'live' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
+            ${channel.status.toUpperCase()}
+          </span>
         </div>
-        <span class="text-xs font-bold px-3 py-1 rounded ${channel.status === 'live' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
-          ${channel.status.toUpperCase()}
-        </span>
+        <div class="text-sm text-gray-600 mb-4">
+          <p><strong>Stream URL:</strong> ${channel.streamUrl.substring(0, 40)}...</p>
+          <p><strong>Viewers:</strong> ${channel.viewers}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editChannelById('${channel.id}')" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm">Edit</button>
+          <button onclick="deleteChannelById('${channel.id}')" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded text-sm">Delete</button>
+        </div>
       </div>
-      <div class="text-sm text-gray-600 mb-4">
-        <p><strong>Stream URL:</strong> ${channel.streamUrl.substring(0, 40)}...</p>
-        <p><strong>Viewers:</strong> ${channel.viewers}</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="editChannel(${idx})" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm">Edit</button>
-        <button onclick="deleteChannel(${idx})" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded text-sm">Delete</button>
-      </div>
-    </div>
-  `).join('');
+    `).join('');
+
+    updateDashboardCounts();
+  } catch (error) {
+    console.error('Error loading channels:', error);
+    alert('Error loading channels from database');
+  }
 }
 
-function saveChannel(e) {
+async function saveChannel(e) {
   e.preventDefault();
 
-  const editIndex = document.getElementById('editChannelIndex').value;
-  const streamType = document.getElementById('streamType').value;
+  try {
+    const streamType = document.getElementById('streamType').value;
+    const editChannelIndex = document.getElementById('editChannelIndex').value;
 
-  const channel = {
-    id: editIndex !== '' ? JSON.parse(localStorage.getItem('channels'))[editIndex].id : 'ch-' + Date.now(),
-    name: document.getElementById('channelName').value,
-    number: parseInt(document.getElementById('channelNum').value),
-    description: document.getElementById('channelDesc').value,
-    streamUrl: document.getElementById('streamUrl').value,
-    type: streamType,
-    status: document.getElementById('channelStatus').value,
-    viewers: parseInt(document.getElementById('viewers').value),
-    poster: 'assets/images/channel-default.jpg'
-  };
+    const channel = {
+      id: editChannelIndex !== '' ? document.getElementById('editChannelIndex').dataset.channelId : 'ch-' + Date.now(),
+      name: document.getElementById('channelName').value,
+      number: parseInt(document.getElementById('channelNum').value),
+      description: document.getElementById('channelDesc').value,
+      streamUrl: document.getElementById('streamUrl').value,
+      type: streamType,
+      status: document.getElementById('channelStatus').value,
+      viewers: parseInt(document.getElementById('viewers').value) || 0,
+      poster: 'assets/images/channel-default.jpg'
+    };
 
-  let channels = JSON.parse(localStorage.getItem('channels')) || [];
-
-  if (editIndex !== '') {
-    // Update existing channel
-    channels[parseInt(editIndex)] = channel;
-  } else {
-    // Add new channel
-    channels.push(channel);
-  }
-
-  localStorage.setItem('channels', JSON.stringify(channels));
-
-  updateChannelsJson(channels);
-
-  hideChannelForm();
-  loadChannels();
-  alert('Channel saved successfully!');
-}
-
-function deleteChannel(idx) {
-  if (confirm('Delete this channel?')) {
+    // Get all channels to update
     let channels = JSON.parse(localStorage.getItem('channels')) || [];
-    channels.splice(idx, 1);
-    localStorage.setItem('channels', JSON.stringify(channels));
-    updateChannelsJson(channels);
-    loadChannels();
+
+    if (editChannelIndex !== '') {
+      // Update existing channel
+      channels = channels.map(ch => ch.id === channel.id ? channel : ch);
+    } else {
+      // Add new channel
+      channels.push(channel);
+    }
+
+    // Save to API (which saves to database)
+    const apiUrl = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/channels'
+      : '/api/channels';
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channels })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save channel to database');
+    }
+
+    hideChannelForm();
+    await loadChannels();
+    alert('Channel saved successfully!');
+  } catch (error) {
+    console.error('Error saving channel:', error);
+    alert('Error saving channel: ' + error.message);
   }
 }
 
-function editChannel(idx) {
-  let channels = JSON.parse(localStorage.getItem('channels')) || [];
-  const channel = channels[idx];
+async function deleteChannelById(channelId) {
+  if (!confirm('Delete this channel?')) return;
+
+  try {
+    // Get all channels and remove the one we're deleting
+    let channels = JSON.parse(localStorage.getItem('channels')) || [];
+    channels = channels.filter(ch => ch.id !== channelId);
+
+    // Save updated channels to API
+    const apiUrl = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/channels'
+      : '/api/channels';
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channels })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete channel from database');
+    }
+
+    await loadChannels();
+    alert('Channel deleted successfully!');
+  } catch (error) {
+    console.error('Error deleting channel:', error);
+    alert('Error deleting channel: ' + error.message);
+  }
+}
+
+async function editChannelById(channelId) {
+  const channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channel = channels.find(ch => ch.id === channelId);
+
+  if (!channel) {
+    alert('Channel not found');
+    return;
+  }
 
   document.getElementById('channelName').value = channel.name;
   document.getElementById('channelNum').value = channel.number;
@@ -296,7 +356,8 @@ function editChannel(idx) {
   document.getElementById('streamType').value = channel.type || 'rtmp';
   document.getElementById('channelStatus').value = channel.status;
   document.getElementById('viewers').value = channel.viewers;
-  document.getElementById('editChannelIndex').value = idx;
+  document.getElementById('editChannelIndex').value = channelId;
+  document.getElementById('editChannelIndex').dataset.channelId = channelId;
 
   updateStreamUrlPlaceholder();
   showChannelForm();

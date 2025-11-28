@@ -48,15 +48,11 @@ const config = {
     allow_origin: '*'
   },
   trans: {
+    // Disabled NodeMediaServer built-in transcoding in favor of custom hls-transcoder.js
+    // which has better error handling, logging, and coordination with RTMP events
+    // HLS transcoding is handled via API calls to hls-transcoder on port 3002
     ffmpeg: process.env.FFMPEG_PATH || ffmpegPath,
-    tasks: [
-      {
-        app: 'live',
-        mp4: false,
-        hls: true,
-        hlsFlags: '[hls_time=2:hls_list_size=6:hls_flags=delete_segments]'
-      }
-    ]
+    tasks: []  // Empty tasks - we use custom hls-transcoder.js instead
   },
   logger: {
     ffmpeg: 'debug',

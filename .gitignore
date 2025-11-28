@@ -18,3 +18,4 @@ SYSTEM_COMPLETE.txt
 *.swo
 *~
 .DS_Store
+.vercel

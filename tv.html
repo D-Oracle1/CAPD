@@ -391,46 +391,53 @@
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
     }
 
-    // Load channels from backend API, localStorage, or JSON
+    // Load channels from backend API (database)
     async function loadChannels() {
       try {
         let channels = [];
 
-        // Try to load from backend API first (production data)
+        // Priority 1: Load from API (database via Supabase)
         try {
           const apiUrl = window.location.hostname === 'localhost'
             ? 'http://localhost:3001/api/channels'
             : '/api/channels';
+
+          console.log('Loading channels from API:', apiUrl);
           const res = await fetch(apiUrl);
+
           if (res.ok) {
             const data = await res.json();
             channels = data.channels || [];
-            console.log('Loaded channels from backend API');
+            console.log('Loaded channels from database API:', channels.length, 'channels');
+
+            // Cache in localStorage for offline access
+            localStorage.setItem('channels', JSON.stringify(channels));
           }
         } catch (apiError) {
-          console.log('Backend API not available, trying alternatives', apiError);
-        }
+          console.log('API not available, trying localStorage fallback', apiError);
 
-        // If no channels from API, try localStorage (from CMS)
-        if (channels.length === 0) {
+          // Fallback to localStorage
           const storedChannels = localStorage.getItem('channels');
           if (storedChannels) {
             try {
-              const parsed = JSON.parse(storedChannels);
-              channels = parsed;
-              console.log('Loaded channels from localStorage');
+              channels = JSON.parse(storedChannels);
+              console.log('Loaded channels from localStorage (cached)');
             } catch (e) {
               console.log("Could not parse stored channels");
             }
           }
         }
 
-        // If still no channels, load from JSON file (default)
+        // Final fallback: Load from JSON file if all else fails
         if (channels.length === 0) {
-          const res = await fetch("data/channels.json");
-          const data = await res.json();
-          channels = data.channels;
-          console.log('Loaded channels from JSON file');
+          try {
+            const res = await fetch("data/channels.json");
+            const data = await res.json();
+            channels = data.channels;
+            console.log('Loaded channels from JSON file (fallback)');
+          } catch (error) {
+            console.error('Could not load channels from any source:', error);
+          }
         }
 
         const container = document.getElementById("recommendedContainer");
