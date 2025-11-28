@@ -242,12 +242,15 @@ function saveChannel(e) {
   e.preventDefault();
 
   const editIndex = document.getElementById('editChannelIndex').value;
+  const streamType = document.getElementById('streamType').value;
+
   const channel = {
     id: editIndex !== '' ? JSON.parse(localStorage.getItem('channels'))[editIndex].id : 'ch-' + Date.now(),
     name: document.getElementById('channelName').value,
     number: parseInt(document.getElementById('channelNum').value),
     description: document.getElementById('channelDesc').value,
     streamUrl: document.getElementById('streamUrl').value,
+    type: streamType,
     status: document.getElementById('channelStatus').value,
     viewers: parseInt(document.getElementById('viewers').value),
     poster: 'assets/images/channel-default.jpg'
@@ -290,10 +293,12 @@ function editChannel(idx) {
   document.getElementById('channelNum').value = channel.number;
   document.getElementById('channelDesc').value = channel.description;
   document.getElementById('streamUrl').value = channel.streamUrl;
+  document.getElementById('streamType').value = channel.type || 'rtmp';
   document.getElementById('channelStatus').value = channel.status;
   document.getElementById('viewers').value = channel.viewers;
   document.getElementById('editChannelIndex').value = idx;
 
+  updateStreamUrlPlaceholder();
   showChannelForm();
 }
 
