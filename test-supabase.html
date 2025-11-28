@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Supabase Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-result {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .loading {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 3px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Supabase Integration Test</h1>
+
+  <div id="test-get" class="test-result loading">
+    <strong>Test 1: GET /api/channels</strong>
+    <p>Loading...</p>
+  </div>
+
+  <div id="test-post" class="test-result loading">
+    <strong>Test 2: POST /api/channels</strong>
+    <p>Waiting for Test 1 to complete...</p>
+  </div>
+
+  <script>
+    // Test 1: Fetch channels
+    async function testGetChannels() {
+      try {
+        const response = await fetch('/api/channels');
+        const data = await response.json();
+
+        const testDiv = document.getElementById('test-get');
+
+        if (response.ok && data.channels && Array.isArray(data.channels)) {
+          testDiv.className = 'test-result success';
+          testDiv.innerHTML = `
+            <strong>✅ Test 1: GET /api/channels - SUCCESS</strong>
+            <p>Retrieved ${data.channels.length} channels from Supabase</p>
+            <pre>${JSON.stringify(data.channels, null, 2)}</pre>
+          `;
+          return true;
+        } else {
+          testDiv.className = 'test-result error';
+          testDiv.innerHTML = `
+            <strong>❌ Test 1: GET /api/channels - FAILED</strong>
+            <p>Status: ${response.status}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+          return false;
+        }
+      } catch (error) {
+        document.getElementById('test-get').className = 'test-result error';
+        document.getElementById('test-get').innerHTML = `
+          <strong>❌ Test 1: GET /api/channels - ERROR</strong>
+          <p>${error.message}</p>
+          <pre>${error.stack}</pre>
+        `;
+        return false;
+      }
+    }
+
+    // Test 2: Save channels
+    async function testPostChannels() {
+      try {
+        const testChannels = [
+          {
+            id: "test-channel",
+            name: "Test Channel",
+            number: 99,
+            description: "Test channel for verification",
+            streamUrl: "https://www.youtube.com/live/test123",
+            type: "youtube",
+            status: "online",
+            viewers: 100
+          }
+        ];
+
+        const response = await fetch('/api/channels', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ channels: testChannels })
+        });
+
+        const data = await response.json();
+        const testDiv = document.getElementById('test-post');
+
+        if (response.ok && data.message) {
+          testDiv.className = 'test-result success';
+          testDiv.innerHTML = `
+            <strong>✅ Test 2: POST /api/channels - SUCCESS</strong>
+            <p>${data.message}</p>
+            <p>Saved ${data.channels.length} channels to Supabase</p>
+          `;
+        } else {
+          testDiv.className = 'test-result error';
+          testDiv.innerHTML = `
+            <strong>❌ Test 2: POST /api/channels - FAILED</strong>
+            <p>Status: ${response.status}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        document.getElementById('test-post').className = 'test-result error';
+        document.getElementById('test-post').innerHTML = `
+          <strong>❌ Test 2: POST /api/channels - ERROR</strong>
+          <p>${error.message}</p>
+          <pre>${error.stack}</pre>
+        `;
+      }
+    }
+
+    // Run tests
+    document.addEventListener('DOMContentLoaded', async () => {
+      const test1Success = await testGetChannels();
+      if (test1Success) {
+        await testPostChannels();
+      }
+    });
+  </script>
+</body>
+</html>
