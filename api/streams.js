@@ -31,6 +31,24 @@ function detectStreamType(url) {
   return 'unknown';
 }
 
+// Convert snake_case to camelCase
+function convertToCamelCase(channel) {
+  return {
+    id: channel.id,
+    name: channel.name,
+    number: channel.number,
+    description: channel.description,
+    streamUrl: channel.stream_url,
+    type: channel.type,
+    status: channel.status,
+    viewers: channel.viewers,
+    poster: channel.poster,
+    rtmpUrl: channel.rtmp_url,
+    createdAt: channel.created_at,
+    updatedAt: channel.updated_at
+  };
+}
+
 async function getStreams(res) {
   try {
     const { data, error } = await supabase
@@ -40,17 +58,7 @@ async function getStreams(res) {
 
     if (error) throw error;
 
-    const streams = (data || []).map(ch => ({
-      id: ch.id,
-      name: ch.name,
-      number: ch.number,
-      description: ch.description,
-      streamUrl: ch.stream_url || ch.streamUrl,
-      status: ch.status || 'offline',
-      viewers: ch.viewers || 0,
-      type: detectStreamType(ch.stream_url || ch.streamUrl)
-    }));
-
+    const streams = (data || []).map(convertToCamelCase);
     return res.status(200).json({ streams });
   } catch (error) {
     console.error('Error:', error);
@@ -70,15 +78,7 @@ async function getStreamById(res, id) {
       return res.status(404).json({ error: 'Stream not found' });
     }
 
-    return res.status(200).json({
-      id: data.id,
-      name: data.name,
-      status: data.status,
-      viewers: data.viewers,
-      streamUrl: data.stream_url || data.streamUrl,
-      type: detectStreamType(data.stream_url || data.streamUrl),
-      description: data.description
-    });
+    return res.status(200).json(convertToCamelCase(data));
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Failed to fetch stream' });
@@ -112,7 +112,7 @@ async function createStream(req, res) {
       .select();
 
     if (error) throw error;
-    return res.status(201).json({ message: 'Created', stream: data[0] });
+    return res.status(201).json({ message: 'Created', stream: convertToCamelCase(data[0]) });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Failed to create stream' });

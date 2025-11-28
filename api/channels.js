@@ -29,6 +29,24 @@ const corsHeaders = {
   'Content-Type': 'application/json'
 };
 
+// Convert snake_case to camelCase
+function convertToCarmelCase(channel) {
+  return {
+    id: channel.id,
+    name: channel.name,
+    number: channel.number,
+    description: channel.description,
+    streamUrl: channel.stream_url,
+    type: channel.type,
+    status: channel.status,
+    viewers: channel.viewers,
+    poster: channel.poster,
+    rtmpUrl: channel.rtmp_url,
+    createdAt: channel.created_at,
+    updatedAt: channel.updated_at
+  };
+}
+
 async function getChannels(res) {
   try {
     const { data, error } = await supabase
@@ -37,7 +55,10 @@ async function getChannels(res) {
       .order('number', { ascending: true });
 
     if (error) throw error;
-    return res.status(200).json({ channels: data || [] });
+
+    // Convert snake_case to camelCase
+    const channels = (data || []).map(convertToCarmelCase);
+    return res.status(200).json({ channels });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Failed to fetch channels' });
