@@ -257,25 +257,48 @@
             </div>
           </div>
 
-          <!-- Right: Interaction Buttons -->
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="Like">
-              <span>👍</span>
-              <span id="likeCount" class="text-xs font-semibold">0</span>
+          <!-- Right: Interaction Buttons with SVG Icons -->
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <!-- Like Button -->
+            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Like">
+              <svg id="likeIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M14 10h4.764a2 2 0 011.789 2.894l-3.646 7.23a2 2 0 01-1.789 1.106H7a2 2 0 01-2-2v-8a2 2 0 012-2h.5a2 2 0 012-2h5a2 2 0 012 2v.5a2 2 0 01-2 2z" stroke-linejoin="round" stroke-linecap="round"/>
+                <path d="M4 10v8a2 2 0 002 2v0" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+              <span id="likeCount" class="text-xs font-semibold text-slate-700">0</span>
             </button>
-            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="Dislike">
-              👎
+
+            <!-- Dislike Button -->
+            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Dislike">
+              <svg id="dislikeIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.646-7.23a2 2 0 011.789-1.106h8a2 2 0 012 2v8a2 2 0 01-2 2h-.5a2 2 0 01-2 2h-5a2 2 0 01-2-2v-.5a2 2 0 012-2z" stroke-linejoin="round" stroke-linecap="round"/>
+                <path d="M20 14v-8a2 2 0 00-2-2v0" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
             </button>
-            <button onclick="shareStream()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="Share">
-              <span>📤</span>
-              <span class="text-xs font-semibold hidden sm:inline">Share</span>
+
+            <!-- Share Button -->
+            <button onclick="shareStream()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Share">
+              <svg class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3-3m0 0l3 3m-3-3v6" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+              <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Share</span>
             </button>
-            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="Save">
-              <span>💾</span>
-              <span class="text-xs font-semibold hidden sm:inline">Save</span>
+
+            <!-- Save Button -->
+            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Save">
+              <svg id="saveIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v14l-7-3.5L5 19V5z" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+              <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Save</span>
             </button>
-            <button onclick="toggleMoreMenu()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="More options">
-              ⋮
+
+            <!-- More Button -->
+            <button onclick="toggleMoreMenu()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="More options">
+              <svg class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1"/>
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="12" cy="19" r="1"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -427,6 +450,7 @@
     let userLikes = JSON.parse(localStorage.getItem('channelLikes') || '{}');
     let userDislikes = JSON.parse(localStorage.getItem('channelDislikes') || '{}');
     let userSaves = JSON.parse(localStorage.getItem('channelSaves') || '{}');
+    let likeCounts = JSON.parse(localStorage.getItem('likeCounts') || '{}');
     let viewCountRefreshInterval;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -463,20 +487,41 @@
       if (!currentStreamInfo.id) return;
 
       const likeBtn = document.getElementById('likeBtn');
+      const likeIcon = document.getElementById('likeIcon');
       const dislikeBtn = document.getElementById('dislikeBtn');
+      const dislikeIcon = document.getElementById('dislikeIcon');
+      const likeCountEl = document.getElementById('likeCount');
 
       if (userLikes[currentStreamInfo.id]) {
+        // Unlike
         delete userLikes[currentStreamInfo.id];
-        likeBtn.classList.remove('bg-gray-200');
+        likeCounts[currentStreamInfo.id] = (likeCounts[currentStreamInfo.id] || 0) - 1;
+
+        // Restore stroke style
+        likeIcon.setAttribute('fill', 'none');
+        likeIcon.classList.add('stroke-slate-700');
       } else {
+        // Like
         userLikes[currentStreamInfo.id] = true;
         delete userDislikes[currentStreamInfo.id];
-        likeBtn.classList.add('bg-gray-200');
-        dislikeBtn.classList.remove('bg-gray-200');
+        likeCounts[currentStreamInfo.id] = (likeCounts[currentStreamInfo.id] || 0) + 1;
+
+        // Fill icon with blue
+        likeIcon.setAttribute('fill', '#3b82f6');
+        likeIcon.classList.remove('stroke-slate-700');
+        likeIcon.classList.add('stroke-blue-600');
+
+        // Remove dislike
+        delete userDislikes[currentStreamInfo.id];
+        dislikeIcon.setAttribute('fill', 'none');
+        dislikeIcon.classList.add('stroke-slate-700');
+        dislikeIcon.classList.remove('stroke-red-600');
       }
 
+      likeCountEl.textContent = Math.max(0, likeCounts[currentStreamInfo.id] || 0);
       localStorage.setItem('channelLikes', JSON.stringify(userLikes));
       localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
+      localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
     }
 
     // Toggle dislike button
@@ -484,34 +529,59 @@
       if (!currentStreamInfo.id) return;
 
       const likeBtn = document.getElementById('likeBtn');
+      const likeIcon = document.getElementById('likeIcon');
       const dislikeBtn = document.getElementById('dislikeBtn');
+      const dislikeIcon = document.getElementById('dislikeIcon');
 
       if (userDislikes[currentStreamInfo.id]) {
+        // Remove dislike
         delete userDislikes[currentStreamInfo.id];
-        dislikeBtn.classList.remove('bg-gray-200');
+        dislikeIcon.setAttribute('fill', 'none');
+        dislikeIcon.classList.add('stroke-slate-700');
+        dislikeIcon.classList.remove('stroke-red-600');
       } else {
+        // Add dislike
         userDislikes[currentStreamInfo.id] = true;
         delete userLikes[currentStreamInfo.id];
-        dislikeBtn.classList.add('bg-gray-200');
-        likeBtn.classList.remove('bg-gray-200');
+
+        // Fill dislike icon with red
+        dislikeIcon.setAttribute('fill', '#ef4444');
+        dislikeIcon.classList.remove('stroke-slate-700');
+        dislikeIcon.classList.add('stroke-red-600');
+
+        // Remove like
+        likeIcon.setAttribute('fill', 'none');
+        likeIcon.classList.add('stroke-slate-700');
+        likeIcon.classList.remove('stroke-blue-600');
+
+        const likeCountEl = document.getElementById('likeCount');
+        likeCounts[currentStreamInfo.id] = Math.max(0, (likeCounts[currentStreamInfo.id] || 0) - 1);
+        likeCountEl.textContent = likeCounts[currentStreamInfo.id] || 0;
       }
 
       localStorage.setItem('channelLikes', JSON.stringify(userLikes));
       localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
+      localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
     }
 
     // Toggle save button
     function toggleSave() {
       if (!currentStreamInfo.id) return;
 
-      const saveBtn = document.getElementById('saveBtn');
+      const saveIcon = document.getElementById('saveIcon');
 
       if (userSaves[currentStreamInfo.id]) {
+        // Unsave
         delete userSaves[currentStreamInfo.id];
-        saveBtn.classList.remove('bg-blue-100');
+        saveIcon.setAttribute('fill', 'none');
+        saveIcon.classList.add('stroke-slate-700');
+        saveIcon.classList.remove('stroke-yellow-600');
       } else {
+        // Save
         userSaves[currentStreamInfo.id] = true;
-        saveBtn.classList.add('bg-blue-100');
+        saveIcon.setAttribute('fill', '#eab308');
+        saveIcon.classList.remove('stroke-slate-700');
+        saveIcon.classList.add('stroke-yellow-600');
       }
 
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
@@ -662,24 +732,43 @@
       document.getElementById("viewCount").textContent = (viewers || 0).toLocaleString();
       document.getElementById("streamTime").textContent = status === 'live' ? 'Streaming now' : 'Streamed just now';
 
-      // Reset button states
-      const likeBtn = document.getElementById('likeBtn');
-      const dislikeBtn = document.getElementById('dislikeBtn');
-      const saveBtn = document.getElementById('saveBtn');
+      // Update like counter
+      const likeCountEl = document.getElementById('likeCount');
+      likeCountEl.textContent = likeCounts[id] || 0;
 
-      likeBtn.classList.remove('bg-blue-100');
-      dislikeBtn.classList.remove('bg-blue-100');
-      saveBtn.classList.remove('bg-blue-100');
+      // Get icon elements
+      const likeIcon = document.getElementById('likeIcon');
+      const dislikeIcon = document.getElementById('dislikeIcon');
+      const saveIcon = document.getElementById('saveIcon');
+
+      // Reset all icons to default stroke state
+      likeIcon.setAttribute('fill', 'none');
+      likeIcon.classList.add('stroke-slate-700');
+      likeIcon.classList.remove('stroke-blue-600');
+
+      dislikeIcon.setAttribute('fill', 'none');
+      dislikeIcon.classList.add('stroke-slate-700');
+      dislikeIcon.classList.remove('stroke-red-600');
+
+      saveIcon.setAttribute('fill', 'none');
+      saveIcon.classList.add('stroke-slate-700');
+      saveIcon.classList.remove('stroke-yellow-600');
 
       // Restore user's previous interactions with this channel
       if (userLikes[id]) {
-        likeBtn.classList.add('bg-blue-100');
+        likeIcon.setAttribute('fill', '#3b82f6');
+        likeIcon.classList.remove('stroke-slate-700');
+        likeIcon.classList.add('stroke-blue-600');
       }
       if (userDislikes[id]) {
-        dislikeBtn.classList.add('bg-blue-100');
+        dislikeIcon.setAttribute('fill', '#ef4444');
+        dislikeIcon.classList.remove('stroke-slate-700');
+        dislikeIcon.classList.add('stroke-red-600');
       }
       if (userSaves[id]) {
-        saveBtn.classList.add('bg-blue-100');
+        saveIcon.setAttribute('fill', '#eab308');
+        saveIcon.classList.remove('stroke-slate-700');
+        saveIcon.classList.add('stroke-yellow-600');
       }
 
       // Load the stream
