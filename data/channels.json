@@ -5,50 +5,60 @@
       "name": "CAPD Main Channel",
       "number": 1,
       "description": "Main live broadcast and news",
-      "streamUrl": "rtmp://localhost:1935/live/main_channel",
+      "streamUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       "poster": "assets/images/channel-main.jpg",
-      "status": "offline",
-      "viewers": 0
+      "status": "online",
+      "viewers": 1250,
+      "type": "youtube",
+      "rtmpUrl": "rtmp://localhost:1935/live/main_channel"
     },
     {
       "id": "news",
       "name": "CAPD News 24/7",
       "number": 2,
       "description": "Latest news and updates",
-      "streamUrl": "rtmp://localhost:1935/live/news_live",
+      "streamUrl": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
       "poster": "assets/images/channel-news.jpg",
-      "status": "offline",
-      "viewers": 0
+      "status": "online",
+      "viewers": 890,
+      "type": "youtube",
+      "rtmpUrl": "rtmp://localhost:1935/live/news_live"
     },
     {
       "id": "community",
       "name": "Community Channel",
       "number": 3,
       "description": "Community events and programs",
-      "streamUrl": "rtmp://localhost:1935/live/community_stream",
+      "streamUrl": "https://commondatastorage.googleapis.com/gtv-videos-library/sample/big_buck_bunny.mp4",
       "poster": "assets/images/channel-community.jpg",
-      "status": "offline",
-      "viewers": 0
+      "status": "online",
+      "viewers": 567,
+      "type": "mp4",
+      "rtmpUrl": "rtmp://localhost:1935/live/community_stream"
     },
     {
       "id": "education",
       "name": "Education Channel",
       "number": 4,
       "description": "Educational content and seminars",
-      "streamUrl": "rtmp://localhost:1935/live/education_live",
+      "streamUrl": "https://www.youtube.com/watch?v=9bZkp7q19f0",
       "poster": "assets/images/channel-education.jpg",
-      "status": "offline",
-      "viewers": 0
+      "status": "online",
+      "viewers": 742,
+      "type": "youtube",
+      "rtmpUrl": "rtmp://localhost:1935/live/education_live"
     },
     {
       "id": "culture",
       "name": "Culture & Entertainment",
       "number": 5,
       "description": "Cultural programs and entertainment",
-      "streamUrl": "rtmp://localhost:1935/live/culture_shows",
+      "streamUrl": "https://commondatastorage.googleapis.com/gtv-videos-library/sample/sintel.mp4",
       "poster": "assets/images/channel-culture.jpg",
-      "status": "offline",
-      "viewers": 0
+      "status": "online",
+      "viewers": 615,
+      "type": "mp4",
+      "rtmpUrl": "rtmp://localhost:1935/live/culture_shows"
     }
   ]
 }
