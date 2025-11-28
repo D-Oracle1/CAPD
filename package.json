@@ -8,7 +8,10 @@
     "dev": "nodemon server.js",
     "rtmp-server": "node rtmp-server.js",
     "rtmp-dev": "nodemon rtmp-server.js",
-    "both": "concurrently \"npm start\" \"npm run rtmp-server\"",
+    "api-server": "node api-server.js",
+    "api-dev": "nodemon api-server.js",
+    "hls-transcoder": "node hls-transcoder.js",
+    "both": "concurrently \"npm start\" \"npm run rtmp-server\" \"npm run api-server\" \"npm run hls-transcoder\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

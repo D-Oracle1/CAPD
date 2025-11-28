@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Program Schedule - CAPD Digital TV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Header -->
+  <div id="header-container"></div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Hero Section -->
+    <div id="hero-container"></div>
+
+    <!-- Schedule Controls -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">Program Guide</h2>
+          <p class="text-gray-400">Browse all programs across our channels</p>
+        </div>
+        <div class="flex gap-3 w-full md:w-auto">
+          <select id="channelFilter" class="flex-1 md:flex-none bg-gray-700 text-white px-4 py-2 rounded">
+            <option value="">All Channels</option>
+          </select>
+          <input type="date" id="dateFilter" class="flex-1 md:flex-none bg-gray-700 text-white px-4 py-2 rounded">
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Table View -->
+    <div class="bg-gray-800 rounded-lg overflow-hidden mb-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-gray-700 border-b border-gray-600">
+            <tr>
+              <th class="px-6 py-4 font-bold">Time</th>
+              <th class="px-6 py-4 font-bold">Channel</th>
+              <th class="px-6 py-4 font-bold">Program</th>
+              <th class="px-6 py-4 font-bold">Duration</th>
+              <th class="px-6 py-4 font-bold">Host</th>
+              <th class="px-6 py-4 font-bold">Status</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleTableBody" class="divide-y divide-gray-700">
+            <tr>
+              <td colspan="6" class="px-6 py-8 text-center text-gray-400">Loading schedule...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div class="mb-6">
+      <h3 class="text-2xl font-bold mb-4 text-red-500">📺 All Programs</h3>
+      <div id="programsGridContainer" class="programs-grid"></div>
+    </div>
+
+    <!-- Program Details Modal -->
+    <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+      <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-90vh overflow-y-auto">
+        <div class="sticky top-0 bg-gray-700 p-4 flex justify-between items-center border-b border-gray-600">
+          <h2 id="modalTitle" class="text-2xl font-bold"></h2>
+          <button id="closeModalBtn" class="text-2xl text-gray-400 hover:text-white">&times;</button>
+        </div>
+        <div id="modalContent" class="p-6"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    let allPrograms = [];
+    let allChannels = [];
+
+    async function initSchedule() {
+      // Load header and footer
+      document.getElementById('header-container').innerHTML = Components.createHeader();
+      document.getElementById('footer-container').innerHTML = Components.createFooter();
+      document.getElementById('hero-container').innerHTML = Components.createHeroSection('Program Schedule', 'Check what\'s on CAPD Digital TV');
+
+      // Load data
+      const schedulData = await Utils.fetchData('data/schedule.json');
+      const channelsData = await Utils.fetchData('data/channels.json');
+
+      if (!schedulData || !channelsData) {
+        Utils.showNotification('Failed to load schedule data', 'error');
+        return;
+      }
+
+      allPrograms = schedulData.schedule;
+      allChannels = channelsData.channels;
+
+      // Populate channel filter
+      populateChannelFilter();
+
+      // Set date filter to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('dateFilter').value = today;
+
+      // Initial display
+      displaySchedule();
+
+      // Setup event listeners
+      document.getElementById('channelFilter').addEventListener('change', displaySchedule);
+      document.getElementById('dateFilter').addEventListener('change', displaySchedule);
+      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    }
+
+    function populateChannelFilter() {
+      const select = document.getElementById('channelFilter');
+      const options = allChannels.map(ch =>
+        `<option value="${ch.id}">${ch.number}. ${ch.name}</option>`
+      ).join('');
+      select.innerHTML += options;
+    }
+
+    function displaySchedule() {
+      const channelFilter = document.getElementById('channelFilter').value;
+      const dateFilter = document.getElementById('dateFilter').value;
+
+      let filtered = allPrograms;
+
+      if (channelFilter) {
+        filtered = filtered.filter(prog => prog.channelId === channelFilter);
+      }
+
+      // Sort by time
+      filtered.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      // Display table
+      displayTable(filtered);
+
+      // Display grid
+      displayGrid(filtered.slice(0, 12));
+    }
+
+    function displayTable(programs) {
+      const tbody = document.getElementById('scheduleTableBody');
+
+      if (programs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">No programs found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = programs.map(prog => {
+        const channel = allChannels.find(ch => ch.id === prog.channelId);
+        const isLive = Utils.isProgramLive(prog.startTime, prog.endTime);
+        const statusClass = isLive ? 'bg-red-900 text-red-200' : 'bg-gray-700 text-gray-300';
+        const statusText = isLive ? '🔴 LIVE' : '📅 UPCOMING';
+
+        return `
+          <tr class="hover:bg-gray-700 transition cursor-pointer" onclick="openProgramModal('${prog.id}')">
+            <td class="px-6 py-4">${Utils.formatTime(prog.startTime)}</td>
+            <td class="px-6 py-4">
+              <span class="text-sm font-semibold">${channel?.number}. ${channel?.name.split(' ')[0]}</span>
+            </td>
+            <td class="px-6 py-4 font-semibold">${prog.title}</td>
+            <td class="px-6 py-4 text-sm">${prog.duration} min</td>
+            <td class="px-6 py-4 text-sm text-gray-400">${prog.host}</td>
+            <td class="px-6 py-4">
+              <span class="text-xs px-2 py-1 rounded ${statusClass}">${statusText}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function displayGrid(programs) {
+      const container = document.getElementById('programsGridContainer');
+      container.innerHTML = programs.map(prog => Components.createProgramItem(prog)).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.program-card').forEach((card, index) => {
+        card.addEventListener('click', () => openProgramModal(programs[index].id));
+      });
+    }
+
+    function openProgramModal(programId) {
+      const program = allPrograms.find(p => p.id === programId);
+      if (!program) return;
+
+      const channel = allChannels.find(ch => ch.id === program.channelId);
+      const isLive = Utils.isProgramLive(program.startTime, program.endTime);
+
+      document.getElementById('modalTitle').textContent = program.title;
+      document.getElementById('modalContent').innerHTML = `
+        <div class="flex flex-col md:flex-row gap-6">
+          <img src="${program.image}" alt="${program.title}" class="w-full md:w-48 h-auto rounded">
+          <div class="flex-grow">
+            <div class="mb-4">
+              <p class="text-gray-400 mb-2">Channel: <span class="text-white font-semibold">${channel?.name}</span></p>
+              <p class="text-gray-400 mb-2">Time: <span class="text-white font-semibold">${Utils.formatTime(program.startTime)} - ${Utils.formatTime(program.endTime)}</span></p>
+              <p class="text-gray-400 mb-4">Host: <span class="text-white font-semibold">${program.host}</span></p>
+              ${isLive ? '<p class="text-red-400 font-semibold animate-pulse">🔴 LIVE NOW</p>' : `<p class="text-yellow-400">Next: ${Utils.getTimeUntil(program.startTime)}</p>`}
+            </div>
+            <p class="text-gray-300 leading-relaxed mb-4">${program.description}</p>
+            <div class="flex gap-3">
+              <button class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition" onclick="goToLiveStream('${program.channelId}')">
+                📺 Watch Channel
+              </button>
+              <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded transition" onclick="closeModal()">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('programModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('programModal').classList.add('hidden');
+    }
+
+    function goToLiveStream(channelId) {
+      window.location.href = `live.html?channel=${channelId}`;
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('programModal');
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initSchedule);
+  </script>
+</body>
+</html>

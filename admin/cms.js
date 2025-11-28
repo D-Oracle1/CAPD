@@ -1207,6 +1207,25 @@ function generateStreamKey() {
 }
 
 /**
+ * Auto-fill stream URL in channel form using generated key
+ */
+function autoFillStreamUrl() {
+  const streamKeyInput = document.getElementById('streamKeyInput').value.trim();
+
+  if (!streamKeyInput) {
+    alert('Please generate a stream key first!');
+    return;
+  }
+
+  // Fill the stream URL field with the generated RTMP URL
+  document.getElementById('streamUrl').value = `rtmp://localhost:1935/live/${streamKeyInput}`;
+
+  // Optionally scroll to show the filled field
+  document.getElementById('streamUrl').focus();
+  alert(`✅ Stream URL auto-filled! Now fill in other details and click "Save Channel"`);
+}
+
+/**
  * Save streaming settings to localStorage
  */
 function saveStreamingSettings() {
@@ -1283,4 +1302,173 @@ function clearStreamingSettings() {
 // Load saved settings when page loads
 document.addEventListener('DOMContentLoaded', function() {
   displaySavedSettings();
+  initializeViewCounterUI();
 }, { once: true });
+
+/**
+ * Stream Type Helper
+ */
+function updateStreamUrlPlaceholder() {
+  const streamType = document.getElementById('streamType').value;
+  const streamUrlInput = document.getElementById('streamUrl');
+  const streamUrlHint = document.getElementById('streamUrlHint');
+
+  const placeholders = {
+    rtmp: 'rtmp://localhost:1935/live/stream_name',
+    hls: 'https://example.com/live/stream/index.m3u8',
+    youtube: 'https://youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID or https://youtube.com/live/VIDEO_ID',
+    mp4: 'https://example.com/videos/stream.mp4'
+  };
+
+  const hints = {
+    rtmp: 'Example: rtmp://localhost:1935/live/channel_name',
+    hls: 'Example: https://example.com/live/stream/index.m3u8',
+    youtube: 'Example: https://youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ or https://youtube.com/live/Moq6CW60r_U',
+    mp4: 'Example: https://example.com/videos/livestream.mp4'
+  };
+
+  streamUrlInput.placeholder = placeholders[streamType] || placeholders.rtmp;
+  streamUrlHint.textContent = hints[streamType] || hints.rtmp;
+}
+
+/**
+ * View Counter Functions
+ */
+
+// Initialize the view counter UI
+function initializeViewCounterUI() {
+  const channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const select = document.getElementById('viewCounterChannel');
+
+  if (select) {
+    select.innerHTML = '<option value="">Choose a channel...</option>' +
+      channels.map(ch => `<option value="${ch.id}">${ch.number}. ${ch.name}</option>`).join('');
+
+    select.addEventListener('change', updateViewCounterDisplay);
+  }
+}
+
+// Update the view counter display when a channel is selected
+function updateViewCounterDisplay() {
+  const select = document.getElementById('viewCounterChannel');
+  const selectedId = select.value;
+
+  if (!selectedId) {
+    document.getElementById('currentViews').textContent = '0';
+    document.getElementById('viewAction').textContent = 'Select a channel to proceed';
+    return;
+  }
+
+  const channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channel = channels.find(ch => ch.id === selectedId);
+
+  if (channel) {
+    document.getElementById('currentViews').textContent = (channel.viewers || 0).toLocaleString();
+    document.getElementById('viewAction').textContent = `Managing views for: ${channel.name}`;
+  }
+}
+
+// Increment views by a fixed amount
+function incrementViews(amount) {
+  const select = document.getElementById('viewCounterChannel');
+  const selectedId = select.value;
+
+  if (!selectedId) {
+    alert('Please select a channel first');
+    return;
+  }
+
+  let channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channelIndex = channels.findIndex(ch => ch.id === selectedId);
+
+  if (channelIndex !== -1) {
+    channels[channelIndex].viewers = (channels[channelIndex].viewers || 0) + amount;
+    localStorage.setItem('channels', JSON.stringify(channels));
+    updateChannelsJson(channels);
+    updateViewCounterDisplay();
+  }
+}
+
+// Add custom number of views
+function addCustomViews() {
+  const select = document.getElementById('viewCounterChannel');
+  const selectedId = select.value;
+  const customCount = parseInt(document.getElementById('customViewCount').value) || 0;
+
+  if (!selectedId) {
+    alert('Please select a channel first');
+    return;
+  }
+
+  if (customCount <= 0) {
+    alert('Please enter a valid number');
+    return;
+  }
+
+  let channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channelIndex = channels.findIndex(ch => ch.id === selectedId);
+
+  if (channelIndex !== -1) {
+    channels[channelIndex].viewers = (channels[channelIndex].viewers || 0) + customCount;
+    localStorage.setItem('channels', JSON.stringify(channels));
+    updateChannelsJson(channels);
+    updateViewCounterDisplay();
+    document.getElementById('customViewCount').value = '';
+    alert(`Added ${customCount} views!`);
+  }
+}
+
+// Set exact view count
+function setViewCount() {
+  const select = document.getElementById('viewCounterChannel');
+  const selectedId = select.value;
+  const newCount = parseInt(document.getElementById('customViewCount').value) || 0;
+
+  if (!selectedId) {
+    alert('Please select a channel first');
+    return;
+  }
+
+  if (newCount < 0) {
+    alert('Please enter a valid number');
+    return;
+  }
+
+  let channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channelIndex = channels.findIndex(ch => ch.id === selectedId);
+
+  if (channelIndex !== -1) {
+    channels[channelIndex].viewers = newCount;
+    localStorage.setItem('channels', JSON.stringify(channels));
+    updateChannelsJson(channels);
+    updateViewCounterDisplay();
+    document.getElementById('customViewCount').value = '';
+    alert(`Set view count to ${newCount}!`);
+  }
+}
+
+// Reset views to 0
+function resetViews() {
+  const select = document.getElementById('viewCounterChannel');
+  const selectedId = select.value;
+
+  if (!selectedId) {
+    alert('Please select a channel first');
+    return;
+  }
+
+  if (!confirm('Are you sure you want to reset views to 0?')) {
+    return;
+  }
+
+  let channels = JSON.parse(localStorage.getItem('channels')) || [];
+  const channelIndex = channels.findIndex(ch => ch.id === selectedId);
+
+  if (channelIndex !== -1) {
+    channels[channelIndex].viewers = 0;
+    localStorage.setItem('channels', JSON.stringify(channels));
+    updateChannelsJson(channels);
+    updateViewCounterDisplay();
+    alert('Views reset to 0!');
+  }
+}

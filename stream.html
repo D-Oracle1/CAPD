@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Stream - CAPD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <h1 class="text-4xl font-bold mb-8">🔴 CAPD Live Stream</h1>
+
+    <!-- Quick Start Info -->
+    <div class="bg-blue-900 border-l-4 border-blue-400 p-6 rounded mb-8">
+      <h2 class="font-bold mb-2">How to Stream with OBS:</h2>
+      <code class="block bg-black p-3 rounded text-sm mb-2 font-mono">
+        Server: rtmp://127.0.0.1:1935/live<br>
+        Stream Key: main
+      </code>
+      <p class="text-sm">Then select your stream below to watch live</p>
+    </div>
+
+    <!-- Stream Selection -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+      <button onclick="loadStream('main')" class="bg-blue-600 hover:bg-blue-700 p-4 rounded font-bold">
+        📺 Main Channel
+      </button>
+      <button onclick="loadStream('news')" class="bg-blue-600 hover:bg-blue-700 p-4 rounded font-bold">
+        📰 News
+      </button>
+      <button onclick="loadStream('community')" class="bg-blue-600 hover:bg-blue-700 p-4 rounded font-bold">
+        👥 Community
+      </button>
+      <button onclick="loadStream('custom')" class="bg-gray-600 hover:bg-gray-700 p-4 rounded font-bold">
+        ⚙️ Custom
+      </button>
+    </div>
+
+    <!-- Video Player -->
+    <div class="bg-black rounded-lg overflow-hidden shadow-2xl mb-8">
+      <div style="position: relative; width: 100%; padding-bottom: 56.25%; background: #000;">
+        <video id="player" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;" controls playsinline></video>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-800 p-4 rounded">
+        <div class="text-sm text-gray-400">Stream</div>
+        <div id="streamName" class="text-lg font-bold">Not selected</div>
+      </div>
+      <div class="bg-gray-800 p-4 rounded">
+        <div class="text-sm text-gray-400">Status</div>
+        <div id="streamStatus" class="text-lg font-bold text-yellow-400">Offline</div>
+      </div>
+      <div class="bg-gray-800 p-4 rounded">
+        <div class="text-sm text-gray-400">Bitrate</div>
+        <div id="bitrate" class="text-lg font-bold">--</div>
+      </div>
+      <div class="bg-gray-800 p-4 rounded">
+        <div class="text-sm text-gray-400">Duration</div>
+        <div id="duration" class="text-lg font-bold">00:00:00</div>
+      </div>
+    </div>
+
+    <!-- Custom Stream Input -->
+    <div id="customStreamForm" class="hidden bg-gray-800 p-6 rounded mb-8">
+      <h3 class="font-bold mb-4">Enter Custom Stream URL</h3>
+      <div class="flex gap-2">
+        <input type="text" id="customUrl" placeholder="e.g., http://localhost:8000/live/mystream/index.m3u8" class="flex-1 px-3 py-2 rounded bg-gray-700 text-white">
+        <button onclick="loadCustomStream()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold">Play</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let hls = null;
+    let startTime = null;
+
+    function loadStream(streamName) {
+      if (streamName === 'custom') {
+        document.getElementById('customStreamForm').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('customStreamForm').classList.add('hidden');
+
+      const url = `http://localhost:8000/live/${streamName}/index.m3u8`;
+      const player = document.getElementById('player');
+
+      document.getElementById('streamName').textContent = streamName.toUpperCase();
+      document.getElementById('streamStatus').textContent = 'Attempting to load...';
+
+      try {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          if (hls) hls.destroy();
+          hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(player);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            player.play().then(() => {
+              document.getElementById('streamStatus').textContent = '🔴 LIVE';
+              startTime = new Date();
+            }).catch(err => {
+              console.error('Play error:', err);
+              document.getElementById('streamStatus').textContent = '⚠️ Stream offline';
+            });
+          });
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            console.error('HLS Error:', data);
+            document.getElementById('streamStatus').textContent = '❌ Stream error';
+          });
+        } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+          player.src = url;
+          player.addEventListener('play', () => {
+            document.getElementById('streamStatus').textContent = '🔴 LIVE';
+            startTime = new Date();
+          });
+          player.addEventListener('error', () => {
+            document.getElementById('streamStatus').textContent = '❌ Stream error';
+          });
+          player.play().catch(err => {
+            document.getElementById('streamStatus').textContent = '⚠️ Stream offline';
+          });
+        } else {
+          document.getElementById('streamStatus').textContent = '❌ Browser not supported';
+        }
+      } catch (err) {
+        console.error('Stream error:', err);
+        document.getElementById('streamStatus').textContent = '❌ Failed to load';
+      }
+    }
+
+    function loadCustomStream() {
+      const url = document.getElementById('customUrl').value.trim();
+      if (!url) {
+        alert('Please enter a stream URL');
+        return;
+      }
+
+      const player = document.getElementById('player');
+      document.getElementById('streamName').textContent = 'CUSTOM';
+      document.getElementById('streamStatus').textContent = 'Loading...';
+
+      try {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          if (hls) hls.destroy();
+          hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(player);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            player.play().then(() => {
+              document.getElementById('streamStatus').textContent = '🔴 LIVE';
+              startTime = new Date();
+            }).catch(err => {
+              document.getElementById('streamStatus').textContent = '⚠️ Failed to play';
+            });
+          });
+        } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+          player.src = url;
+          player.play();
+          document.getElementById('streamStatus').textContent = '🔴 LIVE';
+          startTime = new Date();
+        }
+      } catch (err) {
+        document.getElementById('streamStatus').textContent = '❌ Error';
+      }
+    }
+
+    // Update duration
+    setInterval(() => {
+      if (startTime) {
+        const elapsed = Math.floor((new Date() - startTime) / 1000);
+        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('duration').textContent = `${h}:${m}:${s}`;
+      }
+    }, 1000);
+  </script>
+
+</body>
+</html>

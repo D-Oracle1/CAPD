@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "name": "main",
+      "title": "CAPD Main Channel",
+      "description": "Main live broadcast and news",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "status": "offline",
+      "viewers": 0
+    },
+    {
+      "name": "news",
+      "title": "CAPD News 24/7",
+      "description": "Latest news and updates",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "status": "offline",
+      "viewers": 0
+    },
+    {
+      "name": "community",
+      "title": "Community Channel",
+      "description": "Community events and programs",
+      "createdAt": "2025-01-01T00:00:00Z",
+      "status": "offline",
+      "viewers": 0
+    }
+  ]
+}

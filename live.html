@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Streaming - CAPD Digital TV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Header -->
+  <div id="header-container"></div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto">
+    <!-- Hero Section -->
+    <div id="hero-container"></div>
+
+    <!-- Live Stream Container -->
+    <section class="px-4 py-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Player -->
+        <div class="lg:col-span-2">
+          <div class="bg-gray-800 rounded-lg overflow-hidden">
+            <!-- Video Player -->
+            <div class="video-wrapper bg-black">
+              <video id="mainVideo" class="w-full aspect-video" controls>
+                <source src="" type="application/x-mpegURL">
+                Your browser does not support HTML5 video streaming.
+              </video>
+            </div>
+
+            <!-- Player Info -->
+            <div class="p-4 bg-gray-800">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h2 id="channelTitle" class="text-2xl font-bold mb-1">CAPD Main Channel</h2>
+                  <div class="flex gap-3 text-sm">
+                    <span class="text-gray-400">🔴 Live</span>
+                    <span id="viewerCount" class="text-gray-400">👥 1,250 viewers</span>
+                  </div>
+                </div>
+                <span id="channelNumber" class="text-3xl font-bold text-red-500">1</span>
+              </div>
+
+              <p id="channelDescription" class="text-gray-300 mb-4">Main live broadcast channel with news and community updates</p>
+
+              <!-- Player Controls -->
+              <div class="flex gap-2">
+                <button id="likeBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                  ❤️ Like <span id="likeCount">0</span>
+                </button>
+                <button id="shareBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                  📤 Share
+                </button>
+                <button id="fullscreenBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded transition">
+                  ⛶ Fullscreen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comments Section -->
+          <div class="bg-gray-800 rounded-lg mt-6 overflow-hidden">
+            <div class="bg-gray-700 p-4 font-bold border-b border-gray-600">Live Chat</div>
+            <div class="chat-container">
+              <div id="chatMessages" class="chat-messages bg-gray-800"></div>
+              <div class="chat-input bg-gray-700">
+                <input type="text" id="chatInput" placeholder="Send a message...">
+                <button id="chatSendBtn">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+          <!-- Announcements -->
+          <div class="mb-6">
+            <h3 class="text-lg font-bold mb-4 text-red-500">📢 Announcements</h3>
+            <div id="announcementsContainer" class="space-y-3"></div>
+          </div>
+
+          <!-- Channel List -->
+          <div>
+            <h3 class="text-lg font-bold mb-4 text-red-500">📺 All Channels</h3>
+            <div id="channelsListContainer" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Current Program Info -->
+    <section class="px-4 py-6 bg-gray-800 rounded-lg mx-4 mb-6">
+      <h3 class="text-xl font-bold mb-4 text-red-500">📺 Current Program</h3>
+      <div id="currentProgramContainer" class="bg-gray-700 p-4 rounded">
+        <div class="text-center text-gray-400">Loading program info...</div>
+      </div>
+    </section>
+
+    <!-- Next Programs -->
+    <section class="px-4 py-6">
+      <h3 class="text-2xl font-bold mb-6 text-red-500">⏰ Upcoming Programs</h3>
+      <div id="upcomingProgramsContainer" class="programs-grid"></div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    // Initialize page
+    async function initLive() {
+      // Load header and footer
+      document.getElementById('header-container').innerHTML = Components.createHeader();
+      document.getElementById('footer-container').innerHTML = Components.createFooter();
+      document.getElementById('hero-container').innerHTML = Components.createHeroSection('Live Streaming', 'Watch CAPD Digital TV 24/7');
+
+      // Load channels
+      const channelsData = await Utils.fetchData('data/channels.json');
+      const scheduleData = await Utils.fetchData('data/schedule.json');
+      const announcementsData = await Utils.fetchData('data/announcements.json');
+
+      if (!channelsData || !scheduleData) {
+        Utils.showNotification('Failed to load channel data', 'error');
+        return;
+      }
+
+      // Set up main channel (default to first live channel)
+      let currentChannel = channelsData.channels.find(ch => ch.status === 'live') || channelsData.channels[0];
+      selectChannel(currentChannel, channelsData.channels);
+
+      // Load announcements
+      if (announcementsData) {
+        loadAnnouncements(announcementsData.announcements);
+      }
+
+      // Load channel list sidebar
+      loadChannelsList(channelsData.channels);
+
+      // Load upcoming programs
+      loadUpcomingPrograms(scheduleData.schedule, currentChannel.id);
+
+      // Set up chat
+      setupChat();
+
+      // Setup player controls
+      setupPlayerControls();
+
+      // Display current program
+      displayCurrentProgram(scheduleData.schedule, currentChannel.id);
+    }
+
+    function selectChannel(channel, allChannels) {
+      // Update video source
+      const videoElement = document.getElementById('mainVideo');
+      videoElement.src = channel.streamUrl;
+      videoElement.load();
+
+      // Update channel info
+      document.getElementById('channelTitle').textContent = channel.name;
+      document.getElementById('channelNumber').textContent = channel.number;
+      document.getElementById('channelDescription').textContent = channel.description;
+      document.getElementById('viewerCount').textContent = `👥 ${channel.viewers} viewers`;
+
+      // Clear chat when switching channels
+      document.getElementById('chatMessages').innerHTML = '';
+      document.getElementById('likeCount').textContent = '0';
+
+      // Update selected channel in sidebar
+      document.querySelectorAll('.channel-list-item').forEach(el => {
+        el.classList.remove('ring-2', 'ring-red-500', 'bg-gray-700');
+      });
+      document.querySelector(`[data-channel-id="${channel.id}"]`)?.classList.add('ring-2', 'ring-red-500', 'bg-gray-700');
+    }
+
+    function loadChannelsList(channels) {
+      const container = document.getElementById('channelsListContainer');
+      container.innerHTML = channels.map(channel => `
+        <div class="channel-list-item bg-gray-700 p-3 rounded cursor-pointer hover:bg-gray-600 transition" data-channel-id="${channel.id}">
+          <div class="flex justify-between items-start mb-1">
+            <span class="font-bold">${channel.number}. ${channel.name}</span>
+            ${channel.status === 'live' ? '<span class="text-xs bg-red-600 px-2 py-1 rounded animate-pulse">● LIVE</span>' : '<span class="text-xs bg-gray-600 px-2 py-1 rounded">Offline</span>'}
+          </div>
+          <p class="text-xs text-gray-400">${channel.viewers} viewers</p>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.channel-list-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const channelId = el.dataset.channelId;
+          const selectedChannel = channels.find(ch => ch.id === channelId);
+          if (selectedChannel) selectChannel(selectedChannel, channels);
+        });
+      });
+    }
+
+    function loadAnnouncements(announcements) {
+      const container = document.getElementById('announcementsContainer');
+      // Show only non-expired announcements, sorted by priority
+      const active = announcements.filter(ann => new Date(ann.expiresAt) > new Date()).sort((a, b) => {
+        const priority = { high: 3, medium: 2, low: 1 };
+        return (priority[b.priority] || 0) - (priority[a.priority] || 0);
+      });
+
+      container.innerHTML = active.slice(0, 3).map(ann => Components.createAnnouncement(ann)).join('');
+    }
+
+    function loadUpcomingPrograms(schedule, channelId) {
+      const container = document.getElementById('upcomingProgramsContainer');
+      const programs = schedule.filter(prog => prog.channelId === channelId).sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      container.innerHTML = programs.slice(0, 4).map(prog => Components.createProgramItem(prog)).join('');
+    }
+
+    function displayCurrentProgram(schedule, channelId) {
+      const container = document.getElementById('currentProgramContainer');
+      const currentTime = new Date();
+      const currentTimeStr = `${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`;
+
+      const currentProgram = schedule.find(prog =>
+        prog.channelId === channelId &&
+        currentTimeStr >= prog.startTime &&
+        currentTimeStr <= prog.endTime
+      );
+
+      if (currentProgram) {
+        container.innerHTML = `
+          <div class="flex gap-4">
+            <img src="${currentProgram.image}" alt="${currentProgram.title}" class="w-32 h-24 rounded object-cover">
+            <div class="flex-grow">
+              <h4 class="text-lg font-bold text-white mb-2">${currentProgram.title}</h4>
+              <p class="text-sm text-gray-300 mb-2">${currentProgram.description}</p>
+              <div class="flex gap-4 text-sm">
+                <span>⏰ ${Utils.formatTime(currentProgram.startTime)} - ${Utils.formatTime(currentProgram.endTime)}</span>
+                <span>🎙️ ${currentProgram.host}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = '<p class="text-gray-400">No program currently airing</p>';
+      }
+    }
+
+    function setupChat() {
+      const input = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('chatSendBtn');
+      const messagesContainer = document.getElementById('chatMessages');
+
+      // Sample messages
+      const sampleMessages = [
+        { author: 'Chukwu', text: 'Great broadcast today!', timestamp: new Date(Date.now() - 120000) },
+        { author: 'Zainab', text: 'Love the community updates!', timestamp: new Date(Date.now() - 60000) },
+        { author: 'Marcus', text: 'When is the next program starting?', timestamp: new Date(Date.now() - 30000) }
+      ];
+
+      messagesContainer.innerHTML = sampleMessages.map(msg => Components.createComment({
+        ...msg,
+        timestamp: msg.timestamp.toISOString()
+      })).join('');
+
+      sendBtn.addEventListener('click', () => {
+        if (input.value.trim()) {
+          const newMessage = {
+            author: 'You',
+            text: input.value,
+            timestamp: new Date().toISOString()
+          };
+          messagesContainer.insertAdjacentHTML('beforeend', Components.createComment(newMessage));
+          input.value = '';
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
+
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+      });
+    }
+
+    function setupPlayerControls() {
+      const likeBtn = document.getElementById('likeBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      let likeCount = 0;
+
+      likeBtn.addEventListener('click', () => {
+        likeCount++;
+        document.getElementById('likeCount').textContent = likeCount;
+        likeBtn.classList.add('animate-pulse');
+        setTimeout(() => likeBtn.classList.remove('animate-pulse'), 600);
+      });
+
+      shareBtn.addEventListener('click', () => {
+        const url = window.location.href;
+        if (navigator.share) {
+          navigator.share({
+            title: 'CAPD Digital TV',
+            text: 'Watch live streaming on CAPD Digital TV',
+            url: url
+          });
+        } else {
+          Utils.showNotification('Share URL: ' + url, 'info');
+        }
+      });
+
+      fullscreenBtn.addEventListener('click', () => {
+        const video = document.getElementById('mainVideo');
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        }
+      });
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initLive);
+  </script>
+</body>
+</html>

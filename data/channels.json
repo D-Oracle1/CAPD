@@ -5,37 +5,37 @@
       "name": "CAPD Main Channel",
       "number": 1,
       "description": "Main live broadcast and news",
-      "streamUrl": "https://your-streaming-server.com/live/main",
+      "streamUrl": "rtmp://localhost:1935/live/main_channel",
       "poster": "assets/images/channel-main.jpg",
-      "status": "live",
-      "viewers": 1250
+      "status": "offline",
+      "viewers": 0
     },
     {
       "id": "news",
       "name": "CAPD News 24/7",
       "number": 2,
       "description": "Latest news and updates",
-      "streamUrl": "https://your-streaming-server.com/live/news",
+      "streamUrl": "rtmp://localhost:1935/live/news_live",
       "poster": "assets/images/channel-news.jpg",
-      "status": "live",
-      "viewers": 845
+      "status": "offline",
+      "viewers": 0
     },
     {
       "id": "community",
       "name": "Community Channel",
       "number": 3,
       "description": "Community events and programs",
-      "streamUrl": "https://your-streaming-server.com/live/community",
+      "streamUrl": "rtmp://localhost:1935/live/community_stream",
       "poster": "assets/images/channel-community.jpg",
-      "status": "live",
-      "viewers": 562
+      "status": "offline",
+      "viewers": 0
     },
     {
       "id": "education",
       "name": "Education Channel",
       "number": 4,
       "description": "Educational content and seminars",
-      "streamUrl": "https://your-streaming-server.com/live/education",
+      "streamUrl": "rtmp://localhost:1935/live/education_live",
       "poster": "assets/images/channel-education.jpg",
       "status": "offline",
       "viewers": 0
@@ -45,10 +45,10 @@
       "name": "Culture & Entertainment",
       "number": 5,
       "description": "Cultural programs and entertainment",
-      "streamUrl": "https://your-streaming-server.com/live/culture",
+      "streamUrl": "rtmp://localhost:1935/live/culture_shows",
       "poster": "assets/images/channel-culture.jpg",
-      "status": "live",
-      "viewers": 723
+      "status": "offline",
+      "viewers": 0
     }
   ]
 }

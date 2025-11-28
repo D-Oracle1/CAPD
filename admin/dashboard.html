@@ -289,8 +289,21 @@
               <input type="text" id="channelDesc" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
             </div>
             <div>
+              <label class="block text-sm font-medium mb-2">Stream Type</label>
+              <select id="streamType" onchange="updateStreamUrlPlaceholder()" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2">
+                <option value="rtmp">🔴 RTMP (Live Server)</option>
+                <option value="hls">📡 HLS (m3u8 Playlist)</option>
+                <option value="youtube">▶️ YouTube Direct</option>
+                <option value="mp4">🎥 MP4 Video</option>
+              </select>
+            </div>
+            <div>
               <label class="block text-sm font-medium mb-2">Stream URL</label>
-              <input type="url" id="streamUrl" placeholder="https://stream-server.com/live/channel" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <div class="flex gap-2 mb-2">
+                <input type="url" id="streamUrl" placeholder="rtmp://localhost:1935/live/channel_name" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button type="button" onclick="autoFillStreamUrl()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg whitespace-nowrap font-medium text-sm">Auto-fill</button>
+              </div>
+              <small id="streamUrlHint" class="text-gray-500 block">Example: rtmp://localhost:1935/live/channel_name</small>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -315,6 +328,73 @@
         <!-- Channels List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="channelsContainer">
           <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- RTMP Configuration Guide -->
+        <div class="mt-12 bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+          <h3 class="text-xl font-bold text-blue-900 mb-4">🔴 RTMP Configuration Guide</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-blue-800 mb-2">Stream URL Format:</h4>
+              <code class="bg-white p-3 rounded block text-sm font-mono border border-blue-200 mb-3">rtmp://localhost:1935/live/stream_name</code>
+
+              <h4 class="font-bold text-blue-800 mb-2 mt-4">For Remote RTMP Server:</h4>
+              <code class="bg-white p-3 rounded block text-sm font-mono border border-blue-200">rtmp://your-server.com:1935/live/stream_name</code>
+            </div>
+            <div>
+              <h4 class="font-bold text-blue-800 mb-2">OBS Setup:</h4>
+              <ul class="text-sm text-blue-900 space-y-1 list-disc list-inside">
+                <li>Settings → Stream</li>
+                <li>Service: Custom...</li>
+                <li>Server: rtmp://your-server:1935/live</li>
+                <li>Stream Key: your_stream_name</li>
+                <li>Click "Start Streaming"</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-sm text-blue-800 mt-4">💡 <strong>Note:</strong> Make sure your RTMP server is running. Use <code class="bg-white px-2 py-1 rounded">npm run rtmp-server</code> to start it.</p>
+        </div>
+
+        <!-- View Counter Management -->
+        <div class="mt-12 bg-white rounded-lg shadow p-6">
+          <h3 class="text-xl font-bold mb-6">📊 Channel Views Counter</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Channel View Counter -->
+            <div class="border-2 border-purple-300 rounded-lg p-6">
+              <label class="block text-sm font-medium mb-3">Select Channel</label>
+              <select id="viewCounterChannel" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4">
+                <option value="">Choose a channel...</option>
+              </select>
+
+              <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                <p class="text-gray-600 text-sm mb-2">Current Views:</p>
+                <p id="currentViews" class="text-3xl font-bold text-purple-600">0</p>
+              </div>
+
+              <div class="space-y-2">
+                <button onclick="incrementViews(1)" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">+1 View</button>
+                <button onclick="incrementViews(10)" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">+10 Views</button>
+                <button onclick="incrementViews(100)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">+100 Views</button>
+              </div>
+            </div>
+
+            <!-- Custom View Increment -->
+            <div class="border-2 border-green-300 rounded-lg p-6">
+              <label class="block text-sm font-medium mb-3">Custom View Count</label>
+              <input type="number" id="customViewCount" placeholder="Enter number of views" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4">
+
+              <div class="bg-green-50 p-4 rounded-lg mb-4">
+                <p class="text-gray-600 text-sm mb-2">Action:</p>
+                <p id="viewAction" class="text-sm text-gray-700">Select a channel to proceed</p>
+              </div>
+
+              <div class="space-y-2">
+                <button onclick="addCustomViews()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">Add Views</button>
+                <button onclick="setViewCount()" class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition">Set Views</button>
+                <button onclick="resetViews()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">Reset to 0</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -564,105 +644,17 @@
 
         <!-- Streaming Platform Selection -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 class="text-xl font-bold text-gray-800 mb-4">Step 1: Choose Your Streaming Platform</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div onclick="selectPlatform('youtube')" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-300 rounded-lg p-4 transition">
-              <div class="text-3xl mb-2">▶️</div>
-              <h4 class="font-bold text-red-900">YouTube Live</h4>
-              <p class="text-xs text-red-700">Easy • Free • Large Audience</p>
-            </div>
-            <div onclick="selectPlatform('twitch')" class="cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-2 border-purple-300 rounded-lg p-4 transition">
-              <div class="text-3xl mb-2">🎮</div>
-              <h4 class="font-bold text-purple-900">Twitch</h4>
-              <p class="text-xs text-purple-700">Streaming Focused • Community</p>
-            </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">🎙️ Direct RTMP Streaming Setup</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div onclick="selectPlatform('obs')" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-300 rounded-lg p-4 transition">
               <div class="text-3xl mb-2">🎙️</div>
-              <h4 class="font-bold text-blue-900">OBS + Server</h4>
-              <p class="text-xs text-blue-700">Professional • Full Control</p>
+              <h4 class="font-bold text-blue-900">OBS + RTMP Server</h4>
+              <p class="text-xs text-blue-700">Professional • Full Control • Local</p>
             </div>
             <div onclick="selectPlatform('custom')" class="cursor-pointer bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-2 border-green-300 rounded-lg p-4 transition">
               <div class="text-3xl mb-2">⚙️</div>
-              <h4 class="font-bold text-green-900">Custom RTMP</h4>
-              <p class="text-xs text-green-700">Custom Server • Advanced</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- YouTube Setup -->
-        <div id="youtubeSetup" class="hidden bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-6">
-          <h3 class="text-xl font-bold text-blue-900 mb-4">YouTube Live Configuration</h3>
-          <div class="space-y-4">
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">📋 Step 1: Enable YouTube Live</h4>
-              <p class="text-sm text-gray-600 mb-3">Go to YouTube Creator Studio and enable live streaming (wait 24 hours for activation)</p>
-              <a href="https://youtube.com/creator_studio" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold">Open Creator Studio →</a>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🔑 Step 2: Get Your Stream Key</h4>
-              <p class="text-sm text-gray-600 mb-3">Copy your Stream Key from YouTube Creator Studio > Live Streaming > Stream Settings</p>
-              <div class="flex gap-2">
-                <input type="password" id="youtubeStreamKey" placeholder="Paste your YouTube Stream Key here" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" style="font-size: 13px;">
-                <button onclick="toggleYoutubeKeyVisibility()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg">👁️</button>
-              </div>
-              <p class="text-xs text-gray-500 mt-2">⚠️ Keep this key private! Don't share it publicly</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🎬 Step 3: Use in OBS Studio</h4>
-              <div class="bg-gray-100 p-3 rounded font-mono text-xs mb-3">
-                <p><strong>Server:</strong> rtmps://a.rtmp.youtube.com/live2</p>
-                <p><strong>Stream Key:</strong> <span id="youtubeKeyDisplay">••••••••••••••••</span></p>
-              </div>
-              <button onclick="copyToClipboard('youtubeStreamKey', 'youtube')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
-                📋 Copy Stream Key
-              </button>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🎯 Step 4: Add to CAPD</h4>
-              <label class="block text-sm font-medium mb-2">Video ID or Stream URL:</label>
-              <input type="text" id="youtubeVideoId" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3">
-              <button onclick="saveStreamingConfig('youtube')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                ✅ Save YouTube Configuration
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Twitch Setup -->
-        <div id="twitchSetup" class="hidden bg-purple-50 border-2 border-purple-300 rounded-lg p-6 mb-6">
-          <h3 class="text-xl font-bold text-purple-900 mb-4">Twitch Configuration</h3>
-          <div class="space-y-4">
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">📋 Step 1: Create Twitch Account</h4>
-              <p class="text-sm text-gray-600 mb-3">Sign up at twitch.tv and complete your channel setup</p>
-              <a href="https://twitch.tv" target="_blank" class="text-purple-600 hover:text-purple-700 font-semibold">Open Twitch →</a>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🔑 Step 2: Get Your Stream Key</h4>
-              <p class="text-sm text-gray-600 mb-3">Go to Settings > Channel > Primary Stream Key</p>
-              <div class="flex gap-2">
-                <input type="password" id="twitchStreamKey" placeholder="Paste your Twitch Stream Key" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" style="font-size: 13px;">
-                <button onclick="toggleTwitchKeyVisibility()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg">👁️</button>
-              </div>
-              <p class="text-xs text-gray-500 mt-2">⚠️ Keep this key secret! Anyone with it can stream to your channel</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🎬 Step 3: Use in OBS Studio</h4>
-              <div class="bg-gray-100 p-3 rounded font-mono text-xs mb-3">
-                <p><strong>Server:</strong> rtmp://live-iad.twitch.tv/app</p>
-                <p><strong>Stream Key:</strong> <span id="twitchKeyDisplay">••••••••••••••••</span></p>
-              </div>
-              <button onclick="copyToClipboard('twitchStreamKey', 'twitch')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
-                📋 Copy Stream Key
-              </button>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-              <h4 class="font-bold text-gray-800 mb-2">🎯 Step 4: Add to CAPD</h4>
-              <label class="block text-sm font-medium mb-2">Twitch Channel Name:</label>
-              <input type="text" id="twitchChannelName" placeholder="your-channel-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3">
-              <button onclick="saveStreamingConfig('twitch')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                ✅ Save Twitch Configuration
-              </button>
+              <h4 class="font-bold text-green-900">Custom RTMP Server</h4>
+              <p class="text-xs text-green-700">External Server • Any Source</p>
             </div>
           </div>
         </div>
@@ -851,8 +843,8 @@
                 <div>
                   <span class="font-semibold text-gray-700">HLS URL:</span>
                   <div class="flex items-center gap-2 mt-1">
-                    <code class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800 text-xs">http://localhost:8000/live/[key]/index.m3u8</code>
-                    <button onclick="copyToClipboard('http://localhost:8000/live/[key]/index.m3u8')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
+                    <code id="genHlsUrl" class="bg-gray-100 px-3 py-2 rounded flex-1 text-gray-800 text-xs">http://localhost:8000/live/[key]/index.m3u8</code>
+                    <button onclick="copyToClipboard(document.getElementById('genHlsUrl').textContent)" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded">📋</button>
                   </div>
                 </div>
                 <div>
