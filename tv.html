@@ -64,35 +64,34 @@
 
     .channel-card {
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      border-radius: 8px;
+      border-radius: 12px;
       background: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       display: flex;
-      gap: 10px;
+      flex-direction: column;
     }
 
     .channel-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
     }
 
     .channel-card-thumbnail {
-      width: 80px;
-      height: 60px;
-      min-width: 80px;
+      width: 100%;
+      aspect-ratio: 16/9;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       overflow: hidden;
-      border-radius: 6px;
     }
 
     .channel-card-number {
-      font-size: 28px;
+      font-size: 48px;
       font-weight: 700;
       color: rgba(255, 255, 255, 0.8);
     }
@@ -232,72 +231,66 @@
     </nav>
   </header>
 
-  <!-- Hero Section with Video Player & Channels -->
+  <!-- Hero Section with Full Width Video Player -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Column: Video & Info -->
-      <div class="lg:col-span-2">
-        <div class="hero-card p-6 sm:p-8">
-          <!-- Video Player -->
-          <div class="video-container mb-6">
-            <video id="mainVideo" controls>
-              <source src="" type="application/x-mpegURL">
-              Your browser does not support HTML5 video.
-            </video>
+    <div class="hero-card p-6 sm:p-8">
+      <!-- Video Player -->
+      <div class="video-container mb-4">
+        <video id="mainVideo" controls>
+          <source src="" type="application/x-mpegURL">
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+
+      <!-- Channel Info Row: Title on left, Stats as icons on right -->
+      <div class="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200">
+        <h1 id="videoTitle" class="text-xl sm:text-2xl font-bold text-slate-900 truncate">Select a channel to watch</h1>
+
+        <div class="flex items-center gap-4 flex-shrink-0">
+          <!-- Stats as Icons -->
+          <div class="flex items-center gap-1 text-xs" title="Viewers">
+            <span>👁️</span>
+            <span id="viewCount" class="font-semibold text-slate-900">0</span>
           </div>
-
-          <!-- Channel Info -->
-          <h1 id="videoTitle" class="text-2xl sm:text-3xl font-bold mb-3">Select a channel to watch</h1>
-          <p id="channelDesc" class="text-slate-600 text-sm mb-4 leading-relaxed">Select a channel to see more details and information</p>
-
-          <!-- Stats Grid -->
-          <div class="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-slate-200">
-            <div>
-              <p class="text-xs text-slate-500 mb-1">Viewers</p>
-              <p id="viewCount" class="text-lg font-bold text-slate-900">0</p>
-            </div>
-            <div>
-              <p class="text-xs text-slate-500 mb-1">Status</p>
-              <p id="statusBadge" class="text-lg font-bold">
-                <span id="statusText" class="text-slate-600">Offline</span>
-              </p>
-            </div>
-            <div>
-              <p class="text-xs text-slate-500 mb-1">Type</p>
-              <p id="streamType" class="text-lg font-bold text-slate-600">—</p>
-            </div>
+          <div class="flex items-center gap-1 text-xs" title="Status">
+            <span id="statusIcon">⚪</span>
+            <span id="statusText" class="font-semibold text-slate-600">Offline</span>
           </div>
-
-          <!-- Actions -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Like">
-              👍 Like
-            </button>
-            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Dislike">
-              👎 Dislike
-            </button>
-            <button onclick="shareStream()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Share">
-              📤 Share
-            </button>
-            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Save">
-              💾 Save
-            </button>
+          <div class="flex items-center gap-1 text-xs" title="Type">
+            <span>📺</span>
+            <span id="streamType" class="font-semibold text-slate-600">—</span>
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Trending Channels -->
-      <div class="lg:col-span-1">
-        <div class="hero-card p-6">
-          <h2 class="text-lg font-bold mb-4 text-slate-900">Trending</h2>
-          <div id="recommendedContainer" class="space-y-3 max-h-96 overflow-y-auto">
-            <!-- Channels will be loaded here -->
-            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
-            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
-            <div class="bg-slate-200 rounded-lg animate-pulse h-32"></div>
-          </div>
-        </div>
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Like">
+          👍 Like
+        </button>
+        <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Dislike">
+          👎 Dislike
+        </button>
+        <button onclick="shareStream()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Share">
+          📤 Share
+        </button>
+        <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition text-xs sm:text-sm font-medium" title="Save">
+          💾 Save
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Trending Channels Section - Full Width -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <h2 class="section-title">Trending Channels</h2>
+    <div id="recommendedContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <!-- Channels will be loaded here -->
+      <div class="bg-slate-200 rounded-lg animate-pulse h-40"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-40"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-40"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-40"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-40"></div>
     </div>
   </div>
 
