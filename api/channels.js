@@ -40,11 +40,27 @@ async function saveChannels(req, res) {
       return res.status(400).json({ error: 'Channels must be an array' });
     }
 
+    // Convert camelCase to snake_case for database
+    const dbChannels = channels.map(ch => ({
+      id: ch.id,
+      name: ch.name,
+      number: ch.number,
+      description: ch.description,
+      stream_url: ch.streamUrl || ch.stream_url,
+      status: ch.status,
+      viewers: ch.viewers,
+      type: ch.type,
+      poster: ch.poster,
+      rtmp_url: ch.rtmpUrl || ch.rtmp_url,
+      created_at: ch.createdAt || ch.created_at,
+      updated_at: new Date().toISOString()
+    }));
+
     // Delete and insert
     await supabase.from('channels').delete().neq('id', 'null');
     const { data, error } = await supabase
       .from('channels')
-      .insert(channels)
+      .insert(dbChannels)
       .select();
 
     if (error) throw error;

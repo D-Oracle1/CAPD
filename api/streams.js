@@ -33,10 +33,10 @@ async function getStreams(res) {
       name: ch.name,
       number: ch.number,
       description: ch.description,
-      streamUrl: ch.streamUrl,
+      streamUrl: ch.stream_url || ch.streamUrl,
       status: ch.status || 'offline',
       viewers: ch.viewers || 0,
-      type: detectStreamType(ch.streamUrl)
+      type: detectStreamType(ch.stream_url || ch.streamUrl)
     }));
 
     return res.status(200).json({ streams });
@@ -63,8 +63,8 @@ async function getStreamById(res, id) {
       name: data.name,
       status: data.status,
       viewers: data.viewers,
-      streamUrl: data.streamUrl,
-      type: detectStreamType(data.streamUrl),
+      streamUrl: data.stream_url || data.streamUrl,
+      type: detectStreamType(data.stream_url || data.streamUrl),
       description: data.description
     });
   } catch (error) {
@@ -86,11 +86,12 @@ async function createStream(req, res) {
       name,
       number: number || 1,
       description: description || '',
-      streamUrl,
+      stream_url: streamUrl,
       status: status || 'offline',
       viewers: 0,
       type: detectStreamType(streamUrl),
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase
