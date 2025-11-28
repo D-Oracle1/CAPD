@@ -398,14 +398,17 @@
 
         // Try to load from backend API first (production data)
         try {
-          const res = await fetch("/api/channels");
+          const apiUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:3001/api/channels'
+            : '/api/channels';
+          const res = await fetch(apiUrl);
           if (res.ok) {
             const data = await res.json();
             channels = data.channels || [];
             console.log('Loaded channels from backend API');
           }
         } catch (apiError) {
-          console.log('Backend API not available, trying alternatives');
+          console.log('Backend API not available, trying alternatives', apiError);
         }
 
         // If no channels from API, try localStorage (from CMS)
