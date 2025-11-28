@@ -209,6 +209,13 @@ async function loadChannels() {
       : '/api/channels';
 
     const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API error response:', response.status, errorText);
+      throw new Error(`API returned ${response.status}: ${errorText}`);
+    }
+
     const result = await response.json();
     const data = result.channels || [];
 
@@ -251,7 +258,7 @@ async function loadChannels() {
     updateDashboardCounts();
   } catch (error) {
     console.error('Error loading channels:', error);
-    alert('Error loading channels from database');
+    alert('Error loading channels from database: ' + error.message);
   }
 }
 

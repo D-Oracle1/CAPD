@@ -6,7 +6,19 @@
 const { createClient } = require('@supabase/supabase-js');
 
 // Import Supabase credentials
-const { SUPABASE_URL, SUPABASE_ANON_KEY } = require('../supabase-client.js');
+let SUPABASE_URL, SUPABASE_ANON_KEY;
+try {
+  const config = require('../supabase-client.js');
+  SUPABASE_URL = config.SUPABASE_URL;
+  SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY;
+  console.log('Supabase config loaded from supabase-client.js');
+} catch (e) {
+  console.error('Failed to load supabase-client.js:', e.message);
+  // Fallback to hardcoded values if require fails
+  SUPABASE_URL = 'https://yuzqfrybmpxeqqxtewyl.supabase.co';
+  SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1enFmcnlibXB4ZXFxeHRld3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzMjE1NzYsImV4cCI6MjA3OTg5NzU3Nn0.m_vwoLx449WZoRWzZsYIUf0MD8G_EMpwUDIpIGZ-Z-8';
+  console.log('Using hardcoded Supabase credentials');
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
