@@ -1,90 +1,55 @@
 /**
  * Vercel Serverless Function for Channel Management
+ * Uses Supabase PostgreSQL database for persistent storage
  * GET: Fetch all channels
  * POST: Save/update channels
  */
 
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
-// In production, we store in /tmp since Vercel is ephemeral
-// In development, we store in data folder
-const isProduction = process.env.NODE_ENV === 'production';
-const dataDir = isProduction ? '/tmp' : path.join(process.cwd(), 'data');
-const channelsFile = path.join(dataDir, 'channels.json');
+// Supabase configuration
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yuzqfrybmpxeqqxtewyl.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1enFmcnlibXB4ZXFxeHRld3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzMjE1NzYsImV4cCI6MjA3OTg5NzU3Nn0.m_vwoLx449WZoRWzZsYIUf0MD8G_EMpwUDIpIGZ-Z-8';
 
-// Ensure data directory exists
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+// Create Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Helper function to convert database rows to channel format
+function dbRowToChannel(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    number: row.number,
+    description: row.description,
+    streamUrl: row.stream_url,
+    type: row.type,
+    status: row.status,
+    viewers: row.viewers,
+    poster: row.poster,
+    rtmpUrl: row.rtmp_url,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
 }
 
-// Initialize with default channels if file doesn't exist
-function initializeChannels() {
-  if (!fs.existsSync(channelsFile)) {
-    const defaultChannels = {
-      channels: [
-        {
-          id: "main",
-          name: "CAPD Main Channel",
-          number: 1,
-          description: "Main live broadcast and news",
-          streamUrl: "https://www.youtube.com/live/dQw4w9WgXcQ",
-          poster: "assets/images/channel-main.jpg",
-          status: "online",
-          viewers: 1250,
-          type: "youtube"
-        },
-        {
-          id: "news",
-          name: "CAPD News 24/7",
-          number: 2,
-          description: "Latest news and updates",
-          streamUrl: "https://www.youtube.com/live/jNQXAC9IVRw",
-          poster: "assets/images/channel-news.jpg",
-          status: "online",
-          viewers: 890,
-          type: "youtube"
-        },
-        {
-          id: "community",
-          name: "Community Channel",
-          number: 3,
-          description: "Community events and programs",
-          streamUrl: "https://commondatastorage.googleapis.com/gtv-videos-library/sample/big_buck_bunny.mp4",
-          poster: "assets/images/channel-community.jpg",
-          status: "online",
-          viewers: 567,
-          type: "mp4"
-        },
-        {
-          id: "education",
-          name: "Education Channel",
-          number: 4,
-          description: "Educational content and seminars",
-          streamUrl: "https://www.youtube.com/live/9bZkp7q19f0",
-          poster: "assets/images/channel-education.jpg",
-          status: "online",
-          viewers: 742,
-          type: "youtube"
-        },
-        {
-          id: "culture",
-          name: "Culture & Entertainment",
-          number: 5,
-          description: "Cultural programs and entertainment",
-          streamUrl: "https://commondatastorage.googleapis.com/gtv-videos-library/sample/sintel.mp4",
-          poster: "assets/images/channel-culture.jpg",
-          status: "online",
-          viewers: 615,
-          type: "mp4"
-        }
-      ]
-    };
-    fs.writeFileSync(channelsFile, JSON.stringify(defaultChannels, null, 2));
-  }
+// Helper function to convert channel to database format
+function channelToDbRow(channel) {
+  return {
+    id: channel.id,
+    name: channel.name,
+    number: channel.number,
+    description: channel.description,
+    stream_url: channel.streamUrl,
+    type: channel.type || 'mp4',
+    status: channel.status || 'offline',
+    viewers: channel.viewers || 0,
+    poster: channel.poster,
+    rtmp_url: channel.rtmpUrl,
+    updated_at: new Date().toISOString()
+  };
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -98,31 +63,64 @@ module.exports = (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      // GET /api/channels - Fetch all channels
-      initializeChannels();
-      const data = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-      res.status(200).json(data);
+      // GET /api/channels - Fetch all channels from Supabase
+      const { data, error } = await supabase
+        .from('channels')
+        .select('*')
+        .order('number', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ error: 'Failed to fetch channels from database' });
+      }
+
+      const channels = (data || []).map(dbRowToChannel);
+      res.status(200).json({ channels });
+
     } else if (req.method === 'POST') {
-      // POST /api/channels - Save channels
+      // POST /api/channels - Save/update channels in Supabase
       const { channels } = req.body;
 
       if (!Array.isArray(channels)) {
-        res.status(400).json({ error: 'Channels must be an array' });
-        return;
+        return res.status(400).json({ error: 'Channels must be an array' });
       }
 
-      const data = { channels };
-      fs.writeFileSync(channelsFile, JSON.stringify(data, null, 2));
+      // Delete all existing channels and insert new ones
+      const { error: deleteError } = await supabase
+        .from('channels')
+        .delete()
+        .neq('id', null); // Delete all records
+
+      if (deleteError) {
+        console.error('Delete error:', deleteError);
+        return res.status(500).json({ error: 'Failed to update channels' });
+      }
+
+      // Insert new channels
+      const dbChannels = channels.map(channelToDbRow);
+      const { data, error: insertError } = await supabase
+        .from('channels')
+        .insert(dbChannels);
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        return res.status(500).json({ error: 'Failed to save channels' });
+      }
+
+      const responseChannels = (data || channels).map(ch =>
+        ch.stream_url ? dbRowToChannel(ch) : ch
+      );
 
       res.status(200).json({
         message: 'Channels updated successfully',
-        channels
+        channels: responseChannels
       });
+
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('Error in channels API:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 };
