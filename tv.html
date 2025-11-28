@@ -7,13 +7,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    .live-pulse {
-      animation: pulse 1.5s infinite;
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f8fafc;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    body {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .hero-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      overflow: hidden;
     }
 
     .video-container {
@@ -23,6 +49,7 @@
       height: 0;
       overflow: hidden;
       background: #000;
+      border-radius: 12px;
     }
 
     .video-container video,
@@ -35,72 +62,141 @@
       border: none;
     }
 
-    .video-card {
+    .channel-card {
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    .video-card:hover {
-      transform: scale(1.02);
+    .channel-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
     }
 
-    .video-card:hover .duration {
-      opacity: 1;
-    }
-
-    .duration {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 2px;
-      font-size: 12px;
-      font-weight: 600;
-      opacity: 0.8;
-    }
-
-    .channel-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    .channel-card-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: bold;
+      position: relative;
+      overflow: hidden;
     }
 
-    .subscribe-btn {
+    .channel-card-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .live-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
       background: #ef4444;
       color: white;
-      padding: 8px 20px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .channel-card-info {
+      padding: 16px;
+    }
+
+    .channel-name {
+      font-size: 16px;
       font-weight: 600;
+      color: #1e293b;
+      line-clamp: 1;
+      margin-bottom: 4px;
+    }
+
+    .channel-desc {
+      font-size: 13px;
+      color: #64748b;
+      line-clamp: 2;
+      margin-bottom: 8px;
+    }
+
+    .channel-status {
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .status-dot.live {
+      background: #ef4444;
+      animation: pulse 1.5s infinite;
+    }
+
+    .featured-section {
+      padding: 0 24px 40px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #1e293b;
+    }
+
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .play-btn {
+      background: #1e293b;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 24px;
       border: none;
+      font-weight: 600;
+      font-size: 14px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s ease;
     }
 
-    .subscribe-btn:hover {
-      background: #dc2626;
-    }
-
-    .ticker-scroll {
-      animation: scroll 30s linear infinite;
-      white-space: nowrap;
-    }
-
-    @keyframes scroll {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
+    .play-btn:hover {
+      background: #334155;
+      transform: scale(1.05);
     }
   </style>
 </head>
-<body class="bg-white text-gray-800">
+<body class="bg-slate-50 text-slate-800">
 
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-50">
@@ -134,108 +230,111 @@
     </nav>
   </header>
 
-  <!-- Main Content -->
-  <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-    <!-- Left Column - Video Player & Info -->
-    <div class="flex-1 lg:flex-[2]">
-      <!-- Video Player -->
-      <div class="video-container mb-4 rounded-lg overflow-hidden bg-black">
-        <video id="mainVideo" controls>
-          <source src="" type="application/x-mpegURL">
-          Your browser does not support HTML5 video.
-        </video>
-      </div>
-
-      <!-- Video Title -->
-      <h1 id="videoTitle" class="text-lg sm:text-2xl font-bold mb-2">Select a channel to watch</h1>
-
-      <!-- Video Stats & Actions -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6 pb-4 border-b border-gray-200">
-        <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-          <span id="viewCount" class="text-gray-600">0 views</span>
-          <span id="uploadDate" class="text-gray-600">Today</span>
-        </div>
-        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Like">
-            👍 <span id="likeCount" class="hidden sm:inline">Like</span>
-          </button>
-          <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Dislike">
-            👎 <span id="dislikeCount" class="hidden sm:inline">Dislike</span>
-          </button>
-          <button onclick="shareStream()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Share">
-            📤 <span class="hidden sm:inline">Share</span>
-          </button>
-          <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full hover:bg-gray-100 transition text-xs sm:text-sm" title="Save">
-            💾 <span class="hidden sm:inline">Save</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Channel Info -->
-      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-        <div class="flex gap-3 sm:gap-4">
-          <div class="channel-avatar" id="channelAvatar">C</div>
-          <div>
-            <h3 id="channelName" class="font-bold text-sm sm:text-base">CAPD Communications</h3>
-            <p id="subscriberCount" class="text-gray-600 text-xs sm:text-sm">500K subscribers</p>
-            <p id="channelDesc" class="text-gray-700 text-xs sm:text-sm mt-2">Select a channel to see description</p>
+  <!-- Hero Section with Video Player -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div class="hero-card">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 sm:p-10">
+        <!-- Left: Video Player -->
+        <div>
+          <div class="video-container mb-6">
+            <video id="mainVideo" controls>
+              <source src="" type="application/x-mpegURL">
+              Your browser does not support HTML5 video.
+            </video>
           </div>
         </div>
-        <button class="subscribe-btn text-sm sm:text-base">Subscribe</button>
-      </div>
 
-      <!-- Description (Expandable) -->
-      <div class="mt-4 text-gray-700 text-xs sm:text-sm">
-        <p id="fullDesc" class="line-clamp-2">Select a channel to view more information</p>
-      </div>
+        <!-- Right: Channel Info -->
+        <div class="flex flex-col justify-between">
+          <div>
+            <h1 id="videoTitle" class="text-3xl sm:text-4xl font-bold mb-4">Select a channel to watch</h1>
+            <p id="channelDesc" class="text-slate-600 text-base mb-6 leading-relaxed">Select a channel to see more details and information</p>
 
-      <!-- Comments Section -->
-      <div class="mt-6 sm:mt-8 border-t border-gray-200 pt-4 sm:pt-6">
-        <h3 class="text-base sm:text-lg font-bold mb-4">💬 Comments</h3>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+              <div>
+                <p class="text-sm text-slate-500 mb-1">Viewers</p>
+                <p id="viewCount" class="text-2xl font-bold text-slate-900">0</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-500 mb-1">Status</p>
+                <p id="statusBadge" class="text-xl font-bold">
+                  <span id="statusText" class="text-slate-600">Offline</span>
+                </p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-500 mb-1">Type</p>
+                <p id="streamType" class="text-xl font-bold text-slate-600">—</p>
+              </div>
+            </div>
+          </div>
 
-        <!-- Comment Input -->
-        <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
-          <input
-            type="text"
-            id="guestName"
-            placeholder="Enter your name (guest)"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            maxlength="50"
-          />
-          <textarea
-            id="commentText"
-            placeholder="Share your thoughts about this stream..."
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            maxlength="500"
-          ></textarea>
-          <div class="flex items-center justify-between mt-3">
-            <span class="text-xs text-gray-500"><span id="charCount">0</span>/500</span>
-            <button
-              onclick="postComment()"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition"
-            >
-              Post Comment
+          <!-- Actions -->
+          <div class="flex items-center gap-4 flex-wrap pt-4 border-t border-slate-200">
+            <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Like">
+              👍 Like
+            </button>
+            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Dislike">
+              👎 Dislike
+            </button>
+            <button onclick="shareStream()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Share">
+              📤 Share
+            </button>
+            <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition text-sm font-medium" title="Save">
+              💾 Save
             </button>
           </div>
         </div>
-
-        <!-- Comments List -->
-        <div id="commentsList" class="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto">
-          <p class="text-gray-500 text-xs sm:text-sm text-center py-8">No comments yet. Be the first to comment!</p>
-        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Right Column - Recommended Videos -->
-    <div class="w-full lg:w-80">
-      <!-- Channels List Header -->
-      <h3 class="text-base sm:text-lg font-bold mb-4">Channels</h3>
+  <!-- Featured Channels Section -->
+  <div class="featured-section max-w-7xl mx-auto">
+    <h2 class="section-title">Trending Channels</h2>
+    <div id="recommendedContainer" class="channel-grid">
+      <!-- Channels will be loaded here -->
+      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
+      <div class="bg-slate-200 rounded-lg animate-pulse h-48"></div>
+    </div>
+  </div>
 
-      <!-- Channels/Videos List -->
-      <div id="recommendedContainer" class="space-y-3">
-        <!-- Channels will be loaded here -->
-        <div class="bg-gray-200 p-4 rounded animate-pulse h-24"></div>
+  <!-- Comments Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div class="hero-card p-6 sm:p-10">
+      <h3 class="section-title mb-6">💬 Comments</h3>
+
+      <!-- Comment Input -->
+      <div class="mb-8 p-6 bg-slate-50 rounded-lg">
+        <input
+          type="text"
+          id="guestName"
+          placeholder="Enter your name"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-slate-900"
+          maxlength="50"
+        />
+        <textarea
+          id="commentText"
+          placeholder="Share your thoughts about this stream..."
+          rows="3"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
+          maxlength="500"
+        ></textarea>
+        <div class="flex items-center justify-between mt-3">
+          <span class="text-xs text-slate-500"><span id="charCount">0</span>/500</span>
+          <button
+            onclick="postComment()"
+            class="play-btn"
+          >
+            Post Comment
+          </button>
+        </div>
+      </div>
+
+      <!-- Comments List -->
+      <div id="commentsList" class="space-y-4 max-h-96 overflow-y-auto">
+        <p class="text-slate-500 text-sm text-center py-8">No comments yet. Be the first to comment!</p>
       </div>
     </div>
   </div>
@@ -443,7 +542,7 @@
         const container = document.getElementById("recommendedContainer");
 
         container.innerHTML = channels.map((ch, idx) => {
-          // Generate a random thumbnail (using gradient background)
+          // Generate gradient backgrounds
           const gradients = [
             'from-blue-400 to-blue-600',
             'from-purple-400 to-purple-600',
@@ -456,34 +555,17 @@
           const isLive = ch.status === 'live';
 
           return `
-            <div class="video-card flex flex-col cursor-pointer group" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0})">
-              <!-- Thumbnail with Live Badge -->
-              <div class="relative w-full h-32 bg-gradient-to-br ${gradient} rounded-lg overflow-hidden mb-2">
-                <div class="w-full h-full flex items-center justify-center text-white text-4xl font-bold">
-                  ${ch.number}
-                </div>
-                ${isLive ? `<div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 live-pulse">
-                  <span class="inline-block w-2 h-2 bg-white rounded-full"></span>
-                  LIVE
-                </div>` : `<div class="absolute top-2 left-2 bg-gray-700 text-white px-2 py-1 rounded-full text-xs font-bold">
-                  OFFLINE
-                </div>`}
-
-                <!-- Viewers Badge -->
-                <div class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold">
-                  👁️ ${ch.viewers || 0}
-                </div>
+            <div class="channel-card" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0}, '${ch.status}', '${ch.type}')">
+              <div class="channel-card-thumbnail bg-gradient-to-br ${gradient}">
+                ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
+                <div class="channel-card-number">${ch.number}</div>
               </div>
-
-              <!-- Channel Info -->
-              <div class="flex-1">
-                <h4 class="font-bold text-sm text-gray-900 line-clamp-1 group-hover:text-blue-600">
-                  ${ch.number}. ${ch.name}
-                </h4>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">${ch.description}</p>
-                <div class="flex items-center gap-2 mt-2 text-xs">
-                  <span class="inline-block w-2 h-2 rounded-full ${isLive ? 'bg-red-600 live-pulse' : 'bg-gray-400'}"></span>
-                  <span class="text-gray-500">${isLive ? 'Streaming now' : 'Offline'}</span>
+              <div class="channel-card-info">
+                <h4 class="channel-name">${ch.number}. ${ch.name}</h4>
+                <p class="channel-desc">${ch.description}</p>
+                <div class="channel-status">
+                  <span class="status-dot ${isLive ? 'live' : ''}"></span>
+                  <span>${isLive ? 'Streaming now' : 'Offline'}</span>
                 </div>
               </div>
             </div>
@@ -492,7 +574,15 @@
 
         // Select first channel by default
         if (channels.length > 0) {
-          selectChannel(channels[0].id, channels[0].name, channels[0].description, channels[0].streamUrl, channels[0].viewers || 0);
+          selectChannel(
+            channels[0].id,
+            channels[0].name,
+            channels[0].description,
+            channels[0].streamUrl,
+            channels[0].viewers || 0,
+            channels[0].status || 'offline',
+            channels[0].type || 'unknown'
+          );
         }
       } catch (error) {
         console.error("Error loading channels:", error);
@@ -501,38 +591,35 @@
     }
 
     // Select channel and load stream
-    function selectChannel(id, name, desc, streamUrl, viewers) {
-      currentStreamInfo = { id, name, desc, streamUrl, viewers };
+    function selectChannel(id, name, desc, streamUrl, viewers, status = 'offline', type = 'unknown') {
+      currentStreamInfo = { id, name, desc, streamUrl, viewers, status, type };
 
       // Update video title and info
       document.getElementById("videoTitle").textContent = name;
-      document.getElementById("channelName").textContent = "CAPD Communications";
-      document.getElementById("channelDesc").textContent = desc;
-      document.getElementById("channelAvatar").textContent = name.charAt(0).toUpperCase();
-      document.getElementById("viewCount").textContent = `${(viewers || 0).toLocaleString()} views`;
-      document.getElementById("subscriberCount").textContent = "500K subscribers";
-      document.getElementById("uploadDate").textContent = "Today";
-      document.getElementById("fullDesc").textContent = desc;
-      document.getElementById("likeCount").textContent = "Like";
+      document.getElementById("channelDesc").textContent = desc || 'No description available';
+      document.getElementById("viewCount").textContent = (viewers || 0).toLocaleString();
+      document.getElementById("statusText").textContent = status === 'live' ? 'LIVE' : 'Offline';
+      document.getElementById("statusText").className = status === 'live' ? 'text-red-600 font-bold' : 'text-slate-600';
+      document.getElementById("streamType").textContent = (type || 'unknown').toUpperCase();
 
       // Reset button states
       const likeBtn = document.getElementById('likeBtn');
       const dislikeBtn = document.getElementById('dislikeBtn');
       const saveBtn = document.getElementById('saveBtn');
 
-      likeBtn.classList.remove('bg-gray-200');
-      dislikeBtn.classList.remove('bg-gray-200');
-      saveBtn.classList.remove('bg-yellow-100');
+      likeBtn.classList.remove('bg-slate-100');
+      dislikeBtn.classList.remove('bg-slate-100');
+      saveBtn.classList.remove('bg-slate-100');
 
       // Restore user's previous interactions with this channel
       if (userLikes[id]) {
-        likeBtn.classList.add('bg-gray-200');
+        likeBtn.classList.add('bg-slate-100');
       }
       if (userDislikes[id]) {
-        dislikeBtn.classList.add('bg-gray-200');
+        dislikeBtn.classList.add('bg-slate-100');
       }
       if (userSaves[id]) {
-        saveBtn.classList.add('bg-yellow-100');
+        saveBtn.classList.add('bg-slate-100');
       }
 
       // Load the stream
