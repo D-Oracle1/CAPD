@@ -2,10 +2,6 @@
   "version": 2,
   "buildCommand": "npm install",
   "installCommand": "npm install",
-  "env": {
-    "SUPABASE_URL": "@capd_supabase_url",
-    "SUPABASE_ANON_KEY": "@capd_supabase_anon_key"
-  },
   "functions": {
     "api/*.js": {
       "memory": 1024,
