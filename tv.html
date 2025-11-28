@@ -257,16 +257,6 @@
             </div>
           </div>
 
-          <!-- Middle: Primary Action Buttons -->
-          <div class="flex gap-2 flex-shrink-0">
-            <button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full text-xs sm:text-sm hover:bg-blue-700 transition">
-              Analytics
-            </button>
-            <button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full text-xs sm:text-sm hover:bg-blue-700 transition">
-              Go Live
-            </button>
-          </div>
-
           <!-- Right: Interaction Buttons -->
           <div class="flex items-center gap-2 flex-shrink-0">
             <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="Like">
@@ -284,29 +274,21 @@
               <span>💾</span>
               <span class="text-xs font-semibold hidden sm:inline">Save</span>
             </button>
-            <button class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="More options">
+            <button onclick="toggleMoreMenu()" class="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-slate-100 transition" title="More options">
               ⋮
             </button>
           </div>
         </div>
 
         <!-- Stats & Description Section -->
-        <div class="grid grid-cols-2 gap-4 mb-3">
-          <!-- Left Column: Stats -->
+        <div class="mb-3">
+          <!-- Stats -->
           <div class="text-sm">
             <p class="text-slate-600">
               <span id="viewCount" class="font-bold text-slate-900">0</span>
               <span class="text-slate-600"> views</span>
             </p>
             <p id="streamTime" class="text-slate-600 text-xs">Streamed just now</p>
-          </div>
-
-          <!-- Right Column: Status & Type -->
-          <div class="text-sm text-right">
-            <p class="text-slate-600">
-              Status: <span id="statusText" class="font-semibold">Offline</span>
-            </p>
-            <p class="text-slate-600 text-xs">Type: <span id="streamType">—</span></p>
           </div>
         </div>
 
@@ -315,6 +297,19 @@
           <p id="channelDesc" class="line-clamp-2">Select a channel to see more details</p>
           <button class="text-blue-600 font-semibold text-xs hover:text-blue-700 mt-1">
             ...more
+          </button>
+        </div>
+
+        <!-- More Menu Dropdown -->
+        <div id="moreMenu" class="absolute right-6 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg hidden z-50">
+          <button onclick="reportChannel()" class="block w-full text-left px-4 py-2 text-sm hover:bg-slate-100 transition">
+            Report channel
+          </button>
+          <button onclick="addToPlaylist()" class="block w-full text-left px-4 py-2 text-sm hover:bg-slate-100 transition border-t border-slate-200">
+            Add to playlist
+          </button>
+          <button onclick="shareAdvanced()" class="block w-full text-left px-4 py-2 text-sm hover:bg-slate-100 transition border-t border-slate-200">
+            Share channel
           </button>
         </div>
       </div>
@@ -513,13 +508,45 @@
 
       if (userSaves[currentStreamInfo.id]) {
         delete userSaves[currentStreamInfo.id];
-        saveBtn.classList.remove('bg-yellow-100');
+        saveBtn.classList.remove('bg-blue-100');
       } else {
         userSaves[currentStreamInfo.id] = true;
-        saveBtn.classList.add('bg-yellow-100');
+        saveBtn.classList.add('bg-blue-100');
       }
 
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
+    }
+
+    // Toggle more menu
+    function toggleMoreMenu() {
+      const moreMenu = document.getElementById('moreMenu');
+      moreMenu.classList.toggle('hidden');
+
+      // Close menu when clicking outside
+      document.addEventListener('click', closeMoreMenu);
+    }
+
+    function closeMoreMenu(e) {
+      const moreMenu = document.getElementById('moreMenu');
+      const moreBtn = event.target.closest('button[onclick*="toggleMoreMenu"]');
+
+      if (!moreBtn && !moreMenu.contains(e.target)) {
+        moreMenu.classList.add('hidden');
+        document.removeEventListener('click', closeMoreMenu);
+      }
+    }
+
+    // More menu options
+    function reportChannel() {
+      alert('Report ' + currentStreamInfo.name + ' - Feature coming soon');
+    }
+
+    function addToPlaylist() {
+      alert('Add to playlist - Feature coming soon');
+    }
+
+    function shareAdvanced() {
+      shareStream();
     }
 
     // Load channels from backend API (database)
@@ -634,9 +661,6 @@
       // Update stats
       document.getElementById("viewCount").textContent = (viewers || 0).toLocaleString();
       document.getElementById("streamTime").textContent = status === 'live' ? 'Streaming now' : 'Streamed just now';
-      document.getElementById("statusText").textContent = status === 'live' ? 'LIVE' : 'Offline';
-      document.getElementById("statusText").className = status === 'live' ? 'text-red-600 font-bold' : 'text-slate-600 font-semibold';
-      document.getElementById("streamType").textContent = (type || 'unknown').toUpperCase();
 
       // Reset button states
       const likeBtn = document.getElementById('likeBtn');
