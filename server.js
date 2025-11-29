@@ -16,6 +16,9 @@ app.use(cors({
   maxAge: 86400
 }));
 
+// Parse JSON request bodies
+app.use(express.json());
+
 // Serve static files (your HTML, CSS, JS)
 app.use(express.static(path.join(__dirname), {
   setHeaders: (res, filePath) => {
