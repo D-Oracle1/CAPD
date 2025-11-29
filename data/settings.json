@@ -1,0 +1,29 @@
+{
+  "streaming": {
+    "rtmpServer": {
+      "address": "rtmp://localhost:1935/live",
+      "port": 1935,
+      "status": "online"
+    },
+    "hlsServer": {
+      "address": "http://localhost:8000",
+      "port": 8000,
+      "status": "online"
+    },
+    "savedStreamKey": "main_channel",
+    "timestamp": "2025-01-01T00:00:00Z"
+  },
+  "ui": {
+    "theme": "dark",
+    "language": "en"
+  },
+  "broadcast": {
+    "autoStart": false,
+    "recordStreams": true,
+    "maxConcurrentStreams": 5
+  },
+  "security": {
+    "adminUsername": "admin",
+    "requireAuth": true
+  }
+}

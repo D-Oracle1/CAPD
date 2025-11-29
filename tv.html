@@ -437,10 +437,49 @@
     let viewCountRefreshInterval;
 
     document.addEventListener("DOMContentLoaded", () => {
+      loadSettings();
       loadChannels();
       startViewCountRefresh();
       listenForChannelUpdates();
     });
+
+    // Load application settings from API
+    async function loadSettings() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const apiUrl = window.location.hostname === 'localhost'
+          ? 'http://localhost:3000/api/settings'
+          : '/api/settings';
+
+        const res = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const settings = data.settings || {};
+          localStorage.setItem('appSettings', JSON.stringify(settings));
+          console.log('✅ Loaded settings from server API');
+          return settings;
+        }
+      } catch (error) {
+        console.log('⚠️ Could not load settings from API, using localStorage cache:', error.message);
+      }
+
+      // Fallback to cached settings
+      try {
+        const cached = localStorage.getItem('appSettings');
+        if (cached) {
+          console.log('📦 Using cached settings from localStorage');
+          return JSON.parse(cached);
+        }
+      } catch (e) {
+        console.log('⚠️ No cached settings available');
+      }
+
+      return {};
+    }
 
     // Listen for localStorage changes (when admin panel updates channels)
     function listenForChannelUpdates() {

@@ -1390,7 +1390,7 @@ function autoFillStreamUrl() {
 }
 
 /**
- * Save streaming settings to localStorage
+ * Save streaming settings to localStorage and sync with API
  */
 function saveStreamingSettings() {
   const streamName = document.getElementById('streamKeyInput').value.trim();
@@ -1409,7 +1409,52 @@ function saveStreamingSettings() {
     timestamp: new Date().toLocaleString()
   };
 
+  // Priority 1: Save to localStorage (instant, offline support)
   localStorage.setItem('streamingSettings', JSON.stringify(streamingSettings));
+  console.log('✅ Streaming settings saved to localStorage');
+
+  // Priority 2: Try to sync with API server
+  try {
+    const apiUrl = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api/settings'
+      : '/api/settings';
+
+    const settingsToSave = {
+      streaming: {
+        rtmpServer: {
+          address: 'rtmp://localhost:1935/live',
+          port: 1935,
+          status: 'online'
+        },
+        hlsServer: {
+          address: 'http://localhost:8000',
+          port: 8000,
+          status: 'online'
+        },
+        savedStreamKey: streamName,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings: settingsToSave })
+    })
+      .then(res => {
+        if (res.ok) {
+          console.log('✅ Settings synced to API server');
+        } else {
+          console.log('⚠️ Could not sync to API, but saved locally');
+        }
+      })
+      .catch(err => {
+        console.log('⚠️ API not available, but settings saved locally:', err.message);
+      });
+  } catch (error) {
+    console.log('⚠️ Could not sync settings to API:', error.message);
+  }
+
   displaySavedSettings();
   alert('Streaming settings saved successfully!');
 }
@@ -1465,9 +1510,46 @@ function clearStreamingSettings() {
 
 // Load saved settings when page loads
 document.addEventListener('DOMContentLoaded', function() {
+  loadSettingsFromServer();
   displaySavedSettings();
   initializeViewCounterUI();
 }, { once: true });
+
+/**
+ * Load settings from API server
+ */
+function loadSettingsFromServer() {
+  try {
+    const apiUrl = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api/settings'
+      : '/api/settings';
+
+    fetch(apiUrl, { method: 'GET', signal: AbortSignal.timeout(3000) })
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error('Failed to load settings from API');
+      })
+      .then(data => {
+        if (data.settings) {
+          console.log('✅ Loaded settings from API server');
+          // Cache settings in localStorage
+          localStorage.setItem('appSettings', JSON.stringify(data.settings));
+        }
+      })
+      .catch(err => {
+        console.log('⚠️ Could not load settings from API, using localStorage cache:', err.message);
+        // Try to load from localStorage fallback
+        const cached = localStorage.getItem('appSettings');
+        if (cached) {
+          console.log('📦 Using cached settings from localStorage');
+        }
+      });
+  } catch (error) {
+    console.log('⚠️ Error loading settings:', error.message);
+  }
+}
 
 /**
  * Stream Type Helper

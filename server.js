@@ -142,6 +142,43 @@ app.post('/api/channels', (req, res) => {
   }
 });
 
+// Get all settings (from JSON file)
+app.get('/api/settings', (req, res) => {
+  try {
+    const settingsPath = path.join(__dirname, 'data', 'settings.json');
+    const settingsData = fs.readFileSync(settingsPath, 'utf8');
+    const data = JSON.parse(settingsData);
+    res.json({ settings: data });
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    res.status(500).json({ error: 'Failed to load settings' });
+  }
+});
+
+// Save/Update settings (from admin panel)
+app.post('/api/settings', (req, res) => {
+  try {
+    const { settings } = req.body;
+
+    if (!settings || typeof settings !== 'object') {
+      return res.status(400).json({ error: 'Settings must be an object' });
+    }
+
+    // Save to JSON file
+    const settingsPath = path.join(__dirname, 'data', 'settings.json');
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+
+    console.log('✅ Saved application settings to JSON file');
+    res.json({
+      message: 'Settings updated successfully',
+      settings: settings
+    });
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
+});
+
 // Get active RTMP streams
 app.get('/api/streams', (req, res) => {
   const fs = require('fs');
