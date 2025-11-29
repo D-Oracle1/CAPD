@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -101,6 +102,19 @@ app.use('/api/proxy', createProxyMiddleware({
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Get all channels (from JSON file)
+app.get('/api/channels', (req, res) => {
+  try {
+    const channelsPath = path.join(__dirname, 'data', 'channels.json');
+    const channelsData = fs.readFileSync(channelsPath, 'utf8');
+    const data = JSON.parse(channelsData);
+    res.json({ channels: data.channels || [] });
+  } catch (error) {
+    console.error('Error loading channels:', error);
+    res.status(500).json({ error: 'Failed to load channels', channels: [] });
+  }
 });
 
 // Get active RTMP streams
