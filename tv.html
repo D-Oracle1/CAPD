@@ -259,45 +259,44 @@
 
           <!-- Right: Interaction Buttons with SVG Icons -->
           <div class="flex items-center gap-1 flex-shrink-0">
-            <!-- Like Button -->
+            <!-- Like Button - Heart -->
             <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Like">
-              <svg id="likeIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M14 10h4.764a2 2 0 011.789 2.894l-3.646 7.23a2 2 0 01-1.789 1.106H7a2 2 0 01-2-2v-8a2 2 0 012-2h.5a2 2 0 012-2h5a2 2 0 012 2v.5a2 2 0 01-2 2z" stroke-linejoin="round" stroke-linecap="round"/>
-                <path d="M4 10v8a2 2 0 002 2v0" stroke-linejoin="round" stroke-linecap="round"/>
+              <svg id="likeIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linejoin="round" stroke-linecap="round"/>
               </svg>
               <span id="likeCount" class="text-xs font-semibold text-slate-700">0</span>
             </button>
 
-            <!-- Dislike Button -->
-            <button id="dislikeBtn" onclick="toggleDislike()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Dislike">
-              <svg id="dislikeIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M10 14H5.236a2 2 0 01-1.789-2.894l3.646-7.23a2 2 0 011.789-1.106h8a2 2 0 012 2v8a2 2 0 01-2 2h-.5a2 2 0 01-2 2h-5a2 2 0 01-2-2v-.5a2 2 0 012-2z" stroke-linejoin="round" stroke-linecap="round"/>
-                <path d="M20 14v-8a2 2 0 00-2-2v0" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- Comment Button -->
+            <button id="commentBtn" onclick="toggleComment()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Comment">
+              <svg id="commentIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>
               </svg>
             </button>
 
-            <!-- Share Button -->
+            <!-- Share Button - Send Arrow -->
             <button onclick="shareStream()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Share">
-              <svg class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3-3m0 0l3 3m-3-3v6" stroke-linejoin="round" stroke-linecap="round"/>
+              <svg class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.40,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16346269 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99701575 L3.03521743,10.4380088 C3.03521743,10.5950915 3.19218622,10.7521889 3.50612381,10.7521889 L16.6915026,11.5376757 C16.6915026,11.5376757 17.1624089,11.5376757 17.1624089,12.0089679 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" stroke-linejoin="round" stroke-linecap="round" fill="currentColor"/>
               </svg>
               <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Share</span>
             </button>
 
-            <!-- Save Button -->
+            <!-- Save Button - Bookmark -->
             <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Save">
-              <svg id="saveIcon" class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v14l-7-3.5L5 19V5z" stroke-linejoin="round" stroke-linecap="round"/>
+              <svg id="saveIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z" stroke-linejoin="round" stroke-linecap="round"/>
+                <polyline points="17 7 12 13 7 7" stroke-linejoin="round" stroke-linecap="round"/>
               </svg>
               <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Save</span>
             </button>
 
             <!-- More Button -->
             <button onclick="toggleMoreMenu()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="More options">
-              <svg class="w-5 h-5 stroke-slate-700 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="5" r="1"/>
-                <circle cx="12" cy="12" r="1"/>
-                <circle cx="12" cy="19" r="1"/>
+              <svg class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>
               </svg>
             </button>
           </div>
@@ -448,7 +447,7 @@
 
     // User interaction state
     let userLikes = JSON.parse(localStorage.getItem('channelLikes') || '{}');
-    let userDislikes = JSON.parse(localStorage.getItem('channelDislikes') || '{}');
+    let userComments = JSON.parse(localStorage.getItem('channelComments') || '{}');
     let userSaves = JSON.parse(localStorage.getItem('channelSaves') || '{}');
     let likeCounts = JSON.parse(localStorage.getItem('likeCounts') || '{}');
     let viewCountRefreshInterval;
@@ -482,106 +481,69 @@
       }
     }
 
-    // Toggle like button
+    // Toggle like button - Heart
     function toggleLike() {
       if (!currentStreamInfo.id) return;
 
-      const likeBtn = document.getElementById('likeBtn');
       const likeIcon = document.getElementById('likeIcon');
-      const dislikeBtn = document.getElementById('dislikeBtn');
-      const dislikeIcon = document.getElementById('dislikeIcon');
       const likeCountEl = document.getElementById('likeCount');
 
       if (userLikes[currentStreamInfo.id]) {
-        // Unlike
+        // Unlike - restore outline
         delete userLikes[currentStreamInfo.id];
-        likeCounts[currentStreamInfo.id] = (likeCounts[currentStreamInfo.id] || 0) - 1;
-
-        // Restore stroke style
+        likeCounts[currentStreamInfo.id] = Math.max(0, (likeCounts[currentStreamInfo.id] || 0) - 1);
         likeIcon.setAttribute('fill', 'none');
-        likeIcon.classList.add('stroke-slate-700');
+        likeIcon.classList.add('stroke-slate-800');
       } else {
-        // Like
+        // Like - fill with red
         userLikes[currentStreamInfo.id] = true;
-        delete userDislikes[currentStreamInfo.id];
         likeCounts[currentStreamInfo.id] = (likeCounts[currentStreamInfo.id] || 0) + 1;
-
-        // Fill icon with blue
-        likeIcon.setAttribute('fill', '#3b82f6');
-        likeIcon.classList.remove('stroke-slate-700');
-        likeIcon.classList.add('stroke-blue-600');
-
-        // Remove dislike
-        delete userDislikes[currentStreamInfo.id];
-        dislikeIcon.setAttribute('fill', 'none');
-        dislikeIcon.classList.add('stroke-slate-700');
-        dislikeIcon.classList.remove('stroke-red-600');
+        likeIcon.setAttribute('fill', '#ef4444');
+        likeIcon.setAttribute('stroke', '#ef4444');
+        likeIcon.classList.remove('stroke-slate-800');
       }
 
-      likeCountEl.textContent = Math.max(0, likeCounts[currentStreamInfo.id] || 0);
+      likeCountEl.textContent = likeCounts[currentStreamInfo.id] || 0;
       localStorage.setItem('channelLikes', JSON.stringify(userLikes));
-      localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
       localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
     }
 
-    // Toggle dislike button
-    function toggleDislike() {
+    // Toggle comment button
+    function toggleComment() {
       if (!currentStreamInfo.id) return;
 
-      const likeBtn = document.getElementById('likeBtn');
-      const likeIcon = document.getElementById('likeIcon');
-      const dislikeBtn = document.getElementById('dislikeBtn');
-      const dislikeIcon = document.getElementById('dislikeIcon');
+      const commentIcon = document.getElementById('commentIcon');
 
-      if (userDislikes[currentStreamInfo.id]) {
-        // Remove dislike
-        delete userDislikes[currentStreamInfo.id];
-        dislikeIcon.setAttribute('fill', 'none');
-        dislikeIcon.classList.add('stroke-slate-700');
-        dislikeIcon.classList.remove('stroke-red-600');
+      if (userComments[currentStreamInfo.id]) {
+        // Uncomment - restore outline
+        delete userComments[currentStreamInfo.id];
+        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>';
       } else {
-        // Add dislike
-        userDislikes[currentStreamInfo.id] = true;
-        delete userLikes[currentStreamInfo.id];
-
-        // Fill dislike icon with red
-        dislikeIcon.setAttribute('fill', '#ef4444');
-        dislikeIcon.classList.remove('stroke-slate-700');
-        dislikeIcon.classList.add('stroke-red-600');
-
-        // Remove like
-        likeIcon.setAttribute('fill', 'none');
-        likeIcon.classList.add('stroke-slate-700');
-        likeIcon.classList.remove('stroke-blue-600');
-
-        const likeCountEl = document.getElementById('likeCount');
-        likeCounts[currentStreamInfo.id] = Math.max(0, (likeCounts[currentStreamInfo.id] || 0) - 1);
-        likeCountEl.textContent = likeCounts[currentStreamInfo.id] || 0;
+        // Comment - add dots
+        userComments[currentStreamInfo.id] = true;
+        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>';
       }
 
-      localStorage.setItem('channelLikes', JSON.stringify(userLikes));
-      localStorage.setItem('channelDislikes', JSON.stringify(userDislikes));
-      localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
+      localStorage.setItem('channelComments', JSON.stringify(userComments));
     }
 
-    // Toggle save button
+    // Toggle save button - Bookmark
     function toggleSave() {
       if (!currentStreamInfo.id) return;
 
       const saveIcon = document.getElementById('saveIcon');
 
       if (userSaves[currentStreamInfo.id]) {
-        // Unsave
+        // Unsave - restore outline
         delete userSaves[currentStreamInfo.id];
         saveIcon.setAttribute('fill', 'none');
-        saveIcon.classList.add('stroke-slate-700');
-        saveIcon.classList.remove('stroke-yellow-600');
+        saveIcon.classList.add('stroke-slate-800');
       } else {
-        // Save
+        // Save - fill with black
         userSaves[currentStreamInfo.id] = true;
-        saveIcon.setAttribute('fill', '#eab308');
-        saveIcon.classList.remove('stroke-slate-700');
-        saveIcon.classList.add('stroke-yellow-600');
+        saveIcon.setAttribute('fill', '#1f2937');
+        saveIcon.setAttribute('stroke', '#1f2937');
+        saveIcon.classList.remove('stroke-slate-800');
       }
 
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
@@ -738,37 +700,31 @@
 
       // Get icon elements
       const likeIcon = document.getElementById('likeIcon');
-      const dislikeIcon = document.getElementById('dislikeIcon');
+      const commentIcon = document.getElementById('commentIcon');
       const saveIcon = document.getElementById('saveIcon');
 
-      // Reset all icons to default stroke state
+      // Reset all icons to default outline state
       likeIcon.setAttribute('fill', 'none');
-      likeIcon.classList.add('stroke-slate-700');
-      likeIcon.classList.remove('stroke-blue-600');
+      likeIcon.classList.add('stroke-slate-800');
 
-      dislikeIcon.setAttribute('fill', 'none');
-      dislikeIcon.classList.add('stroke-slate-700');
-      dislikeIcon.classList.remove('stroke-red-600');
+      commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>';
 
       saveIcon.setAttribute('fill', 'none');
-      saveIcon.classList.add('stroke-slate-700');
-      saveIcon.classList.remove('stroke-yellow-600');
+      saveIcon.classList.add('stroke-slate-800');
 
       // Restore user's previous interactions with this channel
       if (userLikes[id]) {
-        likeIcon.setAttribute('fill', '#3b82f6');
-        likeIcon.classList.remove('stroke-slate-700');
-        likeIcon.classList.add('stroke-blue-600');
+        likeIcon.setAttribute('fill', '#ef4444');
+        likeIcon.setAttribute('stroke', '#ef4444');
+        likeIcon.classList.remove('stroke-slate-800');
       }
-      if (userDislikes[id]) {
-        dislikeIcon.setAttribute('fill', '#ef4444');
-        dislikeIcon.classList.remove('stroke-slate-700');
-        dislikeIcon.classList.add('stroke-red-600');
+      if (userComments[id]) {
+        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>';
       }
       if (userSaves[id]) {
-        saveIcon.setAttribute('fill', '#eab308');
-        saveIcon.classList.remove('stroke-slate-700');
-        saveIcon.classList.add('stroke-yellow-600');
+        saveIcon.setAttribute('fill', '#1f2937');
+        saveIcon.setAttribute('stroke', '#1f2937');
+        saveIcon.classList.remove('stroke-slate-800');
       }
 
       // Load the stream
