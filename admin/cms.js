@@ -211,7 +211,7 @@ async function loadChannels() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      const apiUrl = window.location.hostname === 'localhost'
+      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3000/api/channels'
         : '/api/channels';
 
@@ -345,7 +345,7 @@ async function saveChannel(e) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      const apiUrl = window.location.hostname === 'localhost'
+      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3000/api/channels'
         : '/api/channels';
 
@@ -390,7 +390,7 @@ async function deleteChannelById(channelId) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      const apiUrl = window.location.hostname === 'localhost'
+      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3000/api/channels'
         : '/api/channels';
 
@@ -735,11 +735,11 @@ function updateArticlesJson(articles) {
 
 function updateChannelsJson(channels) {
   // Save channels to backend API
-  const API_BASE = window.location.hostname === 'localhost'
-    ? 'http://localhost:3001'  // Local development
-    : '';  // Production - use relative path
+  const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000/api/channels'
+    : '/api/channels';
 
-  fetch(`${API_BASE}/api/channels`, {
+  fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1415,7 +1415,7 @@ function saveStreamingSettings() {
 
   // Priority 2: Try to sync with API server
   try {
-    const apiUrl = window.location.hostname === 'localhost'
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3000/api/settings'
       : '/api/settings';
 
@@ -1520,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function loadSettingsFromServer() {
   try {
-    const apiUrl = window.location.hostname === 'localhost'
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3000/api/settings'
       : '/api/settings';
 

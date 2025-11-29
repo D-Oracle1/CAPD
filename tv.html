@@ -449,7 +449,7 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        const apiUrl = window.location.hostname === 'localhost'
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? 'http://localhost:3000/api/settings'
           : '/api/settings';
 
@@ -645,7 +645,7 @@
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-          const apiUrl = window.location.hostname === 'localhost'
+          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:3000/api/channels'
             : '/api/channels';
 
