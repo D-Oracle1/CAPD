@@ -8,10 +8,23 @@
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
+
+// Load channels from JSON file as fallback
+let localChannels = [];
+try {
+  const channelsPath = path.join(__dirname, 'data', 'channels.json');
+  const channelsData = fs.readFileSync(channelsPath, 'utf8');
+  localChannels = JSON.parse(channelsData).channels || [];
+  console.log(`✅ Loaded ${localChannels.length} channels from JSON file`);
+} catch (error) {
+  console.warn('⚠️ Could not load channels.json:', error.message);
+}
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://yuzqfrybmpxeqqxtewyl.supabase.co';
@@ -38,17 +51,38 @@ async function initializeDatabase() {
 // Get all channels (for frontend and admin)
 app.get('/api/channels', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // Create a timeout promise for Supabase query (5 second timeout)
+    const timeoutPromise = new Promise((resolve) =>
+      setTimeout(() => resolve({ data: null, error: { message: 'Supabase query timeout' } }), 5000)
+    );
+
+    const queryPromise = supabase
       .from('channels')
       .select('*')
       .order('number', { ascending: true });
 
-    if (error) throw error;
+    const result = await Promise.race([queryPromise, timeoutPromise]);
+    const { data, error } = result;
 
-    res.json({ channels: data || [] });
+    if (error) {
+      console.warn('⚠️ Supabase error, using fallback JSON data:', error.message);
+      // Fallback to local JSON file
+      return res.json({ channels: localChannels });
+    }
+
+    // Check if we got valid data from Supabase
+    if (data && Array.isArray(data) && data.length > 0) {
+      console.log(`✅ Loaded ${data.length} channels from Supabase`);
+      return res.json({ channels: data });
+    }
+
+    // If Supabase returned empty, use local fallback
+    console.log('⚠️ Supabase returned no data, using fallback JSON data');
+    res.json({ channels: localChannels });
   } catch (error) {
-    console.error('Error fetching channels:', error);
-    res.status(500).json({ error: 'Failed to fetch channels' });
+    console.warn('⚠️ Database error, using fallback JSON data:', error.message);
+    // Fallback to local JSON file when database is unavailable
+    res.json({ channels: localChannels });
   }
 });
 
@@ -90,15 +124,29 @@ app.post('/api/channels', async (req, res) => {
 // Get all streams (from channels configuration)
 app.get('/api/streams', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // Create a timeout promise for Supabase query (5 second timeout)
+    const timeoutPromise = new Promise((resolve) =>
+      setTimeout(() => resolve({ data: null, error: { message: 'Supabase query timeout' } }), 5000)
+    );
+
+    const queryPromise = supabase
       .from('channels')
       .select('*')
       .order('number', { ascending: true });
 
-    if (error) throw error;
+    const result = await Promise.race([queryPromise, timeoutPromise]);
+    const { data, error } = result;
+
+    let channels = localChannels;
+    if (!error && data && Array.isArray(data) && data.length > 0) {
+      channels = data;
+      console.log(`✅ Loaded ${data.length} streams from Supabase`);
+    } else if (error) {
+      console.warn('⚠️ Supabase error, using fallback JSON data:', error.message);
+    }
 
     // Map channels to streams format
-    const streams = (data || []).map(ch => ({
+    const streams = channels.map(ch => ({
       id: ch.id,
       name: ch.name,
       number: ch.number,
@@ -113,8 +161,21 @@ app.get('/api/streams', async (req, res) => {
 
     res.json({ streams });
   } catch (error) {
-    console.error('Error fetching streams:', error);
-    res.status(500).json({ error: 'Failed to fetch streams' });
+    console.warn('⚠️ Database error, using fallback JSON data:', error.message);
+    // Fallback to local JSON file
+    const streams = localChannels.map(ch => ({
+      id: ch.id,
+      name: ch.name,
+      number: ch.number,
+      description: ch.description,
+      streamUrl: ch.streamUrl,
+      status: ch.status || 'offline',
+      viewers: ch.viewers || 0,
+      type: detectStreamType(ch.streamUrl),
+      hlsUrl: ch.streamUrl.includes('.m3u8') ? ch.streamUrl : null,
+      rtmpUrl: ch.streamUrl.includes('rtmp') ? ch.streamUrl : null
+    }));
+    res.json({ streams });
   }
 });
 
