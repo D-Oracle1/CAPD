@@ -204,71 +204,38 @@ function hideChannelForm() {
 
 async function loadChannels() {
   try {
-    let data = [];
+    // ALWAYS load from database (server API) - database is single source of truth
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    // Priority 1: Try main server API (port 3000) with 3-second timeout
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api/channels'
+      : '/api/channels';
 
-      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3000/api/channels'
-        : '/api/channels';
+    console.log('📥 Loading channels from database:', apiUrl);
+    const response = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
 
-      console.log('Loading channels from main API:', apiUrl);
-      const response = await fetch(apiUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        const result = await response.json();
-        data = result.channels || [];
-        console.log('✅ Loaded channels from server API:', data.length, 'channels');
-        return renderChannels(data);
-      }
-    } catch (apiError) {
-      console.log('⚠️ Server API not available:', apiError.message);
-    }
-
-    // Priority 2: Load directly from JSON file
-    try {
-      console.log('Loading channels from JSON file...');
-      const response = await fetch('../data/channels.json');
-      if (response.ok) {
-        const result = await response.json();
-        data = result.channels || [];
-        console.log('✅ Loaded channels from JSON file:', data.length, 'channels');
-        return renderChannels(data);
-      }
-    } catch (jsonError) {
-      console.log('⚠️ JSON file not available:', jsonError.message);
-    }
-
-    // Priority 3: Load from localStorage cache
-    try {
-      const storedChannels = localStorage.getItem('channels');
-      if (storedChannels) {
-        data = JSON.parse(storedChannels);
-        console.log('✅ Loaded channels from localStorage cache:', data.length, 'channels');
-        return renderChannels(data);
-      }
-    } catch (e) {
-      console.log("⚠️ Could not parse stored channels");
-    }
-
-    // If nothing worked, show error
-    console.error('❌ Could not load channels from any source');
-    const container = document.getElementById('channelsContainer');
-    if (container) {
-      container.innerHTML = '<p class="text-red-600 col-span-full">Error loading channels. Please refresh or ensure a server is running.</p>';
+    if (response.ok) {
+      const result = await response.json();
+      const data = result.channels || [];
+      console.log('✅ Loaded', data.length, 'channels from database');
+      return renderChannels(data);
+    } else {
+      throw new Error(`Server returned ${response.status}`);
     }
   } catch (error) {
-    console.error('Error in loadChannels:', error);
+    console.error('❌ Failed to load channels from database:', error.message);
+    const container = document.getElementById('channelsContainer');
+    if (container) {
+      container.innerHTML = `<p class="text-red-600 col-span-full">Error loading channels: ${error.message}. Ensure the server is running on port 3000.</p>`;
+    }
   }
 }
 
 function renderChannels(data) {
-  // Store in localStorage for backup
-  localStorage.setItem('channels', JSON.stringify(data));
+  // DO NOT store in localStorage - database is single source of truth
+  // localStorage should only be used for UI state, not data persistence
 
   const container = document.getElementById('channelsContainer');
   const select = document.getElementById('progChannel');
@@ -325,51 +292,62 @@ async function saveChannel(e) {
       poster: 'assets/images/channel-default.jpg'
     };
 
-    // Get all channels to update
-    let channels = JSON.parse(localStorage.getItem('channels')) || [];
+    // Load CURRENT channels from database (not localStorage)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api/channels'
+      : '/api/channels';
+
+    // Step 1: Load latest channels from database
+    console.log('📥 Loading current channels from database...');
+    const getResponse = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!getResponse.ok) {
+      throw new Error('Failed to load channels from database. Ensure server is running on port 3000.');
+    }
+
+    const getResult = await getResponse.json();
+    let channels = getResult.channels || [];
+
+    // Step 2: Update the channel in the list
     if (editChannelIndex !== '') {
       // Update existing channel
       channels = channels.map(ch => ch.id === channel.id ? channel : ch);
+      console.log('✏️ Updated channel:', channel.name);
     } else {
       // Add new channel
       channels.push(channel);
+      console.log('➕ Added new channel:', channel.name);
     }
 
-    // Priority 1: Save to localStorage (always works offline)
-    localStorage.setItem('channels', JSON.stringify(channels));
-    console.log('✅ Channel saved to localStorage');
+    // Step 3: Save UPDATED channels to database
+    const postTimeoutId = setTimeout(() => controller.abort(), 5000);
+    console.log('💾 Saving channels to database...');
 
-    // Priority 2: Try to sync with API if available (with timeout)
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const saveResponse = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channels }),
+      signal: controller.signal
+    });
+    clearTimeout(postTimeoutId);
 
-      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3000/api/channels'
-        : '/api/channels';
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        console.log('✅ Channel synced to API database');
-      }
-    } catch (apiError) {
-      console.log('⚠️ Could not sync to API, but saved locally:', apiError.message);
+    if (!saveResponse.ok) {
+      throw new Error(`Failed to save: ${saveResponse.status}`);
     }
+
+    console.log('✅ Channels saved to database');
 
     hideChannelForm();
+    // Step 4: Reload from database to confirm changes persisted
     await loadChannels();
-    alert('Channel saved successfully!');
+    alert('✅ Channel saved successfully to database!');
   } catch (error) {
-    console.error('Error saving channel:', error);
-    alert('Error saving channel: ' + error.message);
+    console.error('❌ Error saving channel:', error);
+    alert('Error saving channel: ' + error.message + '\n\nEnsure the server is running on port 3000.');
   }
 }
 
@@ -377,67 +355,105 @@ async function deleteChannelById(channelId) {
   if (!confirm('Delete this channel?')) return;
 
   try {
-    // Get all channels and remove the one we're deleting
-    let channels = JSON.parse(localStorage.getItem('channels')) || [];
-    channels = channels.filter(ch => ch.id !== channelId);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    // Priority 1: Save to localStorage (always works offline)
-    localStorage.setItem('channels', JSON.stringify(channels));
-    console.log('✅ Channel deleted from localStorage');
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api/channels'
+      : '/api/channels';
 
-    // Priority 2: Try to sync with API if available (with timeout)
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+    // Step 1: Load latest channels from database
+    console.log('📥 Loading current channels from database...');
+    const getResponse = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
 
-      const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3000/api/channels'
-        : '/api/channels';
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channels }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        console.log('✅ Channel deletion synced to API database');
-      }
-    } catch (apiError) {
-      console.log('⚠️ Could not sync to API, but deleted locally:', apiError.message);
+    if (!getResponse.ok) {
+      throw new Error('Failed to load channels from database. Ensure server is running on port 3000.');
     }
 
+    const getResult = await getResponse.json();
+    let channels = getResult.channels || [];
+
+    // Step 2: Remove the channel from the list
+    const channelToDelete = channels.find(ch => ch.id === channelId);
+    if (!channelToDelete) {
+      throw new Error('Channel not found in database');
+    }
+
+    channels = channels.filter(ch => ch.id !== channelId);
+    console.log('🗑️  Removed channel:', channelToDelete.name);
+
+    // Step 3: Save UPDATED channels to database
+    const postTimeoutId = setTimeout(() => controller.abort(), 5000);
+    console.log('💾 Saving updated channels to database...');
+
+    const saveResponse = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channels }),
+      signal: controller.signal
+    });
+    clearTimeout(postTimeoutId);
+
+    if (!saveResponse.ok) {
+      throw new Error(`Failed to delete: ${saveResponse.status}`);
+    }
+
+    console.log('✅ Channel deleted from database');
+
+    // Step 4: Reload from database to confirm deletion
     await loadChannels();
-    alert('Channel deleted successfully!');
+    alert('✅ Channel deleted successfully from database!');
   } catch (error) {
-    console.error('Error deleting channel:', error);
-    alert('Error deleting channel: ' + error.message);
+    console.error('❌ Error deleting channel:', error);
+    alert('Error deleting channel: ' + error.message + '\n\nEnsure the server is running on port 3000.');
   }
 }
 
 async function editChannelById(channelId) {
-  const channels = JSON.parse(localStorage.getItem('channels')) || [];
-  const channel = channels.find(ch => ch.id === channelId);
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  if (!channel) {
-    alert('Channel not found');
-    return;
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api/channels'
+      : '/api/channels';
+
+    // Load channels from database (not localStorage)
+    console.log('📥 Loading channels from database to edit...');
+    const response = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error('Failed to load channels from database');
+    }
+
+    const result = await response.json();
+    const channels = result.channels || [];
+    const channel = channels.find(ch => ch.id === channelId);
+
+    if (!channel) {
+      alert('Channel not found in database');
+      return;
+    }
+
+    // Populate form with channel data from database
+    document.getElementById('channelName').value = channel.name;
+    document.getElementById('channelNum').value = channel.number;
+    document.getElementById('channelDesc').value = channel.description;
+    document.getElementById('streamUrl').value = channel.streamUrl;
+    document.getElementById('streamType').value = channel.type || 'rtmp';
+    document.getElementById('channelStatus').value = channel.status;
+    document.getElementById('viewers').value = channel.viewers;
+    document.getElementById('editChannelIndex').value = channelId;
+    document.getElementById('editChannelIndex').dataset.channelId = channelId;
+
+    updateStreamUrlPlaceholder();
+    showChannelForm();
+  } catch (error) {
+    console.error('❌ Error loading channel for editing:', error);
+    alert('Error loading channel: ' + error.message);
   }
-
-  document.getElementById('channelName').value = channel.name;
-  document.getElementById('channelNum').value = channel.number;
-  document.getElementById('channelDesc').value = channel.description;
-  document.getElementById('streamUrl').value = channel.streamUrl;
-  document.getElementById('streamType').value = channel.type || 'rtmp';
-  document.getElementById('channelStatus').value = channel.status;
-  document.getElementById('viewers').value = channel.viewers;
-  document.getElementById('editChannelIndex').value = channelId;
-  document.getElementById('editChannelIndex').dataset.channelId = channelId;
-
-  updateStreamUrlPlaceholder();
-  showChannelForm();
 }
 
 /**
@@ -1392,7 +1408,7 @@ function autoFillStreamUrl() {
 /**
  * Save streaming settings to localStorage and sync with API
  */
-function saveStreamingSettings() {
+async function saveStreamingSettings() {
   const streamName = document.getElementById('streamKeyInput').value.trim();
 
   if (!streamName) {
@@ -1400,21 +1416,10 @@ function saveStreamingSettings() {
     return;
   }
 
-  const streamingSettings = {
-    streamName: streamName,
-    rtmpUrl: `rtmp://localhost:1935/live/${streamName}`,
-    hlsUrl: `http://localhost:8000/live/${streamName}/index.m3u8`,
-    rtmpServer: 'localhost:1935',
-    httpServer: 'localhost:8000',
-    timestamp: new Date().toLocaleString()
-  };
-
-  // Priority 1: Save to localStorage (instant, offline support)
-  localStorage.setItem('streamingSettings', JSON.stringify(streamingSettings));
-  console.log('✅ Streaming settings saved to localStorage');
-
-  // Priority 2: Try to sync with API server
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3000/api/settings'
       : '/api/settings';
@@ -1436,62 +1441,93 @@ function saveStreamingSettings() {
       }
     };
 
-    fetch(apiUrl, {
+    // Step 1: Save settings to database
+    console.log('💾 Saving settings to database...');
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ settings: settingsToSave })
-    })
-      .then(res => {
-        if (res.ok) {
-          console.log('✅ Settings synced to API server');
-        } else {
-          console.log('⚠️ Could not sync to API, but saved locally');
-        }
-      })
-      .catch(err => {
-        console.log('⚠️ API not available, but settings saved locally:', err.message);
-      });
-  } catch (error) {
-    console.log('⚠️ Could not sync settings to API:', error.message);
-  }
+      body: JSON.stringify({ settings: settingsToSave }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
 
-  displaySavedSettings();
-  alert('Streaming settings saved successfully!');
+    if (!response.ok) {
+      throw new Error(`Failed to save settings: ${response.status}`);
+    }
+
+    console.log('✅ Settings saved to database');
+
+    // Step 2: Refresh display from database
+    await displaySavedSettings();
+    alert('✅ Streaming settings saved successfully to database!');
+  } catch (error) {
+    console.error('❌ Error saving streaming settings:', error);
+    alert('Error saving settings: ' + error.message + '\n\nEnsure the server is running on port 3000.');
+  }
 }
 
 /**
- * Display saved streaming settings
+ * Display saved streaming settings (loaded from database)
  */
-function displaySavedSettings() {
-  const settings = JSON.parse(localStorage.getItem('streamingSettings'));
-  const display = document.getElementById('savedSettingsDisplay');
+async function displaySavedSettings() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  if (!settings) {
-    display.innerHTML = '<p class="text-gray-500">No saved streaming settings yet</p>';
-    return;
+    const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api/settings'
+      : '/api/settings';
+
+    // Load settings from database (not localStorage)
+    console.log('📥 Loading settings from database...');
+    const response = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error('Failed to load settings from database');
+    }
+
+    const result = await response.json();
+    const settings = result.settings;
+    const display = document.getElementById('savedSettingsDisplay');
+
+    if (!settings || !settings.streaming) {
+      display.innerHTML = '<p class="text-gray-500">No saved streaming settings in database</p>';
+      return;
+    }
+
+    // Build the settings display from database values
+    const streamName = settings.streaming.savedStreamKey || 'N/A';
+    const rtmpUrl = `rtmp://localhost:1935/live/${streamName}`;
+    const hlsUrl = `http://localhost:8000/live/${streamName}/index.m3u8`;
+    const timestamp = settings.streaming.timestamp || new Date().toISOString();
+
+    display.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div class="bg-blue-50 border border-blue-200 rounded p-3">
+          <strong class="text-blue-900">Stream Name:</strong>
+          <code class="text-blue-700">${streamName}</code>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded p-3">
+          <strong class="text-green-900">RTMP URL:</strong>
+          <code class="text-green-700 break-all">${rtmpUrl}</code>
+          <button onclick="copyToClipboard('${rtmpUrl}')" class="ml-2 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
+        </div>
+        <div class="bg-purple-50 border border-purple-200 rounded p-3">
+          <strong class="text-purple-900">HLS URL:</strong>
+          <code class="text-purple-700 break-all">${hlsUrl}</code>
+          <button onclick="copyToClipboard('${hlsUrl}')" class="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
+        </div>
+        <div class="bg-gray-50 border border-gray-200 rounded p-3 text-xs">
+          <strong>Last Saved:</strong> ${new Date(timestamp).toLocaleString()}
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('❌ Error loading settings:', error);
+    const display = document.getElementById('savedSettingsDisplay');
+    display.innerHTML = '<p class="text-red-600">Error loading settings from database</p>';
   }
-
-  display.innerHTML = `
-    <div class="space-y-3 text-sm">
-      <div class="bg-blue-50 border border-blue-200 rounded p-3">
-        <strong class="text-blue-900">Stream Name:</strong>
-        <code class="text-blue-700">${settings.streamName}</code>
-      </div>
-      <div class="bg-green-50 border border-green-200 rounded p-3">
-        <strong class="text-green-900">RTMP URL:</strong>
-        <code class="text-green-700 break-all">${settings.rtmpUrl}</code>
-        <button onclick="copyToClipboard('${settings.rtmpUrl}')" class="ml-2 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
-      </div>
-      <div class="bg-purple-50 border border-purple-200 rounded p-3">
-        <strong class="text-purple-900">HLS URL:</strong>
-        <code class="text-purple-700 break-all">${settings.hlsUrl}</code>
-        <button onclick="copyToClipboard('${settings.hlsUrl}')" class="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs">📋 Copy</button>
-      </div>
-      <div class="bg-gray-50 border border-gray-200 rounded p-3 text-xs">
-        <strong>Saved:</strong> ${settings.timestamp}
-      </div>
-    </div>
-  `;
 }
 
 /**
