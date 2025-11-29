@@ -415,6 +415,47 @@
       }
     }
 
+    /* ========== FULLSCREEN VIDEO ENHANCEMENTS ========== */
+
+    /* Video fullscreen styling */
+    .video-container:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+    }
+
+    .video-container video:fullscreen,
+    .video-container iframe:fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Fullscreen button styling */
+    video::-webkit-media-controls-fullscreen-button {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Support for fullscreen on all browsers */
+    video:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    video:-moz-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    video:-ms-fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Improve fullscreen controls */
+    video::-webkit-media-controls {
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    }
+
     /* ========== INTERACTION BUTTONS MOBILE FIX ========== */
 
     /* Move buttons under title on mobile */
@@ -638,7 +679,7 @@
     <div class="hero-card p-6 sm:p-8">
       <!-- Video Player -->
       <div class="video-container mb-4">
-        <video id="mainVideo" controls>
+        <video id="mainVideo" controls allowfullscreen>
           <source src="" type="application/x-mpegURL">
           Your browser does not support HTML5 video.
         </video>
@@ -1319,7 +1360,7 @@
         // Enable autoplay on mobile, muted to allow autoplay
         const isMobile = window.innerWidth < 768;
         const autoplayAttr = isMobile ? 'autoplay muted' : '';
-        videoContainer.innerHTML = `<video id="mainVideo" controls ${autoplayAttr}><source src="" type="application/x-mpegURL">Your browser does not support HTML5 video.</video>`;
+        videoContainer.innerHTML = `<video id="mainVideo" controls allowfullscreen ${autoplayAttr}><source src="" type="application/x-mpegURL">Your browser does not support HTML5 video.</video>`;
         console.log('✨ Video container restored' + (isMobile ? ' (mobile autoplay enabled)' : ''));
       }
 
@@ -1392,11 +1433,11 @@
         return null;
       }
 
-      // Return iframe HTML with minimal YouTube branding - clean embed
+      // Return iframe HTML with minimal YouTube branding - clean embed with fullscreen enabled
       return `<iframe
-        src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1&fs=0"
+        src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1"
         frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowfullscreen
         style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none;">
       </iframe>`;
