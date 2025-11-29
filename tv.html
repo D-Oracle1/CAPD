@@ -414,6 +414,141 @@
         border-radius: 8px;
       }
     }
+
+    /* ========== INTERACTION BUTTONS MOBILE FIX ========== */
+
+    /* Interaction buttons container on mobile */
+    @media (max-width: 640px) {
+      /* Make buttons container wrap properly */
+      .flex.items-center.gap-1.flex-shrink-0 {
+        gap: 4px !important;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      /* Increase button padding and size */
+      #likeBtn, #commentBtn, #saveBtn, #moreBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        padding: 10px 12px !important;
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Increase icon sizes */
+      #likeBtn .fa-heart,
+      #commentBtn .fa-comment,
+      #saveBtn .fa-bookmark,
+      button[onclick*="shareStream"] .fa-paper-plane,
+      button[onclick*="toggleMoreMenu"] .fa-ellipsis-vertical {
+        font-size: 20px !important;
+      }
+
+      /* Like count text */
+      #likeCount {
+        font-size: 11px !important;
+        min-width: auto;
+      }
+
+      /* Improve button hover/tap state on mobile */
+      #likeBtn:active, #commentBtn:active, #saveBtn:active {
+        background-color: rgba(100, 116, 139, 0.15) !important;
+      }
+
+      /* Better button backgrounds on mobile */
+      #likeBtn, #commentBtn, #saveBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        background-color: rgba(100, 116, 139, 0.08);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+      }
+    }
+
+    /* Extra small screens - stack buttons in 2 rows if needed */
+    @media (max-width: 360px) {
+      .flex.items-center.gap-1.flex-shrink-0 {
+        width: 100%;
+        gap: 6px !important;
+        justify-content: space-between;
+      }
+
+      #likeBtn, #commentBtn, #saveBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        flex: 1;
+        min-width: 40px;
+        padding: 12px 8px !important;
+      }
+    }
+
+    /* Small tablets - optimize button spacing */
+    @media (min-width: 641px) and (max-width: 768px) {
+      .flex.items-center.gap-1.flex-shrink-0 {
+        gap: 8px !important;
+      }
+
+      #likeBtn, #commentBtn, #saveBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        padding: 12px 16px !important;
+        min-height: 40px;
+      }
+    }
+
+    /* Desktop - maintain original behavior */
+    @media (min-width: 769px) {
+      .flex.items-center.gap-1.flex-shrink-0 {
+        gap: 8px !important;
+      }
+
+      #likeBtn, #commentBtn, #saveBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        padding: 8px 12px;
+      }
+    }
+
+    /* Touch device optimization - larger targets */
+    @media (hover: none) and (pointer: coarse) {
+      #likeBtn, #commentBtn, #saveBtn,
+      button[onclick*="shareStream"],
+      button[onclick*="toggleMoreMenu"] {
+        min-height: 48px !important;
+        min-width: 48px !important;
+        padding: 12px 14px !important;
+      }
+
+      .fa-heart, .fa-comment, .fa-bookmark, .fa-paper-plane, .fa-ellipsis-vertical {
+        font-size: 22px !important;
+      }
+    }
+
+    /* Prevent button text from wrapping on mobile */
+    @media (max-width: 640px) {
+      button span {
+        white-space: nowrap;
+      }
+    }
+
+    /* Better dropdown menu positioning on mobile */
+    @media (max-width: 640px) {
+      #moreMenu {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 16px 16px 0 0 !important;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
