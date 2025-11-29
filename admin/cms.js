@@ -336,19 +336,32 @@ async function saveChannel(e) {
       channels.push(channel);
     }
 
-    // Save to API (which saves to database)
-    const apiUrl = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/channels'
-      : '/api/channels';
+    // Priority 1: Save to localStorage (always works offline)
+    localStorage.setItem('channels', JSON.stringify(channels));
+    console.log('✅ Channel saved to localStorage');
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ channels })
-    });
+    // Priority 2: Try to sync with API if available (with timeout)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    if (!response.ok) {
-      throw new Error('Failed to save channel to database');
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/api/channels'
+        : '/api/channels';
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channels }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        console.log('✅ Channel synced to API database');
+      }
+    } catch (apiError) {
+      console.log('⚠️ Could not sync to API, but saved locally:', apiError.message);
     }
 
     hideChannelForm();
@@ -368,19 +381,32 @@ async function deleteChannelById(channelId) {
     let channels = JSON.parse(localStorage.getItem('channels')) || [];
     channels = channels.filter(ch => ch.id !== channelId);
 
-    // Save updated channels to API
-    const apiUrl = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/channels'
-      : '/api/channels';
+    // Priority 1: Save to localStorage (always works offline)
+    localStorage.setItem('channels', JSON.stringify(channels));
+    console.log('✅ Channel deleted from localStorage');
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ channels })
-    });
+    // Priority 2: Try to sync with API if available (with timeout)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    if (!response.ok) {
-      throw new Error('Failed to delete channel from database');
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/api/channels'
+        : '/api/channels';
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channels }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        console.log('✅ Channel deletion synced to API database');
+      }
+    } catch (apiError) {
+      console.log('⚠️ Could not sync to API, but deleted locally:', apiError.message);
     }
 
     await loadChannels();
