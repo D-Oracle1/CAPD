@@ -204,62 +204,106 @@ function hideChannelForm() {
 
 async function loadChannels() {
   try {
-    const apiUrl = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/channels'
-      : '/api/channels';
+    let data = [];
 
-    const response = await fetch(apiUrl);
+    // Priority 1: Try main server API (port 3000) with 3-second timeout
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API error response:', response.status, errorText);
-      throw new Error(`API returned ${response.status}: ${errorText}`);
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/api/channels'
+        : '/api/channels';
+
+      console.log('Loading channels from main API:', apiUrl);
+      const response = await fetch(apiUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        data = result.channels || [];
+        console.log('✅ Loaded channels from server API:', data.length, 'channels');
+        return renderChannels(data);
+      }
+    } catch (apiError) {
+      console.log('⚠️ Server API not available:', apiError.message);
     }
 
-    const result = await response.json();
-    const data = result.channels || [];
+    // Priority 2: Load directly from JSON file
+    try {
+      console.log('Loading channels from JSON file...');
+      const response = await fetch('../data/channels.json');
+      if (response.ok) {
+        const result = await response.json();
+        data = result.channels || [];
+        console.log('✅ Loaded channels from JSON file:', data.length, 'channels');
+        return renderChannels(data);
+      }
+    } catch (jsonError) {
+      console.log('⚠️ JSON file not available:', jsonError.message);
+    }
 
-    // Store in localStorage for backup
-    localStorage.setItem('channels', JSON.stringify(data));
+    // Priority 3: Load from localStorage cache
+    try {
+      const storedChannels = localStorage.getItem('channels');
+      if (storedChannels) {
+        data = JSON.parse(storedChannels);
+        console.log('✅ Loaded channels from localStorage cache:', data.length, 'channels');
+        return renderChannels(data);
+      }
+    } catch (e) {
+      console.log("⚠️ Could not parse stored channels");
+    }
 
+    // If nothing worked, show error
+    console.error('❌ Could not load channels from any source');
     const container = document.getElementById('channelsContainer');
-    const select = document.getElementById('progChannel');
-
-    // Populate channel selector for schedule
-    select.innerHTML = data.map(ch => `<option value="${ch.id}">${ch.name}</option>`).join('');
-
-    if (data.length === 0) {
-      container.innerHTML = '<p class="text-gray-500 col-span-full">No channels yet</p>';
-      return;
+    if (container) {
+      container.innerHTML = '<p class="text-red-600 col-span-full">Error loading channels. Please refresh or ensure a server is running.</p>';
     }
-
-    container.innerHTML = data.map((channel) => `
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <h4 class="text-lg font-bold">${channel.number}. ${channel.name}</h4>
-            <p class="text-gray-600 text-sm">${channel.description}</p>
-          </div>
-          <span class="text-xs font-bold px-3 py-1 rounded ${channel.status === 'live' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
-            ${channel.status.toUpperCase()}
-          </span>
-        </div>
-        <div class="text-sm text-gray-600 mb-4">
-          <p><strong>Stream URL:</strong> ${channel.streamUrl.substring(0, 40)}...</p>
-          <p><strong>Viewers:</strong> ${channel.viewers}</p>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="editChannelById('${channel.id}')" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm">Edit</button>
-          <button onclick="deleteChannelById('${channel.id}')" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded text-sm">Delete</button>
-        </div>
-      </div>
-    `).join('');
-
-    updateDashboardCounts();
   } catch (error) {
-    console.error('Error loading channels:', error);
-    alert('Error loading channels from database: ' + error.message);
+    console.error('Error in loadChannels:', error);
   }
+}
+
+function renderChannels(data) {
+  // Store in localStorage for backup
+  localStorage.setItem('channels', JSON.stringify(data));
+
+  const container = document.getElementById('channelsContainer');
+  const select = document.getElementById('progChannel');
+
+  // Populate channel selector for schedule
+  select.innerHTML = data.map(ch => `<option value="${ch.id}">${ch.name}</option>`).join('');
+
+  if (data.length === 0) {
+    container.innerHTML = '<p class="text-gray-500 col-span-full">No channels yet</p>';
+    return;
+  }
+
+  container.innerHTML = data.map((channel) => `
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h4 class="text-lg font-bold">${channel.number}. ${channel.name}</h4>
+          <p class="text-gray-600 text-sm">${channel.description}</p>
+        </div>
+        <span class="text-xs font-bold px-3 py-1 rounded ${channel.status === 'live' || channel.status === 'online' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
+          ${(channel.status || 'offline').toUpperCase()}
+        </span>
+      </div>
+      <div class="text-sm text-gray-600 mb-4">
+        <p><strong>Stream URL:</strong> ${channel.streamUrl.substring(0, 40)}...</p>
+        <p><strong>Viewers:</strong> ${channel.viewers || 0}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="editChannelById('${channel.id}')" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm">Edit</button>
+        <button onclick="deleteChannelById('${channel.id}')" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded text-sm">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  updateDashboardCounts();
 }
 
 async function saveChannel(e) {
