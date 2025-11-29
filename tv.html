@@ -196,6 +196,224 @@
       background: #334155;
       transform: scale(1.05);
     }
+
+    /* ========== MOBILE RESPONSIVE IMPROVEMENTS ========== */
+
+    /* Mobile: Reduce hero card padding */
+    @media (max-width: 640px) {
+      .hero-card {
+        padding: 16px !important;
+      }
+
+      /* Reduce section spacing on mobile */
+      .section-title {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+
+      /* Stack channel info and buttons vertically on very small screens */
+      @media (max-width: 380px) {
+        .flex.items-center.justify-between.gap-4 {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      /* Optimize interaction buttons for mobile */
+      #likeBtn, #commentBtn, #saveBtn {
+        padding: 6px 8px !important;
+      }
+
+      .fa-heart, .fa-comment, .fa-bookmark, .fa-paper-plane, .fa-ellipsis-vertical {
+        font-size: 18px !important;
+      }
+
+      /* Hide text labels on small screens, show only icons */
+      #likeCount {
+        font-size: 10px !important;
+      }
+
+      /* Stack comment input vertically on mobile */
+      .mb-4.flex.gap-3.items-center {
+        flex-direction: column;
+        gap: 8px !important;
+        align-items: stretch !important;
+      }
+
+      #guestName {
+        width: 100% !important;
+        padding: 12px !important;
+      }
+
+      #commentText {
+        width: 100% !important;
+        padding: 12px !important;
+      }
+
+      /* Make comment button full width on mobile */
+      .bg-slate-900.text-white.px-6.py-3 {
+        width: 100%;
+      }
+
+      /* Improve channel cards on small screens */
+      .channel-card {
+        border-radius: 8px;
+      }
+
+      .channel-card-number {
+        font-size: 36px;
+      }
+
+      /* Reduce channel card info padding */
+      .channel-card-info {
+        padding: 6px 8px;
+      }
+
+      .channel-name {
+        font-size: 12px;
+      }
+
+      .channel-desc {
+        font-size: 10px;
+      }
+
+      /* Adjust live badge on mobile */
+      .live-badge {
+        padding: 3px 8px;
+        font-size: 10px;
+        top: 8px;
+        left: 8px;
+      }
+
+      /* Reduce trending section padding */
+      .max-w-7xl.mx-auto.px-4.sm\\:px-6.py-8 {
+        padding: 16px 12px !important;
+      }
+
+      /* Responsive trending channels grid */
+      #recommendedContainer {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      /* Comments section optimization */
+      .hero-card.p-6 {
+        padding: 12px !important;
+      }
+
+      /* Footer optimization on mobile */
+      .grid.grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      /* Reduce footer padding on mobile */
+      footer {
+        padding: 24px 0 !important;
+      }
+
+      /* Header optimization */
+      header .max-w-7xl {
+        padding: 8px 12px !important;
+      }
+
+      /* Dropdown menu positioning on mobile */
+      #moreMenu {
+        right: 0 !important;
+        left: auto !important;
+        max-width: 90vw;
+      }
+    }
+
+    /* Small tablets and up */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .channel-card-number {
+        font-size: 40px;
+      }
+
+      #recommendedContainer {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+    }
+
+    /* Touch-friendly button sizes for all devices */
+    @media (hover: none) and (pointer: coarse) {
+      button {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      #likeBtn, #commentBtn, #saveBtn, .play-btn {
+        padding: 12px 16px !important;
+      }
+
+      /* Larger tap targets on mobile */
+      .flex.items-center.gap-2.px-3.py-2 {
+        padding: 12px 12px !important;
+      }
+    }
+
+    /* Optimize responsive spacing */
+    @media (max-width: 768px) {
+      .gap-4 {
+        gap: 8px !important;
+      }
+
+      .gap-6 {
+        gap: 12px !important;
+      }
+
+      .mb-4 {
+        margin-bottom: 12px !important;
+      }
+
+      .py-8 {
+        padding-top: 16px !important;
+        padding-bottom: 16px !important;
+      }
+    }
+
+    /* Large screens - enhanced experience */
+    @media (min-width: 1024px) {
+      .channel-card:hover {
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      #recommendedContainer {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    /* Prevent layout shift on mobile */
+    body {
+      overflow-x: hidden;
+    }
+
+    /* Responsive text sizing */
+    @media (max-width: 640px) {
+      h1, h2, h3 {
+        word-break: break-word;
+      }
+
+      .text-sm {
+        font-size: 13px;
+      }
+
+      .text-xs {
+        font-size: 11px;
+      }
+    }
+
+    /* Better mobile scrolling */
+    @media (max-width: 768px) {
+      html {
+        scroll-behavior: smooth;
+      }
+
+      .video-container {
+        border-radius: 8px;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
