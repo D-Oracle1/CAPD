@@ -437,6 +437,10 @@
     let viewCountRefreshInterval;
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Debug: Check if mainVideo exists
+      const videoTest = document.getElementById("mainVideo");
+      console.log('🔍 DOMContentLoaded fired. mainVideo element:', videoTest ? 'FOUND' : 'NOT FOUND');
+
       loadSettings();
       loadChannels();
       startViewCountRefresh();
@@ -482,38 +486,128 @@
     }
 
     // Listen for localStorage changes (when admin panel updates channels)
+    let lastChannelsHash = null;
     function listenForChannelUpdates() {
       // Reload channels when user switches back to this tab
-      // This ensures we always get the latest data from the database
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           console.log('📡 Page became visible, reloading channels from database...');
           loadChannels();
         }
       });
+
+      // Poll for channel updates every 5 seconds (auto-refresh when admin changes links)
+      setInterval(async () => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3000/api/channels'
+            : '/api/channels';
+
+          const res = await fetch(apiUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (res.ok) {
+            const data = await res.json();
+            const channels = data.channels || [];
+            const currentHash = JSON.stringify(channels);
+
+            // If channels changed, reload them
+            if (currentHash !== lastChannelsHash) {
+              console.log('🔄 Channel update detected! Refreshing...');
+              lastChannelsHash = currentHash;
+              renderChannels(channels);
+
+              // If we have a current stream, check if it still exists and update it
+              if (currentStreamInfo.id) {
+                const updatedChannel = channels.find(ch => ch.id === currentStreamInfo.id);
+                if (updatedChannel && updatedChannel.streamUrl !== currentStreamInfo.streamUrl) {
+                  console.log('📺 Stream URL updated! Reloading stream...');
+                  selectChannel(
+                    updatedChannel.id,
+                    updatedChannel.name,
+                    updatedChannel.description,
+                    updatedChannel.streamUrl,
+                    updatedChannel.viewers || 0,
+                    updatedChannel.status || 'offline',
+                    updatedChannel.type || 'unknown'
+                  );
+                }
+              }
+            } else if (currentStreamInfo.id) {
+              // Even if channels data is same, update current stream's view count seamlessly
+              const updatedChannel = channels.find(ch => ch.id === currentStreamInfo.id);
+              if (updatedChannel && updatedChannel.viewers !== currentStreamInfo.viewers) {
+                const viewCountElement = document.getElementById("viewCount");
+                if (viewCountElement) {
+                  viewCountElement.textContent = (updatedChannel.viewers || 0).toLocaleString();
+                  currentStreamInfo.viewers = updatedChannel.viewers || 0;
+
+                  // Subtle green flash to indicate update
+                  viewCountElement.style.transition = 'color 0.3s ease';
+                  viewCountElement.style.color = '#16a34a';
+                  setTimeout(() => {
+                    viewCountElement.style.color = '#1e293b';
+                  }, 300);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          // Silently fail - don't spam console
+        }
+      }, 5000);
     }
 
-    // Start refreshing view counts every 2 seconds
+    // Start refreshing view counts every 1 second from server
     function startViewCountRefresh() {
       viewCountRefreshInterval = setInterval(() => {
         if (currentStreamInfo.id) {
           updateViewCount();
         }
-      }, 2000);
+      }, 1000); // Update every 1 second for seamless experience
     }
 
-    // Update view count from admin data
-    function updateViewCount() {
+    // Update view count from server API (real-time)
+    async function updateViewCount() {
       try {
-        const channels = JSON.parse(localStorage.getItem('channels') || '[]');
-        const currentChannel = channels.find(ch => ch.id === currentStreamInfo.id);
-        if (currentChannel) {
-          const viewCount = currentChannel.viewers || 0;
-          document.getElementById("viewCount").textContent = viewCount.toLocaleString();
-          currentStreamInfo.viewers = viewCount;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? `http://localhost:3000/api/channels`
+          : '/api/channels';
+
+        const res = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const channels = data.channels || [];
+          const currentChannel = channels.find(ch => ch.id === currentStreamInfo.id);
+
+          if (currentChannel) {
+            const viewCount = currentChannel.viewers || 0;
+            const viewCountElement = document.getElementById("viewCount");
+
+            // Only update if the value changed (prevents unnecessary DOM updates)
+            if (viewCountElement && parseInt(viewCountElement.textContent.replace(/,/g, '')) !== viewCount) {
+              viewCountElement.textContent = viewCount.toLocaleString();
+              currentStreamInfo.viewers = viewCount;
+
+              // Add subtle animation effect
+              viewCountElement.style.transition = 'color 0.3s ease';
+              viewCountElement.style.color = '#16a34a'; // Green highlight
+              setTimeout(() => {
+                viewCountElement.style.color = '#1e293b'; // Back to normal
+              }, 300);
+            }
+          }
         }
       } catch (error) {
-        console.error('Error updating view count:', error);
+        // Silently fail - network errors are expected
       }
     }
 
@@ -650,6 +744,45 @@
       }
     }
 
+    // Helper function to extract YouTube thumbnail URL
+    function getYouTubeThumbnail(youtubeUrl) {
+      let videoId = null;
+
+      if (youtubeUrl.includes('youtube.com/watch?v=')) {
+        const match = youtubeUrl.match(/v=([^&]+)/);
+        videoId = match ? match[1] : null;
+      } else if (youtubeUrl.includes('youtu.be/')) {
+        const match = youtubeUrl.match(/youtu\.be\/([^?&]+)/);
+        videoId = match ? match[1] : null;
+      } else if (youtubeUrl.includes('youtube.com/live/')) {
+        const match = youtubeUrl.match(/youtube\.com\/live\/([^?&]+)/);
+        videoId = match ? match[1] : null;
+      }
+
+      if (videoId) {
+        // Use maxresdefault for best quality, fallback to hqdefault if not available
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+      return null;
+    }
+
+    // Helper function to get thumbnail for any stream
+    function getThumbnailUrl(streamUrl) {
+      if (!streamUrl) return null;
+
+      // YouTube
+      if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
+        return getYouTubeThumbnail(streamUrl);
+      }
+
+      // Direct video files (MP4, MOV, etc) - use as-is, browser will load preview
+      if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv'))) {
+        return streamUrl; // Can be used as poster attribute
+      }
+
+      return null;
+    }
+
     // Helper function to render channels
     function renderChannels(channels) {
       // DO NOT cache in localStorage - database is single source of truth
@@ -658,7 +791,7 @@
       const container = document.getElementById("recommendedContainer");
 
       container.innerHTML = channels.map((ch, idx) => {
-        // Generate gradient backgrounds
+        // Generate gradient backgrounds as fallback
         const gradients = [
           'from-blue-400 to-blue-600',
           'from-purple-400 to-purple-600',
@@ -670,11 +803,19 @@
         const gradient = gradients[idx % gradients.length];
         const isLive = ch.status === 'live' || ch.status === 'online';
 
+        // Generate thumbnail from stream URL
+        const thumbnailUrl = getThumbnailUrl(ch.streamUrl);
+        const hasThumbnail = thumbnailUrl && thumbnailUrl.trim();
+        const thumbnailStyle = hasThumbnail
+          ? `background-image: url('${thumbnailUrl}'); background-size: cover; background-position: center;`
+          : ``;
+        const fallbackGradient = !hasThumbnail ? `bg-gradient-to-br ${gradient}` : '';
+
         return `
           <div class="channel-card" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0}, '${ch.status}', '${ch.type}')">
-            <div class="channel-card-thumbnail bg-gradient-to-br ${gradient}">
+            <div class="channel-card-thumbnail ${fallbackGradient}" style="${thumbnailStyle}">
               ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
-              <div class="channel-card-number">${ch.number}</div>
+              ${!hasThumbnail ? `<div class="channel-card-number">${ch.number}</div>` : ''}
             </div>
             <div class="channel-card-info">
               <h4 class="channel-name">${ch.number}. ${ch.name}</h4>
@@ -766,7 +907,18 @@
         return;
       }
 
+      // Restore video container to its original state (in case it was replaced with an iframe)
+      const videoContainer = document.querySelector('.video-container');
+      if (videoContainer && !videoContainer.querySelector('video')) {
+        // Enable autoplay on mobile, muted to allow autoplay
+        const isMobile = window.innerWidth < 768;
+        const autoplayAttr = isMobile ? 'autoplay muted' : '';
+        videoContainer.innerHTML = `<video id="mainVideo" controls ${autoplayAttr}><source src="" type="application/x-mpegURL">Your browser does not support HTML5 video.</video>`;
+        console.log('✨ Video container restored' + (isMobile ? ' (mobile autoplay enabled)' : ''));
+      }
+
       const video = document.getElementById("mainVideo");
+      console.log('📹 loadStream called. Video element found:', video ? 'YES' : 'NO');
 
       // Detect stream format and load accordingly
       if (streamUrl.includes('.m3u8')) {
@@ -783,7 +935,9 @@
         loadVideoStream(streamUrl);
       } else {
         // Direct video file or fallback
-        video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
+        if (video) {
+          video.innerHTML = `<source src="${streamUrl}" type="video/mp4">`;
+        }
       }
 
       console.log('Stream loaded:', streamUrl);
@@ -832,12 +986,13 @@
         return null;
       }
 
-      // Return iframe HTML with no YouTube branding
+      // Return iframe HTML with minimal YouTube branding - clean embed
       return `<iframe
-        src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1"
+        src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1&fs=0"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen>
+        allowfullscreen
+        style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none;">
       </iframe>`;
     }
 
@@ -853,8 +1008,12 @@
       }
 
       // Replace video container with YouTube iframe
-      const video = document.getElementById("mainVideo");
-      const videoContainer = video.parentElement;
+      const videoContainer = document.querySelector('.video-container');
+      if (!videoContainer) {
+        console.error('Video container not found');
+        alert('Error: Video container not found on page');
+        return;
+      }
 
       videoContainer.innerHTML = iframeHtml;
       console.log('YouTube iframe loaded');
@@ -877,8 +1036,12 @@
       console.log('Stream name:', streamName);
 
       // Show loading status to user
-      const mainVideo = document.getElementById("mainVideo");
-      const videoContainer = mainVideo.parentElement;
+      const videoContainer = document.querySelector('.video-container');
+      if (!videoContainer) {
+        console.error('Video container not found');
+        alert('Error: Video container not found on page');
+        return;
+      }
       videoContainer.style.backgroundColor = '#1a1a1a';
 
       // Determine server host from RTMP URL

@@ -5,12 +5,11 @@
       "name": "CAPD Main Channel",
       "number": 1,
       "description": "Main live broadcast and news",
-      "streamUrl": "https://www.youtube.com/live/dQw4w9WgXcQ",
-      "poster": "assets/images/channel-main.jpg",
-      "status": "online",
-      "viewers": 1250,
+      "streamUrl": "https://youtube.com/live/KTxLgi1AkI8?feature=share",
       "type": "youtube",
-      "rtmpUrl": "rtmp://localhost:1935/live/main_channel"
+      "status": "live",
+      "viewers": 1000,
+      "poster": "assets/images/channel-default.jpg"
     },
     {
       "id": "news",
