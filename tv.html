@@ -483,26 +483,12 @@
 
     // Listen for localStorage changes (when admin panel updates channels)
     function listenForChannelUpdates() {
-      // Listen for storage events from other tabs/windows
-      window.addEventListener('storage', (event) => {
-        if (event.key === 'channels' && event.newValue) {
-          console.log('📡 Channels updated from another tab, reloading...');
-          loadChannels();
-        }
-      });
-
-      // Also reload channels when user switches back to this tab (for same-window updates)
+      // Reload channels when user switches back to this tab
+      // This ensures we always get the latest data from the database
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
-          console.log('📡 Page became visible, checking for channel updates...');
-          // Check if channels have changed by comparing with current data
-          const storedChannels = JSON.parse(localStorage.getItem('channels') || '[]');
-          const currentChannels = JSON.parse(localStorage.getItem('_lastLoadedChannels') || '[]');
-
-          if (JSON.stringify(storedChannels) !== JSON.stringify(currentChannels)) {
-            console.log('📡 Channels have changed, reloading...');
-            loadChannels();
-          }
+          console.log('📡 Page became visible, reloading channels from database...');
+          loadChannels();
         }
       });
     }
@@ -638,77 +624,36 @@
     // Load channels from backend API (database)
     async function loadChannels() {
       try {
-        let channels = [];
+        // ALWAYS load from database (server API) - database is single source of truth
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        // Priority 1: Load from main server API with 3-second timeout
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'http://localhost:3000/api/channels'
+          : '/api/channels';
 
-          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:3000/api/channels'
-            : '/api/channels';
+        console.log('📥 Loading channels from database:', apiUrl);
+        const res = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
-          console.log('Loading channels from main API:', apiUrl);
-          const res = await fetch(apiUrl, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            const data = await res.json();
-            channels = data.channels || [];
-            console.log('✅ Loaded channels from server API:', channels.length, 'channels');
-
-            // Cache in localStorage for offline access
-            localStorage.setItem('channels', JSON.stringify(channels));
-            return renderChannels(channels);
-          }
-        } catch (apiError) {
-          console.log('⚠️ Server API not available:', apiError.message);
+        if (res.ok) {
+          const data = await res.json();
+          const channels = data.channels || [];
+          console.log('✅ Loaded', channels.length, 'channels from database');
+          return renderChannels(channels);
+        } else {
+          throw new Error(`Server returned ${res.status}`);
         }
-
-        // Priority 2: Load directly from JSON file
-        try {
-          console.log('Loading channels from JSON file...');
-          const res = await fetch("data/channels.json");
-          if (res.ok) {
-            const data = await res.json();
-            channels = data.channels || [];
-            console.log('✅ Loaded channels from JSON file:', channels.length, 'channels');
-
-            // Cache in localStorage
-            localStorage.setItem('channels', JSON.stringify(channels));
-            return renderChannels(channels);
-          }
-        } catch (jsonError) {
-          console.log('⚠️ JSON file not available:', jsonError.message);
-        }
-
-        // Priority 3: Load from localStorage cache
-        try {
-          const storedChannels = localStorage.getItem('channels');
-          if (storedChannels) {
-            channels = JSON.parse(storedChannels);
-            console.log('✅ Loaded channels from localStorage cache:', channels.length, 'channels');
-            return renderChannels(channels);
-          }
-        } catch (e) {
-          console.log("⚠️ Could not parse stored channels");
-        }
-
-        // If nothing worked, show error
-        console.error('❌ Could not load channels from any source');
-        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600 col-span-full text-center">Error loading channels. Please refresh the page.</p>';
-        return;
       } catch (error) {
-        console.error("Error in loadChannels:", error);
-        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600 col-span-full text-center">Error loading channels</p>';
+        console.error('❌ Failed to load channels from database:', error.message);
+        document.getElementById("recommendedContainer").innerHTML = `<p class="text-red-600 col-span-full text-center">Error loading channels: ${error.message}. Ensure the server is running on port 3000.</p>`;
       }
     }
 
     // Helper function to render channels
     function renderChannels(channels) {
-      // Cache the loaded channels for comparison
-      localStorage.setItem('_lastLoadedChannels', JSON.stringify(channels));
+      // DO NOT cache in localStorage - database is single source of truth
+      // Only use localStorage for UI state, not data persistence
 
       const container = document.getElementById("recommendedContainer");
 
