@@ -117,6 +117,31 @@ app.get('/api/channels', (req, res) => {
   }
 });
 
+// Save/Update all channels (from admin panel)
+app.post('/api/channels', (req, res) => {
+  try {
+    const { channels } = req.body;
+
+    if (!Array.isArray(channels)) {
+      return res.status(400).json({ error: 'Channels must be an array' });
+    }
+
+    // Save to JSON file
+    const channelsPath = path.join(__dirname, 'data', 'channels.json');
+    const data = { channels };
+    fs.writeFileSync(channelsPath, JSON.stringify(data, null, 2), 'utf8');
+
+    console.log(`✅ Saved ${channels.length} channels to JSON file`);
+    res.json({
+      message: 'Channels updated successfully',
+      channels: channels
+    });
+  } catch (error) {
+    console.error('Error saving channels:', error);
+    res.status(500).json({ error: 'Failed to save channels' });
+  }
+});
+
 // Get active RTMP streams
 app.get('/api/streams', (req, res) => {
   const fs = require('fs');
