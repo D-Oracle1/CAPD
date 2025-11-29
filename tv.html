@@ -417,13 +417,37 @@
 
     /* ========== INTERACTION BUTTONS MOBILE FIX ========== */
 
-    /* Interaction buttons container on mobile */
+    /* Move buttons under title on mobile */
+    @media (max-width: 640px) {
+      /* Stack channel info and buttons vertically */
+      .flex.items-center.justify-between.gap-4.mb-4 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      /* Make left section (avatar + info) full width */
+      .flex.items-center.gap-3.flex-1 {
+        flex-shrink: 1 !important;
+        width: 100% !important;
+      }
+
+      /* Make buttons container full width and center them */
+      .flex.items-center.gap-1.flex-shrink-0 {
+        gap: 4px !important;
+        flex-wrap: wrap;
+        justify-content: center !important;
+        width: 100% !important;
+        flex-shrink: 0 !important;
+      }
+    }
+
+    /* Interaction buttons container on mobile - additional styling */
     @media (max-width: 640px) {
       /* Make buttons container wrap properly */
       .flex.items-center.gap-1.flex-shrink-0 {
         gap: 4px !important;
         flex-wrap: wrap;
-        justify-content: flex-end;
       }
 
       /* Increase button padding and size */
@@ -470,10 +494,18 @@
 
     /* Extra small screens - stack buttons in 2 rows if needed */
     @media (max-width: 360px) {
+      /* Stack channel info and buttons vertically */
+      .flex.items-center.justify-between.gap-4.mb-4 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
       .flex.items-center.gap-1.flex-shrink-0 {
         width: 100%;
         gap: 6px !important;
-        justify-content: space-between;
+        justify-content: space-around;
+        flex-basis: 100%;
       }
 
       #likeBtn, #commentBtn, #saveBtn,
@@ -482,13 +514,21 @@
         flex: 1;
         min-width: 40px;
         padding: 12px 8px !important;
+        max-width: calc(50% - 3px);
       }
     }
 
-    /* Small tablets - optimize button spacing */
+    /* Small tablets - buttons still on right side */
     @media (min-width: 641px) and (max-width: 768px) {
+      /* Keep horizontal layout on tablets */
+      .flex.items-center.justify-between.gap-4.mb-4 {
+        flex-direction: row;
+        align-items: center;
+      }
+
       .flex.items-center.gap-1.flex-shrink-0 {
         gap: 8px !important;
+        width: auto !important;
       }
 
       #likeBtn, #commentBtn, #saveBtn,
@@ -501,8 +541,16 @@
 
     /* Desktop - maintain original behavior */
     @media (min-width: 769px) {
+      /* Keep original horizontal layout */
+      .flex.items-center.justify-between.gap-4.mb-4 {
+        flex-direction: row;
+        align-items: center;
+      }
+
       .flex.items-center.gap-1.flex-shrink-0 {
         gap: 8px !important;
+        width: auto !important;
+        justify-content: flex-end !important;
       }
 
       #likeBtn, #commentBtn, #saveBtn,
