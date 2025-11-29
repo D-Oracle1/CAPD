@@ -6,6 +6,7 @@
   <title>Digital TV - CAPD Communications</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * {
       scrollbar-width: thin;
@@ -261,43 +262,30 @@
           <div class="flex items-center gap-1 flex-shrink-0">
             <!-- Like Button - Heart -->
             <button id="likeBtn" onclick="toggleLike()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Like">
-              <svg id="likeIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linejoin="round" stroke-linecap="round"/>
-              </svg>
+              <i id="likeIcon" class="fa fa-heart text-slate-800 text-xl group-hover:text-slate-900 transition"></i>
               <span id="likeCount" class="text-xs font-semibold text-slate-700">0</span>
             </button>
 
             <!-- Comment Button -->
-            <button id="commentBtn" onclick="toggleComment()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Comment">
-              <svg id="commentIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>
-              </svg>
+            <button id="commentBtn" onclick="toggleComment(); scrollToComments()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Comment">
+              <i id="commentIcon" class="fa fa-comment text-slate-800 text-xl group-hover:text-slate-900 transition"></i>
             </button>
 
             <!-- Share Button - Send Arrow -->
             <button onclick="shareStream()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Share">
-              <svg class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.40,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16346269 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99701575 L3.03521743,10.4380088 C3.03521743,10.5950915 3.19218622,10.7521889 3.50612381,10.7521889 L16.6915026,11.5376757 C16.6915026,11.5376757 17.1624089,11.5376757 17.1624089,12.0089679 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" stroke-linejoin="round" stroke-linecap="round" fill="currentColor"/>
-              </svg>
+              <i id="shareIcon" class="fa fa-paper-plane text-slate-800 text-xl group-hover:text-slate-900 transition"></i>
               <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Share</span>
             </button>
 
             <!-- Save Button - Bookmark -->
             <button id="saveBtn" onclick="toggleSave()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="Save">
-              <svg id="saveIcon" class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z" stroke-linejoin="round" stroke-linecap="round"/>
-                <polyline points="17 7 12 13 7 7" stroke-linejoin="round" stroke-linecap="round"/>
-              </svg>
+              <i id="saveIcon" class="fa fa-bookmark text-slate-800 text-xl group-hover:text-slate-900 transition"></i>
               <span class="text-xs font-semibold text-slate-700 hidden sm:inline">Save</span>
             </button>
 
             <!-- More Button -->
             <button onclick="toggleMoreMenu()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition group" title="More options">
-              <svg class="w-6 h-6 stroke-slate-800 group-hover:stroke-slate-900 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/>
-                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>
-              </svg>
+              <i class="fa fa-ellipsis-vertical text-slate-800 text-xl group-hover:text-slate-900 transition"></i>
             </button>
           </div>
         </div>
@@ -352,37 +340,33 @@
   </div>
 
   <!-- Comments Section - Small Box Like YouTube -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="hero-card p-4">
-      <h3 class="font-bold text-slate-900 mb-3">Comments</h3>
+  <div id="commentsSection" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 scroll-smooth">
+    <div class="hero-card p-6">
+      <h3 class="font-bold text-slate-900 mb-4">Comments</h3>
 
       <!-- Comment Input (Compact) -->
-      <div class="mb-4 flex gap-3 items-start">
-        <div class="flex-1">
-          <input
-            type="text"
-            id="guestName"
-            placeholder="Name"
-            class="w-full px-3 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-900 mb-2"
-            maxlength="50"
-          />
-          <div class="flex gap-2">
-            <textarea
-              id="commentText"
-              placeholder="Add a comment..."
-              rows="2"
-              class="flex-1 px-3 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-slate-900 resize-none"
-              maxlength="500"
-            ></textarea>
-            <button onclick="postComment()" class="bg-slate-900 text-white px-3 py-1 rounded text-xs font-medium hover:bg-slate-800 transition">
-              Post
-            </button>
-          </div>
-        </div>
+      <div class="mb-4 flex gap-3 items-center">
+        <input
+          type="text"
+          id="guestName"
+          placeholder="Name"
+          class="px-4 py-3 border border-slate-300 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-slate-800 w-28"
+          maxlength="50"
+        />
+        <textarea
+          id="commentText"
+          placeholder="Add a comment..."
+          rows="1"
+          class="flex-1 px-4 py-3 border border-slate-300 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-slate-800 resize-none"
+          maxlength="500"
+        ></textarea>
+        <button onclick="postComment()" class="bg-slate-900 text-white px-6 py-3 rounded-full text-xs font-medium hover:bg-slate-800 transition whitespace-nowrap h-11 flex items-center justify-center">
+          Post
+        </button>
       </div>
 
       <!-- Comments List (Compact) -->
-      <div id="commentsList" class="space-y-2 max-h-64 overflow-y-auto text-xs">
+      <div id="commentsList" class="space-y-3 max-h-64 overflow-y-auto text-xs">
         <p class="text-slate-500 text-center py-4">No comments yet</p>
       </div>
     </div>
@@ -492,15 +476,16 @@
         // Unlike - restore outline
         delete userLikes[currentStreamInfo.id];
         likeCounts[currentStreamInfo.id] = Math.max(0, (likeCounts[currentStreamInfo.id] || 0) - 1);
-        likeIcon.setAttribute('fill', 'none');
-        likeIcon.classList.add('stroke-slate-800');
+        likeIcon.classList.remove('fa-solid');
+        likeIcon.classList.add('fa');
+        likeIcon.style.color = '';
       } else {
         // Like - fill with red
         userLikes[currentStreamInfo.id] = true;
         likeCounts[currentStreamInfo.id] = (likeCounts[currentStreamInfo.id] || 0) + 1;
-        likeIcon.setAttribute('fill', '#ef4444');
-        likeIcon.setAttribute('stroke', '#ef4444');
-        likeIcon.classList.remove('stroke-slate-800');
+        likeIcon.classList.remove('fa');
+        likeIcon.classList.add('fa-solid');
+        likeIcon.style.color = '#ef4444';
       }
 
       likeCountEl.textContent = likeCounts[currentStreamInfo.id] || 0;
@@ -517,11 +502,13 @@
       if (userComments[currentStreamInfo.id]) {
         // Uncomment - restore outline
         delete userComments[currentStreamInfo.id];
-        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>';
+        commentIcon.classList.remove('fa-solid', 'fa-comment-dots');
+        commentIcon.classList.add('fa', 'fa-comment');
       } else {
-        // Comment - add dots
+        // Comment - show with dots
         userComments[currentStreamInfo.id] = true;
-        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>';
+        commentIcon.classList.remove('fa', 'fa-comment');
+        commentIcon.classList.add('fa-solid', 'fa-comment-dots');
       }
 
       localStorage.setItem('channelComments', JSON.stringify(userComments));
@@ -536,14 +523,15 @@
       if (userSaves[currentStreamInfo.id]) {
         // Unsave - restore outline
         delete userSaves[currentStreamInfo.id];
-        saveIcon.setAttribute('fill', 'none');
-        saveIcon.classList.add('stroke-slate-800');
+        saveIcon.classList.remove('fa-solid');
+        saveIcon.classList.add('fa');
+        saveIcon.style.color = '';
       } else {
         // Save - fill with black
         userSaves[currentStreamInfo.id] = true;
-        saveIcon.setAttribute('fill', '#1f2937');
-        saveIcon.setAttribute('stroke', '#1f2937');
-        saveIcon.classList.remove('stroke-slate-800');
+        saveIcon.classList.remove('fa');
+        saveIcon.classList.add('fa-solid');
+        saveIcon.style.color = '#1f2937';
       }
 
       localStorage.setItem('channelSaves', JSON.stringify(userSaves));
@@ -586,98 +574,117 @@
       try {
         let channels = [];
 
-        // Priority 1: Load from API (database via Supabase)
+        // Priority 1: Load from main server API with 3-second timeout
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+
           const apiUrl = window.location.hostname === 'localhost'
-            ? 'http://localhost:3001/api/channels'
+            ? 'http://localhost:3000/api/channels'
             : '/api/channels';
 
-          console.log('Loading channels from API:', apiUrl);
-          const res = await fetch(apiUrl);
+          console.log('Loading channels from main API:', apiUrl);
+          const res = await fetch(apiUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
 
           if (res.ok) {
             const data = await res.json();
             channels = data.channels || [];
-            console.log('Loaded channels from database API:', channels.length, 'channels');
+            console.log('✅ Loaded channels from server API:', channels.length, 'channels');
 
             // Cache in localStorage for offline access
             localStorage.setItem('channels', JSON.stringify(channels));
+            return renderChannels(channels);
           }
         } catch (apiError) {
-          console.log('API not available, trying localStorage fallback', apiError);
+          console.log('⚠️ Server API not available:', apiError.message);
+        }
 
-          // Fallback to localStorage
+        // Priority 2: Load directly from JSON file
+        try {
+          console.log('Loading channels from JSON file...');
+          const res = await fetch("data/channels.json");
+          if (res.ok) {
+            const data = await res.json();
+            channels = data.channels || [];
+            console.log('✅ Loaded channels from JSON file:', channels.length, 'channels');
+
+            // Cache in localStorage
+            localStorage.setItem('channels', JSON.stringify(channels));
+            return renderChannels(channels);
+          }
+        } catch (jsonError) {
+          console.log('⚠️ JSON file not available:', jsonError.message);
+        }
+
+        // Priority 3: Load from localStorage cache
+        try {
           const storedChannels = localStorage.getItem('channels');
           if (storedChannels) {
-            try {
-              channels = JSON.parse(storedChannels);
-              console.log('Loaded channels from localStorage (cached)');
-            } catch (e) {
-              console.log("Could not parse stored channels");
-            }
+            channels = JSON.parse(storedChannels);
+            console.log('✅ Loaded channels from localStorage cache:', channels.length, 'channels');
+            return renderChannels(channels);
           }
+        } catch (e) {
+          console.log("⚠️ Could not parse stored channels");
         }
 
-        // Final fallback: Load from JSON file if all else fails
-        if (channels.length === 0) {
-          try {
-            const res = await fetch("data/channels.json");
-            const data = await res.json();
-            channels = data.channels;
-            console.log('Loaded channels from JSON file (fallback)');
-          } catch (error) {
-            console.error('Could not load channels from any source:', error);
-          }
-        }
+        // If nothing worked, show error
+        console.error('❌ Could not load channels from any source');
+        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600 col-span-full text-center">Error loading channels. Please refresh the page.</p>';
+        return;
+      } catch (error) {
+        console.error("Error in loadChannels:", error);
+        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600 col-span-full text-center">Error loading channels</p>';
+      }
+    }
 
-        const container = document.getElementById("recommendedContainer");
+    // Helper function to render channels
+    function renderChannels(channels) {
+      const container = document.getElementById("recommendedContainer");
 
-        container.innerHTML = channels.map((ch, idx) => {
-          // Generate gradient backgrounds
-          const gradients = [
-            'from-blue-400 to-blue-600',
-            'from-purple-400 to-purple-600',
-            'from-pink-400 to-pink-600',
-            'from-green-400 to-green-600',
-            'from-red-400 to-red-600',
-            'from-indigo-400 to-indigo-600'
-          ];
-          const gradient = gradients[idx % gradients.length];
-          const isLive = ch.status === 'live';
+      container.innerHTML = channels.map((ch, idx) => {
+        // Generate gradient backgrounds
+        const gradients = [
+          'from-blue-400 to-blue-600',
+          'from-purple-400 to-purple-600',
+          'from-pink-400 to-pink-600',
+          'from-green-400 to-green-600',
+          'from-red-400 to-red-600',
+          'from-indigo-400 to-indigo-600'
+        ];
+        const gradient = gradients[idx % gradients.length];
+        const isLive = ch.status === 'live' || ch.status === 'online';
 
-          return `
-            <div class="channel-card" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0}, '${ch.status}', '${ch.type}')">
-              <div class="channel-card-thumbnail bg-gradient-to-br ${gradient}">
-                ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
-                <div class="channel-card-number">${ch.number}</div>
-              </div>
-              <div class="channel-card-info">
-                <h4 class="channel-name">${ch.number}. ${ch.name}</h4>
-                <p class="channel-desc">${ch.description}</p>
-                <div class="channel-status">
-                  <span class="status-dot ${isLive ? 'live' : ''}"></span>
-                  <span>${isLive ? 'Streaming now' : 'Offline'}</span>
-                </div>
+        return `
+          <div class="channel-card" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0}, '${ch.status}', '${ch.type}')">
+            <div class="channel-card-thumbnail bg-gradient-to-br ${gradient}">
+              ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
+              <div class="channel-card-number">${ch.number}</div>
+            </div>
+            <div class="channel-card-info">
+              <h4 class="channel-name">${ch.number}. ${ch.name}</h4>
+              <p class="channel-desc">${ch.description}</p>
+              <div class="channel-status">
+                <span class="status-dot ${isLive ? 'live' : ''}"></span>
+                <span>${isLive ? 'Streaming now' : 'Offline'}</span>
               </div>
             </div>
-          `;
-        }).join("");
+          </div>
+        `;
+      }).join("");
 
-        // Select first channel by default
-        if (channels.length > 0) {
-          selectChannel(
-            channels[0].id,
-            channels[0].name,
-            channels[0].description,
-            channels[0].streamUrl,
-            channels[0].viewers || 0,
-            channels[0].status || 'offline',
-            channels[0].type || 'unknown'
-          );
-        }
-      } catch (error) {
-        console.error("Error loading channels:", error);
-        document.getElementById("recommendedContainer").innerHTML = '<p class="text-red-600">Error loading channels</p>';
+      // Select first channel by default
+      if (channels.length > 0) {
+        selectChannel(
+          channels[0].id,
+          channels[0].name,
+          channels[0].description,
+          channels[0].streamUrl,
+          channels[0].viewers || 0,
+          channels[0].status || 'offline',
+          channels[0].type || 'unknown'
+        );
       }
     }
 
@@ -704,27 +711,31 @@
       const saveIcon = document.getElementById('saveIcon');
 
       // Reset all icons to default outline state
-      likeIcon.setAttribute('fill', 'none');
-      likeIcon.classList.add('stroke-slate-800');
+      likeIcon.classList.remove('fa-solid');
+      likeIcon.classList.add('fa');
+      likeIcon.style.color = '';
 
-      commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/>';
+      commentIcon.classList.remove('fa-solid', 'fa-comment-dots');
+      commentIcon.classList.add('fa', 'fa-comment');
 
-      saveIcon.setAttribute('fill', 'none');
-      saveIcon.classList.add('stroke-slate-800');
+      saveIcon.classList.remove('fa-solid');
+      saveIcon.classList.add('fa');
+      saveIcon.style.color = '';
 
       // Restore user's previous interactions with this channel
       if (userLikes[id]) {
-        likeIcon.setAttribute('fill', '#ef4444');
-        likeIcon.setAttribute('stroke', '#ef4444');
-        likeIcon.classList.remove('stroke-slate-800');
+        likeIcon.classList.remove('fa');
+        likeIcon.classList.add('fa-solid');
+        likeIcon.style.color = '#ef4444';
       }
       if (userComments[id]) {
-        commentIcon.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>';
+        commentIcon.classList.remove('fa', 'fa-comment');
+        commentIcon.classList.add('fa-solid', 'fa-comment-dots');
       }
       if (userSaves[id]) {
-        saveIcon.setAttribute('fill', '#1f2937');
-        saveIcon.setAttribute('stroke', '#1f2937');
-        saveIcon.classList.remove('stroke-slate-800');
+        saveIcon.classList.remove('fa');
+        saveIcon.classList.add('fa-solid');
+        saveIcon.style.color = '#1f2937';
       }
 
       // Load the stream
@@ -782,56 +793,57 @@
       });
     }
 
-    // Load YouTube stream
-    function loadYouTubeStream(youtubeUrl) {
-      console.log('Processing YouTube URL:', youtubeUrl);
-
-      // Extract video ID from YouTube URL
+    // Convert YouTube URL to embedded iframe HTML
+    function youtubeUrlToEmbed(youtubeUrl) {
       let videoId = null;
 
       // Format 1: https://www.youtube.com/watch?v=VIDEO_ID
       if (youtubeUrl.includes('youtube.com/watch?v=')) {
         const match = youtubeUrl.match(/v=([^&]+)/);
-        if (match) {
-          videoId = match[1];
-        }
+        videoId = match ? match[1] : null;
       }
       // Format 2: https://youtu.be/VIDEO_ID
       else if (youtubeUrl.includes('youtu.be/')) {
         const match = youtubeUrl.match(/youtu\.be\/([^?&]+)/);
-        if (match) {
-          videoId = match[1];
-        }
+        videoId = match ? match[1] : null;
       }
       // Format 3: https://youtube.com/live/VIDEO_ID (YouTube Live format)
       else if (youtubeUrl.includes('youtube.com/live/')) {
         const match = youtubeUrl.match(/youtube\.com\/live\/([^?&]+)/);
-        if (match) {
-          videoId = match[1];
-        }
+        videoId = match ? match[1] : null;
       }
 
       if (!videoId) {
         console.error('Could not extract video ID from YouTube URL');
+        return null;
+      }
+
+      // Return iframe HTML with no YouTube branding
+      return `<iframe
+        src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>`;
+    }
+
+    // Load YouTube stream
+    function loadYouTubeStream(youtubeUrl) {
+      console.log('Processing YouTube URL:', youtubeUrl);
+
+      const iframeHtml = youtubeUrlToEmbed(youtubeUrl);
+
+      if (!iframeHtml) {
         alert('Invalid YouTube URL. Please use youtube.com/watch?v=ID, youtu.be/ID, or youtube.com/live/ID');
         return;
       }
-
-      console.log('YouTube video ID:', videoId);
 
       // Replace video container with YouTube iframe
       const video = document.getElementById("mainVideo");
       const videoContainer = video.parentElement;
 
-      const iframeHtml = `<iframe
-        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen>
-      </iframe>`;
-
       videoContainer.innerHTML = iframeHtml;
-      console.log('YouTube iframe loaded:', videoId);
+      console.log('YouTube iframe loaded');
     }
 
     // Load RTMP stream (convert to HLS)
@@ -1018,6 +1030,18 @@
       }
     }
 
+    // Scroll to comments section
+    function scrollToComments() {
+      const commentsSection = document.getElementById('commentsSection');
+      if (commentsSection) {
+        commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Focus on the comment input
+        setTimeout(() => {
+          document.getElementById('commentText').focus();
+        }, 500);
+      }
+    }
+
     // ==================== COMMENTS FUNCTIONS ====================
 
     // Load comments for current channel
@@ -1089,7 +1113,6 @@
       // Clear inputs
       document.getElementById('guestName').value = '';
       document.getElementById('commentText').value = '';
-      document.getElementById('charCount').textContent = '0';
 
       // Reload comments
       loadComments();
@@ -1135,20 +1158,11 @@
       return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    // Update character count
-    document.addEventListener('DOMContentLoaded', () => {
-      const commentTextarea = document.getElementById('commentText');
-      if (commentTextarea) {
-        commentTextarea.addEventListener('input', (e) => {
-          document.getElementById('charCount').textContent = e.target.value.length;
-        });
-      }
-    });
 
     // Load comments when channel is selected
     const originalSelectChannel = selectChannel;
-    selectChannel = function(id, name, desc, streamUrl, viewers) {
-      originalSelectChannel(id, name, desc, streamUrl, viewers);
+    selectChannel = function(id, name, desc, streamUrl, viewers, status, type) {
+      originalSelectChannel(id, name, desc, streamUrl, viewers, status, type);
       loadComments();
     };
 
