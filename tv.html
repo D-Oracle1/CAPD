@@ -439,7 +439,34 @@
     document.addEventListener("DOMContentLoaded", () => {
       loadChannels();
       startViewCountRefresh();
+      listenForChannelUpdates();
     });
+
+    // Listen for localStorage changes (when admin panel updates channels)
+    function listenForChannelUpdates() {
+      // Listen for storage events from other tabs/windows
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'channels' && event.newValue) {
+          console.log('📡 Channels updated from another tab, reloading...');
+          loadChannels();
+        }
+      });
+
+      // Also reload channels when user switches back to this tab (for same-window updates)
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          console.log('📡 Page became visible, checking for channel updates...');
+          // Check if channels have changed by comparing with current data
+          const storedChannels = JSON.parse(localStorage.getItem('channels') || '[]');
+          const currentChannels = JSON.parse(localStorage.getItem('_lastLoadedChannels') || '[]');
+
+          if (JSON.stringify(storedChannels) !== JSON.stringify(currentChannels)) {
+            console.log('📡 Channels have changed, reloading...');
+            loadChannels();
+          }
+        }
+      });
+    }
 
     // Start refreshing view counts every 2 seconds
     function startViewCountRefresh() {
@@ -641,6 +668,9 @@
 
     // Helper function to render channels
     function renderChannels(channels) {
+      // Cache the loaded channels for comparison
+      localStorage.setItem('_lastLoadedChannels', JSON.stringify(channels));
+
       const container = document.getElementById("recommendedContainer");
 
       container.innerHTML = channels.map((ch, idx) => {
