@@ -280,6 +280,9 @@ async function saveChannel(e) {
     const streamType = document.getElementById('streamType').value;
     const editChannelIndex = document.getElementById('editChannelIndex').value;
 
+    // Get thumbnail data (base64) if uploaded
+    const thumbnailData = document.getElementById('thumbnailData').value;
+
     const channel = {
       id: editChannelIndex !== '' ? document.getElementById('editChannelIndex').dataset.channelId : 'ch-' + Date.now(),
       name: document.getElementById('channelName').value,
@@ -289,7 +292,8 @@ async function saveChannel(e) {
       type: streamType,
       status: document.getElementById('channelStatus').value,
       viewers: parseInt(document.getElementById('viewers').value) || 0,
-      poster: 'assets/images/channel-default.jpg'
+      poster: 'assets/images/channel-default.jpg',
+      thumbnail: thumbnailData || null  // Store base64 thumbnail
     };
 
     // Load CURRENT channels from database (not localStorage)
@@ -447,6 +451,13 @@ async function editChannelById(channelId) {
     document.getElementById('viewers').value = channel.viewers;
     document.getElementById('editChannelIndex').value = channelId;
     document.getElementById('editChannelIndex').dataset.channelId = channelId;
+
+    // Load thumbnail if it exists
+    if (channel.thumbnail) {
+      loadThumbnailForChannel(channel);
+    } else {
+      clearThumbnail();
+    }
 
     updateStreamUrlPlaceholder();
     showChannelForm();
@@ -1754,3 +1765,98 @@ function resetViews() {
     alert('Views reset to 0!');
   }
 }
+
+/**
+ * Handle thumbnail upload
+ */
+function handleThumbnailUpload(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  // Check file size (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert('File size must be less than 2MB');
+    fileInput.value = '';
+    return;
+  }
+
+  // Check file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please upload an image file (PNG, JPG, WebP)');
+    fileInput.value = '';
+    return;
+  }
+
+  // Read file and convert to base64
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64Data = e.target.result;
+
+    // Store in hidden input
+    document.getElementById('thumbnailData').value = base64Data;
+
+    // Show preview
+    const preview = document.getElementById('thumbnailPreview');
+    const uploadHint = document.getElementById('thumbnailUploadHint');
+    const clearBtn = document.getElementById('clearThumbnailBtn');
+
+    document.getElementById('thumbnailImg').src = base64Data;
+    preview.classList.remove('hidden');
+    uploadHint.classList.add('hidden');
+    clearBtn.classList.remove('hidden');
+
+    console.log('📸 Thumbnail uploaded:', file.name);
+  };
+
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Clear thumbnail
+ */
+function clearThumbnail() {
+  document.getElementById('thumbnailInput').value = '';
+  document.getElementById('thumbnailData').value = '';
+
+  const preview = document.getElementById('thumbnailPreview');
+  const uploadHint = document.getElementById('thumbnailUploadHint');
+  const clearBtn = document.getElementById('clearThumbnailBtn');
+
+  preview.classList.add('hidden');
+  uploadHint.classList.remove('hidden');
+  clearBtn.classList.add('hidden');
+
+  console.log('🗑️ Thumbnail cleared');
+}
+
+/**
+ * Load thumbnail when editing a channel
+ */
+function loadThumbnailForChannel(channelData) {
+  const thumbnailData = channelData.thumbnail;
+
+  if (thumbnailData) {
+    // Show preview
+    const preview = document.getElementById('thumbnailPreview');
+    const uploadHint = document.getElementById('thumbnailUploadHint');
+    const clearBtn = document.getElementById('clearThumbnailBtn');
+
+    document.getElementById('thumbnailImg').src = thumbnailData;
+    document.getElementById('thumbnailData').value = thumbnailData;
+
+    preview.classList.remove('hidden');
+    uploadHint.classList.add('hidden');
+    clearBtn.classList.remove('hidden');
+  }
+}
+
+/**
+ * Clear form when hiding channel form
+ */
+const originalHideChannelForm = window.hideChannelForm || function() {};
+window.hideChannelForm = function() {
+  clearThumbnail();
+  document.getElementById('formChannel').reset();
+  document.getElementById('channelForm').classList.add('hidden');
+  originalHideChannelForm();
+};

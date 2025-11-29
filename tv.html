@@ -767,15 +767,20 @@
     }
 
     // Helper function to get thumbnail for any stream
-    function getThumbnailUrl(streamUrl) {
+    function getThumbnailUrl(streamUrl, channelData) {
       if (!streamUrl) return null;
 
-      // YouTube
+      // Priority 1: Use uploaded thumbnail if available
+      if (channelData && channelData.thumbnail) {
+        return channelData.thumbnail;
+      }
+
+      // Priority 2: YouTube
       if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
         return getYouTubeThumbnail(streamUrl);
       }
 
-      // Direct video files (MP4, MOV, etc) - use as-is, browser will load preview
+      // Priority 3: Direct video files (MP4, MOV, etc)
       if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv'))) {
         return streamUrl; // Can be used as poster attribute
       }
@@ -803,8 +808,8 @@
         const gradient = gradients[idx % gradients.length];
         const isLive = ch.status === 'live' || ch.status === 'online';
 
-        // Generate thumbnail from stream URL
-        const thumbnailUrl = getThumbnailUrl(ch.streamUrl);
+        // Generate thumbnail from stream URL (or use uploaded thumbnail)
+        const thumbnailUrl = getThumbnailUrl(ch.streamUrl, ch);
         const hasThumbnail = thumbnailUrl && thumbnailUrl.trim();
         const thumbnailStyle = hasThumbnail
           ? `background-image: url('${thumbnailUrl}'); background-size: cover; background-position: center;`

@@ -318,6 +318,24 @@
                 <input type="number" id="viewers" value="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
               </div>
             </div>
+
+            <!-- Thumbnail Upload Section -->
+            <div>
+              <label class="block text-sm font-medium mb-2">📸 Channel Thumbnail</label>
+              <div class="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center cursor-pointer hover:bg-purple-50 transition" onclick="document.getElementById('thumbnailInput').click()">
+                <input type="file" id="thumbnailInput" accept="image/*" class="hidden" onchange="handleThumbnailUpload(this)">
+                <div id="thumbnailPreview" class="hidden mb-4">
+                  <img id="thumbnailImg" src="" alt="Thumbnail preview" class="max-h-32 mx-auto rounded">
+                </div>
+                <div id="thumbnailUploadHint">
+                  <p class="text-gray-600 text-sm">Click to upload thumbnail</p>
+                  <p class="text-gray-400 text-xs mt-1">PNG, JPG, WebP (Max 2MB)</p>
+                </div>
+              </div>
+              <input type="hidden" id="thumbnailData">
+              <button type="button" id="clearThumbnailBtn" class="hidden mt-2 w-full bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded transition" onclick="clearThumbnail()">Clear Thumbnail</button>
+            </div>
+
             <div class="flex gap-4">
               <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Channel</button>
               <button type="button" onclick="hideChannelForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
