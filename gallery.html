@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery - CAPD Media</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .media-card {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+      aspect-ratio: 1;
+    }
+
+    .media-card img,
+    .media-card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .media-card:hover img,
+    .media-card:hover video {
+      transform: scale(1.05);
+    }
+
+    .media-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .media-card:hover .media-overlay {
+      opacity: 1;
+    }
+
+    .play-icon {
+      font-size: 3rem;
+      color: white;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-media {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+      z-index: 1001;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+      z-index: 1001;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .lightbox-nav.prev {
+      left: 20px;
+    }
+
+    .lightbox-nav.next {
+      right: 20px;
+    }
+
+    .category-btn {
+      transition: all 0.3s ease;
+    }
+
+    .category-btn.active {
+      background-color: #6366f1;
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @media (max-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+
+      .lightbox-nav {
+        padding: 8px 12px;
+        font-size: 1.5rem;
+      }
+
+      .lightbox-close {
+        top: 10px;
+        right: 15px;
+        padding: 8px 12px;
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+      <img src="logo.png" alt="CAPD Logo" class="h-8 sm:h-10 w-auto object-contain">
+      <nav class="hidden md:flex space-x-3 lg:space-x-6 text-xs sm:text-sm font-medium">
+        <a href="index.html" class="text-gray-600 hover:text-gray-900">Home</a>
+        <a href="news.html" class="text-gray-600 hover:text-gray-900">News</a>
+        <a href="tv.html" class="text-gray-600 hover:text-gray-900">📺 TV</a>
+        <a href="videos.html" class="text-gray-600 hover:text-gray-900">Videos</a>
+        <a href="gallery.html" class="text-gray-900 font-bold">🖼️ Gallery</a>
+        <a href="about.html" class="text-gray-600 hover:text-gray-900">About</a>
+      </nav>
+      <!-- Mobile menu button -->
+      <button id="mobileMenuBtn" class="md:hidden p-2 hover:bg-gray-100 rounded">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+    <!-- Mobile Navigation -->
+    <nav id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-200">
+      <div class="px-4 py-3 space-y-2">
+        <a href="index.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Home</a>
+        <a href="news.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">News</a>
+        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">📺 Digital TV</a>
+        <a href="videos.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Videos</a>
+        <a href="gallery.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">🖼️ Gallery</a>
+        <a href="about.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-12 sm:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">🖼️ Media Gallery</h1>
+      <p class="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto">
+        Explore our collection of photos and videos from events, programs, and community activities
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+    <!-- Category Filter -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-bold mb-4">Filter by Category</h2>
+      <div class="flex flex-wrap gap-2" id="categoryFilter">
+        <button onclick="filterByCategory('')" class="category-btn active bg-slate-200 hover:bg-slate-300 text-slate-900 px-4 py-2 rounded-full font-medium transition text-sm sm:text-base">
+          All Categories
+        </button>
+      </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div id="galleryContainer" class="mb-12">
+      <div class="text-center py-12">
+        <p class="text-gray-600">Loading gallery...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-12 hidden">
+      <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      <p class="text-gray-600 text-lg">No media found in this category</p>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <button class="lightbox-nav prev" onclick="prevMedia()">&lt;</button>
+    <div class="lightbox-content">
+      <img id="lightboxImage" class="lightbox-media hidden" alt="Gallery image">
+      <video id="lightboxVideo" class="lightbox-media hidden" controls style="max-width: 90vw; max-height: 90vh;"></video>
+    </div>
+    <button class="lightbox-nav next" onclick="nextMedia()">&gt;</button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-white py-8 sm:py-12 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div>
+          <h3 class="font-bold text-lg mb-4">About CAPD</h3>
+          <p class="text-gray-300 text-sm">Community, Art, and Public Development platform providing quality content and community engagement.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-4">Quick Links</h3>
+          <ul class="space-y-2 text-sm text-gray-300">
+            <li><a href="index.html" class="hover:text-white">Home</a></li>
+            <li><a href="tv.html" class="hover:text-white">Live TV</a></li>
+            <li><a href="gallery.html" class="hover:text-white">Gallery</a></li>
+            <li><a href="about.html" class="hover:text-white">About Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-4">Contact</h3>
+          <p class="text-gray-300 text-sm">
+            📧 info@capd.com<br>
+            📞 +1 (555) 123-4567<br>
+            📍 Visit us online
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-slate-700 pt-8 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 CAPD - Community, Art & Public Development. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let galleryData = { categories: [], media: [] };
+    let currentMediaIndex = 0;
+    let filteredMedia = [];
+    let allMedia = [];
+
+    /**
+     * Load gallery data from API
+     */
+    async function loadGallery() {
+      try {
+        const response = await fetch('/api/gallery/categories');
+        const data = await response.json();
+        galleryData.categories = data.categories || [];
+
+        // Load all media for public categories
+        allMedia = [];
+        for (const category of galleryData.categories) {
+          const mediaResponse = await fetch(`/api/gallery/categories/${category.id}/media`);
+          const mediaData = await mediaResponse.json();
+          allMedia = allMedia.concat(mediaData.media || []);
+        }
+
+        filteredMedia = allMedia;
+        renderCategories();
+        renderGallery();
+      } catch (error) {
+        console.error('Error loading gallery:', error);
+        document.getElementById('galleryContainer').innerHTML = '<p class="text-red-600 text-center">Failed to load gallery</p>';
+      }
+    }
+
+    /**
+     * Render category buttons
+     */
+    function renderCategories() {
+      const filterDiv = document.getElementById('categoryFilter');
+      filterDiv.innerHTML = `
+        <button onclick="filterByCategory('')" class="category-btn active bg-indigo-600 text-white px-4 py-2 rounded-full font-medium transition text-sm sm:text-base">
+          All Categories
+        </button>
+      `;
+
+      galleryData.categories.forEach(category => {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn bg-slate-200 hover:bg-slate-300 text-slate-900 px-4 py-2 rounded-full font-medium transition text-sm sm:text-base';
+        btn.textContent = `${category.name} (${allMedia.filter(m => m.categoryId === category.id).length})`;
+        btn.onclick = () => filterByCategory(category.id);
+        filterDiv.appendChild(btn);
+      });
+    }
+
+    /**
+     * Filter media by category
+     */
+    function filterByCategory(categoryId) {
+      // Update button states
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-200', 'text-slate-900', 'hover:bg-slate-300');
+      });
+
+      if (categoryId === '') {
+        filteredMedia = allMedia;
+        document.querySelectorAll('.category-btn')[0].classList.add('active', 'bg-indigo-600', 'text-white');
+        document.querySelectorAll('.category-btn')[0].classList.remove('bg-slate-200', 'text-slate-900');
+      } else {
+        filteredMedia = allMedia.filter(m => m.categoryId === categoryId);
+        event.target.classList.add('active', 'bg-indigo-600', 'text-white');
+        event.target.classList.remove('bg-slate-200', 'text-slate-900', 'hover:bg-slate-300');
+      }
+
+      currentMediaIndex = 0;
+      renderGallery();
+    }
+
+    /**
+     * Render gallery grid
+     */
+    function renderGallery() {
+      const container = document.getElementById('galleryContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filteredMedia.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = '<div class="gallery-grid fade-in"></div>';
+      const grid = container.querySelector('.gallery-grid');
+
+      filteredMedia.forEach((media, index) => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.onclick = () => openLightbox(index);
+
+        if (media.type === 'video') {
+          card.innerHTML = `
+            <video src="${media.url}" class="w-full h-full object-cover"></video>
+            <div class="media-overlay">
+              <div class="play-icon">▶️</div>
+            </div>
+          `;
+        } else {
+          card.innerHTML = `
+            <img src="${media.url}" alt="${media.name}" loading="lazy">
+            <div class="media-overlay">
+              <div class="text-white text-center">
+                <p class="font-bold">${media.name}</p>
+              </div>
+            </div>
+          `;
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    /**
+     * Open lightbox
+     */
+    function openLightbox(index) {
+      currentMediaIndex = index;
+      const media = filteredMedia[index];
+      const lightbox = document.getElementById('lightbox');
+      const image = document.getElementById('lightboxImage');
+      const video = document.getElementById('lightboxVideo');
+
+      if (media.type === 'video') {
+        image.classList.add('hidden');
+        video.classList.remove('hidden');
+        video.src = media.url;
+      } else {
+        video.classList.add('hidden');
+        image.classList.remove('hidden');
+        image.src = media.url;
+        image.alt = media.name;
+      }
+
+      lightbox.classList.add('active');
+    }
+
+    /**
+     * Close lightbox
+     */
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.getElementById('lightboxVideo').pause();
+    }
+
+    /**
+     * Navigate to next media
+     */
+    function nextMedia() {
+      currentMediaIndex = (currentMediaIndex + 1) % filteredMedia.length;
+      openLightbox(currentMediaIndex);
+    }
+
+    /**
+     * Navigate to previous media
+     */
+    function prevMedia() {
+      currentMediaIndex = (currentMediaIndex - 1 + filteredMedia.length) % filteredMedia.length;
+      openLightbox(currentMediaIndex);
+    }
+
+    /**
+     * Handle mobile menu toggle
+     */
+    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('hidden');
+    });
+
+    /**
+     * Close lightbox on escape key
+     */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowRight') {
+        if (document.getElementById('lightbox').classList.contains('active')) {
+          nextMedia();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (document.getElementById('lightbox').classList.contains('active')) {
+          prevMedia();
+        }
+      }
+    });
+
+    // Load gallery on page load
+    window.addEventListener('load', loadGallery);
+  </script>
+</body>
+</html>

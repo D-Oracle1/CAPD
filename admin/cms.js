@@ -1860,3 +1860,727 @@ window.hideChannelForm = function() {
   document.getElementById('channelForm').classList.add('hidden');
   originalHideChannelForm();
 };
+
+// ========== GALLERY MANAGEMENT FUNCTIONS ==========
+
+let galleryData = { categories: [], media: [] };
+let selectedMediaFile = null;
+let createNewCategoryMode = false;
+
+/**
+ * Load gallery data from server
+ */
+async function loadGalleryData() {
+  try {
+    const response = await fetch('/api/gallery/categories?admin=true');
+    const data = await response.json();
+    galleryData.categories = data.categories || [];
+
+    // Load all media
+    const mediaResponse = await fetch('/api/gallery/categories?admin=true');
+    const mediaData = await mediaResponse.json();
+
+    updateCategorySelects();
+    displayCategories();
+    loadAllMedia();
+  } catch (error) {
+    console.error('Error loading gallery data:', error);
+    alert('Failed to load gallery data');
+  }
+}
+
+/**
+ * Show gallery tab
+ */
+function showGalleryTab(tabName) {
+  // Hide all tabs
+  document.getElementById('galleryUploadTab').classList.add('hidden');
+  document.getElementById('galleryCategoriesTab').classList.add('hidden');
+  document.getElementById('galleryMediaTab').classList.add('hidden');
+
+  // Show selected tab
+  if (tabName === 'upload') {
+    document.getElementById('galleryUploadTab').classList.remove('hidden');
+    document.getElementById('galleryTabUpload').classList.add('bg-white/20');
+    document.getElementById('galleryTabUpload').classList.remove('bg-white/10');
+    document.getElementById('galleryTabCategories').classList.remove('bg-white/20');
+    document.getElementById('galleryTabCategories').classList.add('bg-white/10');
+    document.getElementById('galleryTabMedia').classList.remove('bg-white/20');
+    document.getElementById('galleryTabMedia').classList.add('bg-white/10');
+  } else if (tabName === 'categories') {
+    document.getElementById('galleryCategoriesTab').classList.remove('hidden');
+    displayCategories();
+    document.getElementById('galleryTabCategories').classList.add('bg-white/20');
+    document.getElementById('galleryTabCategories').classList.remove('bg-white/10');
+    document.getElementById('galleryTabUpload').classList.remove('bg-white/20');
+    document.getElementById('galleryTabUpload').classList.add('bg-white/10');
+    document.getElementById('galleryTabMedia').classList.remove('bg-white/20');
+    document.getElementById('galleryTabMedia').classList.add('bg-white/10');
+  } else if (tabName === 'media') {
+    document.getElementById('galleryMediaTab').classList.remove('hidden');
+    loadAllMedia();
+    document.getElementById('galleryTabMedia').classList.add('bg-white/20');
+    document.getElementById('galleryTabMedia').classList.remove('bg-white/10');
+    document.getElementById('galleryTabUpload').classList.remove('bg-white/20');
+    document.getElementById('galleryTabUpload').classList.add('bg-white/10');
+    document.getElementById('galleryTabCategories').classList.remove('bg-white/20');
+    document.getElementById('galleryTabCategories').classList.add('bg-white/10');
+  }
+}
+
+/**
+ * Handle media file selection
+ */
+function handleMediaFileSelect(event) {
+  const input = document.getElementById('mediaFileInput');
+  const file = input.files[0];
+
+  if (!file) return;
+
+  selectedMediaFile = file;
+
+  // Show preview
+  const preview = document.getElementById('mediaPreview');
+  const previewImg = document.getElementById('mediaPreviewImg');
+  const previewVideo = document.getElementById('mediaPreviewVideo');
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const isVideo = file.type.startsWith('video/');
+
+    if (isVideo) {
+      previewImg.classList.add('hidden');
+      previewVideo.classList.remove('hidden');
+      previewVideo.src = e.target.result;
+    } else {
+      previewVideo.classList.add('hidden');
+      previewImg.classList.remove('hidden');
+      previewImg.src = e.target.result;
+    }
+
+    preview.classList.remove('hidden');
+  };
+
+  reader.readAsDataURL(file);
+
+  // Set default media name
+  const fileName = file.name.split('.')[0];
+  document.getElementById('mediaName').value = fileName;
+}
+
+/**
+ * Drag and drop file upload
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  const dropZone = document.getElementById('uploadDropZone');
+  if (!dropZone) return;
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('bg-purple-400/20');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('bg-purple-400/20');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('bg-purple-400/20');
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      document.getElementById('mediaFileInput').files = files;
+      handleMediaFileSelect();
+    }
+  });
+});
+
+/**
+ * Toggle new category input
+ */
+function toggleNewCategory() {
+  createNewCategoryMode = !createNewCategoryMode;
+  const input = document.getElementById('newCategoryInput');
+  const select = document.getElementById('galleryCategory');
+
+  if (createNewCategoryMode) {
+    input.classList.remove('hidden');
+    select.classList.add('hidden');
+    select.value = '';
+  } else {
+    input.classList.add('hidden');
+    select.classList.remove('hidden');
+    document.getElementById('newCategoryName').value = '';
+  }
+}
+
+/**
+ * Update category selects
+ */
+function updateCategorySelects() {
+  const select = document.getElementById('galleryCategory');
+  const filterSelect = document.getElementById('mediaFilterCategory');
+
+  select.innerHTML = '<option value="">Select Category...</option>';
+  filterSelect.innerHTML = '<option value="">All Categories</option>';
+
+  galleryData.categories.forEach(cat => {
+    const option1 = document.createElement('option');
+    option1.value = cat.id;
+    option1.textContent = `${cat.name} (${cat.mediaCount || 0})`;
+    select.appendChild(option1);
+
+    const option2 = document.createElement('option');
+    option2.value = cat.id;
+    option2.textContent = `${cat.name} (${cat.mediaCount || 0})`;
+    filterSelect.appendChild(option2);
+  });
+}
+
+/**
+ * Upload media to category
+ */
+async function uploadMedia() {
+  if (!selectedMediaFile) {
+    alert('Please select a media file');
+    return;
+  }
+
+  const mediaName = document.getElementById('mediaName').value.trim();
+  const mediaDescription = document.getElementById('mediaDescription').value.trim();
+  let categoryId = document.getElementById('galleryCategory').value;
+
+  if (createNewCategoryMode) {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    if (!categoryName) {
+      alert('Please enter a category name');
+      return;
+    }
+    categoryId = null;
+  } else if (!categoryId) {
+    alert('Please select or create a category');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', selectedMediaFile);
+  formData.append('mediaName', mediaName);
+  formData.append('mediaDescription', mediaDescription);
+  formData.append('categoryId', categoryId);
+  formData.append('categoryName', createNewCategoryMode ? document.getElementById('newCategoryName').value : '');
+  formData.append('isNewCategory', createNewCategoryMode ? 'true' : 'false');
+
+  try {
+    // Show progress
+    const progressDiv = document.getElementById('uploadProgress');
+    progressDiv.classList.remove('hidden');
+
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 30;
+      if (progress > 90) progress = 90;
+      updateUploadProgress(progress);
+    }, 200);
+
+    const response = await fetch('/api/gallery/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(progressInterval);
+    updateUploadProgress(100);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Upload failed');
+    }
+
+    const result = await response.json();
+
+    // Success message
+    setTimeout(() => {
+      alert(`✅ ${result.media.type === 'video' ? 'Video' : 'Photo'} uploaded successfully!`);
+
+      // Reset form
+      document.getElementById('mediaFileInput').value = '';
+      document.getElementById('mediaName').value = '';
+      document.getElementById('mediaDescription').value = '';
+      document.getElementById('newCategoryName').value = '';
+      document.getElementById('newCategoryInput').classList.add('hidden');
+      document.getElementById('galleryCategory').classList.remove('hidden');
+      document.getElementById('mediaPreview').classList.add('hidden');
+      progressDiv.classList.add('hidden');
+      createNewCategoryMode = false;
+      selectedMediaFile = null;
+
+      // Reload gallery data
+      loadGalleryData();
+    }, 500);
+  } catch (error) {
+    console.error('Upload error:', error);
+    alert(`Upload failed: ${error.message}`);
+    document.getElementById('uploadProgress').classList.add('hidden');
+  }
+}
+
+/**
+ * Update upload progress bar
+ */
+function updateUploadProgress(percent) {
+  document.getElementById('uploadPercent').textContent = Math.round(percent) + '%';
+  document.getElementById('uploadBar').style.width = percent + '%';
+}
+
+/**
+ * Show create category form
+ */
+function showCreateCategoryForm() {
+  document.getElementById('createCategoryForm').classList.remove('hidden');
+}
+
+/**
+ * Cancel create category
+ */
+function cancelCreateCategory() {
+  document.getElementById('createCategoryForm').classList.add('hidden');
+  document.getElementById('catName').value = '';
+  document.getElementById('catDescription').value = '';
+  document.getElementById('catPublic').checked = true;
+}
+
+/**
+ * Create category
+ */
+async function createCategory() {
+  const name = document.getElementById('catName').value.trim();
+  const description = document.getElementById('catDescription').value.trim();
+  const isPublic = document.getElementById('catPublic').checked;
+
+  if (!name) {
+    alert('Please enter a category name');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/gallery/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description, isPublic })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create category');
+    }
+
+    const result = await response.json();
+    alert('✅ Category created successfully!');
+
+    cancelCreateCategory();
+    loadGalleryData();
+  } catch (error) {
+    console.error('Error creating category:', error);
+    alert(`Failed to create category: ${error.message}`);
+  }
+}
+
+/**
+ * Display categories
+ */
+async function displayCategories() {
+  try {
+    const response = await fetch('/api/gallery/categories?admin=true');
+    const data = await response.json();
+    galleryData.categories = data.categories || [];
+
+    const list = document.getElementById('categoriesList');
+    list.innerHTML = '';
+
+    if (galleryData.categories.length === 0) {
+      list.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No categories yet. Create one to get started!</p>';
+      return;
+    }
+
+    galleryData.categories.forEach(category => {
+      const card = document.createElement('div');
+      card.className = 'bg-white/10 rounded-lg p-4 border border-white/20 hover:bg-white/15 transition';
+      card.innerHTML = `
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex-1">
+            <h3 class="text-white font-bold text-lg">${category.name}</h3>
+            <p class="text-gray-400 text-sm">${category.mediaCount || 0} items</p>
+            ${category.description ? `<p class="text-gray-300 text-sm mt-2">${category.description}</p>` : ''}
+          </div>
+          <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
+            ${category.isPublic ? '🌐 Public' : '🔒 Private'}
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleCategoryPublic('${category.id}', ${category.isPublic})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium transition">
+            ${category.isPublic ? '🔒 Make Private' : '🌐 Make Public'}
+          </button>
+          <button onclick="deleteCategory('${category.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm font-medium transition">
+            🗑️ Delete
+          </button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error displaying categories:', error);
+  }
+}
+
+/**
+ * Toggle category public/private
+ */
+async function toggleCategoryPublic(categoryId, currentPublic) {
+  try {
+    const response = await fetch(`/api/gallery/categories/${categoryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isPublic: !currentPublic })
+    });
+
+    if (!response.ok) throw new Error('Failed to update');
+
+    alert('✅ Category updated!');
+    displayCategories();
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
+
+/**
+ * Delete category
+ */
+async function deleteCategory(categoryId) {
+  if (!confirm('Delete this category and all its media?')) return;
+
+  try {
+    const response = await fetch(`/api/gallery/categories/${categoryId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) throw new Error('Failed to delete');
+
+    alert('✅ Category deleted!');
+    loadGalleryData();
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
+
+/**
+ * Load all media
+ */
+async function loadAllMedia() {
+  try {
+    const response = await fetch('/api/gallery/categories?admin=true');
+    const data = await response.json();
+    galleryData.categories = data.categories || [];
+
+    const list = document.getElementById('mediaList');
+    list.innerHTML = '';
+
+    let allMedia = [];
+    for (const category of galleryData.categories) {
+      const mediaResponse = await fetch(`/api/gallery/categories/${category.id}/media?admin=true`);
+      const mediaData = await mediaResponse.json();
+      allMedia = allMedia.concat(mediaData.media || []);
+    }
+
+    if (allMedia.length === 0) {
+      list.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No media uploaded yet</p>';
+      return;
+    }
+
+    allMedia.forEach(media => {
+      const card = document.createElement('div');
+      card.className = 'bg-white/10 rounded-lg overflow-hidden border border-white/20 hover:bg-white/15 transition';
+
+      const category = galleryData.categories.find(c => c.id === media.categoryId);
+      const mediaType = media.type === 'video' ? '🎬' : '📷';
+
+      card.innerHTML = `
+        <div class="aspect-square bg-black/50 overflow-hidden">
+          ${media.type === 'video'
+            ? `<video src="${media.url}" class="w-full h-full object-cover" style="background: #000;"></video>`
+            : `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover">`
+          }
+        </div>
+        <div class="p-3">
+          <p class="text-white font-bold text-sm truncate">${mediaType} ${media.name}</p>
+          <p class="text-gray-400 text-xs">${category?.name || 'Unknown'}</p>
+          <p class="text-gray-500 text-xs mt-1">${(media.fileSize / 1024 / 1024).toFixed(2)}MB</p>
+          <button onclick="deleteMedia('${media.id}')" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded mt-2 font-medium transition">
+            🗑️ Delete
+          </button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error loading media:', error);
+  }
+}
+
+/**
+ * Filter media by category
+ */
+async function filterMediaByCategory() {
+  const categoryId = document.getElementById('mediaFilterCategory').value;
+
+  try {
+    const list = document.getElementById('mediaList');
+    list.innerHTML = '<p class="text-gray-400 col-span-full text-center">Loading...</p>';
+
+    if (!categoryId) {
+      loadAllMedia();
+      return;
+    }
+
+    const response = await fetch(`/api/gallery/categories/${categoryId}/media?admin=true`);
+    const data = await response.json();
+    const media = data.media || [];
+
+    list.innerHTML = '';
+
+    if (media.length === 0) {
+      list.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No media in this category</p>';
+      return;
+    }
+
+    media.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'bg-white/10 rounded-lg overflow-hidden border border-white/20 hover:bg-white/15 transition';
+      const mediaType = m.type === 'video' ? '🎬' : '📷';
+
+      card.innerHTML = `
+        <div class="aspect-square bg-black/50 overflow-hidden">
+          ${m.type === 'video'
+            ? `<video src="${m.url}" class="w-full h-full object-cover"></video>`
+            : `<img src="${m.url}" alt="${m.name}" class="w-full h-full object-cover">`
+          }
+        </div>
+        <div class="p-3">
+          <p class="text-white font-bold text-sm truncate">${mediaType} ${m.name}</p>
+          <p class="text-gray-500 text-xs mt-1">${(m.fileSize / 1024 / 1024).toFixed(2)}MB</p>
+          <button onclick="deleteMedia('${m.id}')" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded mt-2 font-medium transition">
+            🗑️ Delete
+          </button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error filtering media:', error);
+  }
+}
+
+/**
+ * Delete media
+ */
+async function deleteMedia(mediaId) {
+  if (!confirm('Delete this media?')) return;
+
+  try {
+    const response = await fetch(`/api/gallery/media/${mediaId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) throw new Error('Failed to delete');
+
+    alert('✅ Media deleted!');
+    loadAllMedia();
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Load gallery data when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadGalleryData();
+});
+
+// ========== MP4 UPLOAD FUNCTIONS ==========
+
+let selectedMp4File = null;
+let mp4UploadedUrl = null;
+
+/**
+ * Override updateStreamUrlPlaceholder to show/hide MP4 section
+ */
+const originalUpdateStreamUrlPlaceholder = window.updateStreamUrlPlaceholder || function() {};
+window.updateStreamUrlPlaceholder = function() {
+  const streamType = document.getElementById('streamType').value;
+  const mp4Section = document.getElementById('mp4UploadSection');
+  const streamUrlInput = document.getElementById('streamUrl');
+  const hint = document.getElementById('streamUrlHint');
+
+  if (streamType === 'mp4') {
+    mp4Section.classList.remove('hidden');
+    streamUrlInput.placeholder = 'Will be auto-filled from upload or paste URL here';
+  } else {
+    mp4Section.classList.add('hidden');
+    clearMp4Upload();
+  }
+
+  originalUpdateStreamUrlPlaceholder();
+};
+
+/**
+ * Toggle between URL and upload mode for MP4
+ */
+function toggleMp4Mode(mode) {
+  const uploadSection = document.getElementById('mp4FileUploadSection');
+  const streamUrl = document.getElementById('streamUrl');
+
+  if (mode === 'upload') {
+    uploadSection.classList.remove('hidden');
+    streamUrl.placeholder = 'Will be auto-filled from file upload';
+    streamUrl.disabled = true;
+  } else {
+    uploadSection.classList.add('hidden');
+    streamUrl.placeholder = 'Paste your MP4 URL here';
+    streamUrl.disabled = false;
+    streamUrl.value = '';
+    clearMp4Upload();
+  }
+}
+
+/**
+ * Handle MP4 file selection
+ */
+function handleMp4FileSelect(input) {
+  const file = input.files[0];
+
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith('video/') && !file.name.endsWith('.mp4')) {
+    alert('Please select a valid MP4 video file');
+    return;
+  }
+
+  // Validate file size (50MB max)
+  if (file.size > 52428800) {
+    alert('File size exceeds 50MB limit');
+    return;
+  }
+
+  selectedMp4File = file;
+
+  // Show preview
+  const preview = document.getElementById('mp4FilePreview');
+  const videoPreview = document.getElementById('mp4VideoPreview');
+  const fileName = document.getElementById('mp4FileName');
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    videoPreview.src = e.target.result;
+    fileName.textContent = `📹 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`;
+    preview.classList.remove('hidden');
+  };
+
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Clear MP4 upload
+ */
+function clearMp4Upload() {
+  selectedMp4File = null;
+  mp4UploadedUrl = null;
+  document.getElementById('mp4FileInput').value = '';
+  document.getElementById('mp4FilePreview').classList.add('hidden');
+  document.getElementById('mp4UploadProgress').classList.add('hidden');
+  document.getElementById('streamUrl').value = '';
+}
+
+/**
+ * Upload MP4 to Supabase
+ */
+async function uploadMp4File() {
+  if (!selectedMp4File) {
+    alert('Please select an MP4 file');
+    return false;
+  }
+
+  const progressDiv = document.getElementById('mp4UploadProgress');
+  progressDiv.classList.remove('hidden');
+
+  const formData = new FormData();
+  formData.append('file', selectedMp4File);
+
+  try {
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 25;
+      if (progress > 90) progress = 90;
+      updateMp4UploadProgress(progress);
+    }, 200);
+
+    const response = await fetch('/api/gallery/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(progressInterval);
+    updateMp4UploadProgress(100);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Upload failed');
+    }
+
+    const result = await response.json();
+    mp4UploadedUrl = result.media.url;
+
+    // Auto-fill the stream URL
+    document.getElementById('streamUrl').value = mp4UploadedUrl;
+
+    console.log('✅ MP4 uploaded:', mp4UploadedUrl);
+    alert('✅ MP4 file uploaded successfully!');
+
+    return true;
+  } catch (error) {
+    console.error('Upload error:', error);
+    alert(`Upload failed: ${error.message}`);
+    progressDiv.classList.add('hidden');
+    return false;
+  }
+}
+
+/**
+ * Update MP4 upload progress
+ */
+function updateMp4UploadProgress(percent) {
+  document.getElementById('mp4UploadPercent').textContent = Math.round(percent) + '%';
+  document.getElementById('mp4UploadBar').style.width = percent + '%';
+}
+
+/**
+ * Override saveChannel to handle MP4 uploads
+ */
+const originalSaveChannel = window.saveChannel || function() {};
+window.saveChannel = async function() {
+  const streamType = document.getElementById('streamType').value;
+
+  // If MP4 mode with file upload, upload file first
+  if (streamType === 'mp4') {
+    const mp4Mode = document.querySelector('input[name="mp4Mode"]:checked').value;
+    if (mp4Mode === 'upload' && selectedMp4File && !mp4UploadedUrl) {
+      const uploaded = await uploadMp4File();
+      if (!uploaded) {
+        return;
+      }
+    }
+  }
+
+  // Call original save function
+  originalSaveChannel();
+};
