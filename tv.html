@@ -972,11 +972,12 @@
     // Listen for localStorage changes (when admin panel updates channels)
     let lastChannelsHash = null;
     function listenForChannelUpdates() {
-      // Reload channels when user switches back to this tab
+      // Update channels when user switches back to this tab (without interrupting playback)
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
-          console.log('📡 Page became visible, reloading channels from database...');
-          loadChannels();
+          console.log('📡 Page became visible, updating channel list...');
+          // Only update channel list silently, don't reload current stream
+          updateChannelListOnly();
         }
       });
 
@@ -1199,6 +1200,33 @@
       shareStream();
     }
 
+    // Update only the channel list without interrupting current playback
+    async function updateChannelListOnly() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'http://localhost:5001/api/channels'
+          : '/api/channels';
+
+        console.log('📥 Silently updating channel list...');
+        const res = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const channels = data.channels || [];
+          console.log('✅ Updated channel list silently');
+          // Only re-render the channel grid, don't reset current stream
+          renderChannelGridOnly(channels);
+        }
+      } catch (error) {
+        console.log('⚠️ Silent channel update failed (this is OK):', error.message);
+        // Silently fail - don't interrupt viewing experience
+      }
+    }
+
     // Load channels from backend API (database)
     async function loadChannels() {
       try {
@@ -1270,6 +1298,50 @@
       }
 
       return null;
+    }
+
+    // Helper function to render only the channel grid (without resetting current stream)
+    function renderChannelGridOnly(channels) {
+      const container = document.getElementById("recommendedContainer");
+
+      container.innerHTML = channels.map((ch, idx) => {
+        // Generate gradient backgrounds as fallback
+        const gradients = [
+          'from-blue-400 to-blue-600',
+          'from-purple-400 to-purple-600',
+          'from-pink-400 to-pink-600',
+          'from-green-400 to-green-600',
+          'from-red-400 to-red-600',
+          'from-indigo-400 to-indigo-600'
+        ];
+        const gradient = gradients[idx % gradients.length];
+        const isLive = ch.status === 'live' || ch.status === 'online';
+
+        // Generate thumbnail from stream URL (or use uploaded thumbnail)
+        const thumbnailUrl = getThumbnailUrl(ch.streamUrl, ch);
+        const hasThumbnail = thumbnailUrl && thumbnailUrl.trim();
+        const thumbnailStyle = hasThumbnail
+          ? `background-image: url('${thumbnailUrl}'); background-size: cover; background-position: center;`
+          : ``;
+        const fallbackGradient = !hasThumbnail ? `bg-gradient-to-br ${gradient}` : '';
+
+        return `
+          <div class="channel-card" onclick="selectChannel('${ch.id}', '${ch.name}', '${ch.description}', '${ch.streamUrl}', ${ch.viewers || 0}, '${ch.status}', '${ch.type}')">
+            <div class="channel-card-thumbnail ${fallbackGradient}" style="${thumbnailStyle}">
+              ${isLive ? `<div class="live-badge"><div class="live-dot"></div> LIVE</div>` : ''}
+              ${!hasThumbnail ? `<div class="channel-card-number">${ch.number}</div>` : ''}
+            </div>
+            <div class="channel-card-info">
+              <h4 class="channel-name">${ch.number}. ${ch.name}</h4>
+              <p class="channel-desc">${ch.description}</p>
+              <div class="channel-status">
+                <span class="status-dot ${isLive ? 'live' : ''}"></span>
+                <span>${isLive ? 'Streaming now' : 'Offline'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     // Helper function to render channels
