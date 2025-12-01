@@ -987,7 +987,7 @@
           const timeoutId = setTimeout(() => controller.abort(), 3000);
 
           const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:3000/api/channels'
+            ? 'http://localhost:5001/api/channels'
             : '/api/channels';
 
           const res = await fetch(apiUrl, { signal: controller.signal });
@@ -1207,7 +1207,7 @@
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-          ? 'http://localhost:3000/api/channels'
+          ? 'http://localhost:5001/api/channels'
           : '/api/channels';
 
         console.log('📥 Loading channels from database:', apiUrl);
@@ -1224,7 +1224,7 @@
         }
       } catch (error) {
         console.error('❌ Failed to load channels from database:', error.message);
-        document.getElementById("recommendedContainer").innerHTML = `<p class="text-red-600 col-span-full text-center">Error loading channels: ${error.message}. Ensure the server is running on port 3000.</p>`;
+        document.getElementById("recommendedContainer").innerHTML = `<p class="text-red-600 col-span-full text-center">Error loading channels: ${error.message}. Ensure the server is running on port 5001.</p>`;
       }
     }
 

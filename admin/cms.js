@@ -2556,23 +2556,28 @@ function updateMp4UploadProgress(percent) {
 /**
  * Override saveChannel to handle MP4 uploads
  */
-const originalSaveChannel = window.saveChannel || function() {};
-window.saveChannel = async function() {
-  const streamType = document.getElementById('streamType').value;
+const originalSaveChannel = window.saveChannel || function(e) {};
+window.saveChannel = async function(e) {
+  try {
+    const streamType = document.getElementById('streamType').value;
 
-  // If MP4 mode with file upload, upload file first
-  if (streamType === 'mp4') {
-    const mp4Mode = document.querySelector('input[name="mp4Mode"]:checked').value;
-    if (mp4Mode === 'upload' && selectedMp4File && !mp4UploadedUrl) {
-      const uploaded = await uploadMp4File();
-      if (!uploaded) {
-        return;
+    // If MP4 mode with file upload, upload file first
+    if (streamType === 'mp4') {
+      const mp4Mode = document.querySelector('input[name="mp4Mode"]:checked');
+      if (mp4Mode && mp4Mode.value === 'upload' && selectedMp4File && !mp4UploadedUrl) {
+        const uploaded = await uploadMp4File();
+        if (!uploaded) {
+          return;
+        }
       }
     }
-  }
 
-  // Call original save function
-  originalSaveChannel();
+    // Call original save function and await it
+    await originalSaveChannel(e);
+  } catch (error) {
+    console.error('❌ Error in saveChannel override:', error);
+    alert('Error saving channel: ' + error.message);
+  }
 };
 
 /**
