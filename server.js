@@ -39,35 +39,8 @@ const upload = multer({
   }
 });
 
-// Serve static files (your HTML, CSS, JS)
-app.use(express.static(path.join(__dirname), {
-  setHeaders: (res, filePath) => {
-    // Add CORS headers to all static files
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-
-    // For streaming files, add range headers support
-    if (filePath.match(/\.(m3u8|ts|mp4|mkv|webm)$/i)) {
-      res.setHeader('Accept-Ranges', 'bytes');
-    }
-  }
-}));
-
-// Serve HLS streams from RTMP server
-app.use('/hls', express.static(path.join(__dirname, 'hls'), {
-  setHeaders: (res, filePath) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.setHeader('Accept-Ranges', 'bytes');
-
-    // Proper MIME types for HLS
-    if (filePath.endsWith('.m3u8')) {
-      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-    } else if (filePath.endsWith('.ts')) {
-      res.setHeader('Content-Type', 'video/mp2t');
-    }
-  }
-}));
+// IMPORTANT: Register API routes BEFORE static file middleware
+// Otherwise static middleware will intercept /api/* requests and return 404
 
 // Convert Google Drive sharing URL to direct playable URL
 function convertGoogleDriveUrl(url) {
@@ -688,6 +661,37 @@ app.put('/api/gallery/media/:id', (req, res) => {
     res.status(500).json({ error: 'Failed to update media' });
   }
 });
+
+// NOW register static files AFTER all API routes
+// This ensures /api/* routes are handled before static file middleware tries to serve them
+app.use(express.static(path.join(__dirname), {
+  setHeaders: (res, filePath) => {
+    // Add CORS headers to all static files
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+
+    // For streaming files, add range headers support
+    if (filePath.match(/\.(m3u8|ts|mp4|mkv|webm)$/i)) {
+      res.setHeader('Accept-Ranges', 'bytes');
+    }
+  }
+}));
+
+// Serve HLS streams from RTMP server
+app.use('/hls', express.static(path.join(__dirname, 'hls'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    // Proper MIME types for HLS
+    if (filePath.endsWith('.m3u8')) {
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+    } else if (filePath.endsWith('.ts')) {
+      res.setHeader('Content-Type', 'video/mp2t');
+    }
+  }
+}));
 
 // Start server with error handling
 const server = app.listen(PORT, '127.0.0.1', () => {
