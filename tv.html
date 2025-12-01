@@ -1382,8 +1382,8 @@
         saveIcon.style.color = '#1f2937';
       }
 
-      // Load the stream
-      loadStream(streamUrl);
+      // Load the stream with type information
+      loadStream(streamUrl, type);
 
       // Scroll to top of page
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1413,7 +1413,7 @@
       return url;
     }
 
-    function loadStream(streamUrl) {
+    function loadStream(streamUrl, streamType = 'unknown') {
       if (!streamUrl) {
         console.log('No stream URL available');
         return;
@@ -1439,17 +1439,21 @@
       console.log('📹 loadStream called. Video element found:', video ? 'YES' : 'NO');
 
       // Detect stream format and load accordingly
-      if (streamUrl.includes('.m3u8')) {
+      // Use streamType parameter first if available, then fallback to URL detection
+      if (streamType === 'youtube' || streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
+        // YouTube Stream - Direct URL or Video ID
+        loadYouTubeStream(streamUrl);
+      } else if (streamUrl.includes('.m3u8') || streamType === 'hls') {
         // HLS Stream (m3u8 playlist)
         loadHLSStream(streamUrl);
-      } else if (streamUrl.startsWith('rtmp')) {
+      } else if (streamUrl.startsWith('rtmp') || streamType === 'rtmp') {
         // RTMP Stream - Convert to HLS
         loadRTMPStream(streamUrl);
-      } else if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
-        // YouTube Stream - Direct URL
-        loadYouTubeStream(streamUrl);
       } else if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv') || streamUrl.includes('drive.google.com'))) {
         // HTTP Direct Video Stream (MP4, MOV, MKV) or Google Drive
+        loadVideoStream(streamUrl);
+      } else if (streamType === 'mp4') {
+        // Explicit MP4 type
         loadVideoStream(streamUrl);
       } else {
         // Direct video file or fallback
@@ -1458,7 +1462,7 @@
         }
       }
 
-      console.log('Stream loaded:', streamUrl);
+      console.log('Stream loaded:', streamUrl, '(Type:', streamType + ')');
     }
 
     // Load direct video stream (MP4, MOV, MKV)
@@ -1498,11 +1502,17 @@
         const match = youtubeUrl.match(/youtube\.com\/live\/([^?&]+)/);
         videoId = match ? match[1] : null;
       }
+      // Format 4: Raw YouTube Video ID (11 characters: alphanumeric, dash, underscore)
+      else if (/^[a-zA-Z0-9_-]{11}$/.test(youtubeUrl)) {
+        videoId = youtubeUrl;
+      }
 
       if (!videoId) {
-        console.error('Could not extract video ID from YouTube URL');
+        console.error('Could not extract video ID from YouTube URL:', youtubeUrl);
         return null;
       }
+
+      console.log('✅ YouTube Video ID extracted:', videoId);
 
       // Return iframe HTML with minimal YouTube branding - clean embed with fullscreen enabled
       return `<iframe
