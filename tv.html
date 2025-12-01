@@ -1482,8 +1482,9 @@
       }
 
       if (fileId) {
-        const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-        console.log('✅ Google Drive URL converted for playback');
+        // Use export=download for video streaming (not export=view which returns HTML)
+        const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        console.log('✅ Google Drive URL converted for playback:', directUrl);
         return directUrl;
       }
 
@@ -1546,15 +1547,16 @@
     // Load direct video stream (MP4, MOV, MKV, or Google Drive)
     function loadVideoStream(videoUrl) {
       const video = document.getElementById("mainVideo");
+      const isGoogleDrive = videoUrl.includes('drive.google.com') || videoUrl.includes('export=download');
 
       // Determine MIME type based on file extension or URL
       let mimeType = 'video/mp4';
       let finalUrl = videoUrl;
 
       // Check if it's a Google Drive URL
-      if (videoUrl.includes('drive.google.com')) {
+      if (isGoogleDrive) {
         mimeType = 'video/mp4';
-        console.log('📁 Loading Google Drive video stream...');
+        console.log('📁 Loading Google Drive video stream:', finalUrl);
       } else if (videoUrl.includes('.mov')) {
         mimeType = 'video/quicktime';
       } else if (videoUrl.includes('.mkv')) {
@@ -1566,15 +1568,42 @@
       // Add error event listener for better error handling
       video.addEventListener('error', function(e) {
         console.error('❌ Video playback error:', e);
-        const errorMessage = `Failed to load video. Error: ${video.error?.message || 'Unknown error'}`;
-        alert(errorMessage);
+        console.error('Error code:', video.error?.code);
+        console.error('Error message:', video.error?.message);
+
+        if (isGoogleDrive) {
+          const suggestions = [
+            '❌ Google Drive video failed to load.',
+            '',
+            'Troubleshooting steps:',
+            '1. Check the file is shared with "Anyone with the link"',
+            '2. Make sure it\'s a valid video file (MP4, MOV, etc.)',
+            '3. Try a different video to test',
+            '4. Check browser console (F12) for detailed errors',
+            '5. If still failing, the file may have playback restrictions'
+          ].join('\n');
+          alert(suggestions);
+        } else {
+          alert(`❌ Failed to load video. Error: ${video.error?.message || 'Unknown error'}`);
+        }
       }, { once: true });
 
       video.play().catch(err => {
         console.error('❌ Playback error:', err.message);
         // Try to provide helpful error messages
-        if (videoUrl.includes('drive.google.com')) {
-          alert('❌ Failed to load Google Drive video. Make sure:\n1. The file is shared publicly\n2. The file is a video file (MP4, MOV, etc.)\n3. Your internet connection is working');
+        if (isGoogleDrive) {
+          const suggestions = [
+            '❌ Failed to play Google Drive video.',
+            '',
+            'Please verify:',
+            '1. File is shared with "Anyone with the link"',
+            '2. File is a valid video file (MP4, MOV, etc.)',
+            '3. Your internet connection is stable',
+            '4. Try refreshing the page',
+            '',
+            'If the problem persists, open browser console (F12) to see detailed errors.'
+          ].join('\n');
+          alert(suggestions);
         } else {
           alert(`❌ Failed to play video: ${err.message}`);
         }

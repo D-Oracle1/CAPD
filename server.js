@@ -90,8 +90,9 @@ function convertGoogleDriveUrl(url) {
   }
 
   if (fileId) {
-    // Return direct playable URL
-    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    // Return direct playable URL using export=download for video streaming
+    // This returns the actual file instead of an HTML preview page
+    return `https://drive.google.com/uc?export=download&id=${fileId}`;
   }
 
   return url;
