@@ -1553,10 +1553,12 @@
       let mimeType = 'video/mp4';
       let finalUrl = videoUrl;
 
-      // Check if it's a Google Drive URL
+      // For Google Drive, use the proxy endpoint to bypass CORS restrictions
       if (isGoogleDrive) {
         mimeType = 'video/mp4';
-        console.log('📁 Loading Google Drive video stream:', finalUrl);
+        // Proxy through our server instead of direct access (bypasses Google Drive CORS blocks)
+        finalUrl = `/api/gdrive/stream?url=${encodeURIComponent(videoUrl)}`;
+        console.log('📁 Loading Google Drive video stream via proxy:', finalUrl);
       } else if (videoUrl.includes('.mov')) {
         mimeType = 'video/quicktime';
       } else if (videoUrl.includes('.mkv')) {

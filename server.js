@@ -115,20 +115,36 @@ app.get('/api/gdrive/stream', (req, res) => {
     console.log('Original URL:', decodedUrl.substring(0, 50) + '...');
     console.log('Direct URL:', directUrl.substring(0, 50) + '...');
 
-    // Create proxy middleware for Google Drive
+    // Create proxy middleware for Google Drive with streaming support
     const proxy = createProxyMiddleware({
       target: directUrl,
       changeOrigin: true,
+      followRedirects: true,
       logLevel: 'warn',
+      // Add custom headers for video streaming
+      onProxyRes: (proxyRes, req, res) => {
+        // Allow video streaming and range requests
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+
+        // Ensure proper content type for video
+        if (proxyRes.headers['content-type']) {
+          res.setHeader('Content-Type', proxyRes.headers['content-type']);
+        } else {
+          res.setHeader('Content-Type', 'video/mp4');
+        }
+      },
       onError: (err, req, res) => {
-        console.error('Google Drive proxy error:', err.message);
+        console.error('❌ Google Drive proxy error:', err.message);
         res.status(500).json({ error: 'Failed to stream from Google Drive' });
       }
     });
 
     proxy(req, res);
   } catch (error) {
-    console.error('Google Drive proxy error:', error);
+    console.error('❌ Google Drive proxy error:', error);
     res.status(500).json({ error: 'Invalid Google Drive URL' });
   }
 });
