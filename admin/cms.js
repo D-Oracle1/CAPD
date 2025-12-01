@@ -2584,3 +2584,75 @@ window.saveChannel = async function() {
   // Call original save function
   originalSaveChannel();
 };
+
+/**
+ * Convert Google Drive sharing URL to direct playable URL
+ * @param {string} url - Google Drive sharing URL
+ * @returns {string} - Direct playable URL
+ */
+function convertGoogleDriveUrl(url) {
+  if (!url.includes('drive.google.com')) {
+    return url; // Return as-is if not a Google Drive URL
+  }
+
+  // Extract FILE_ID from various Google Drive URL formats
+  let fileId = null;
+
+  // Format: https://drive.google.com/file/d/{FILE_ID}/view
+  const match1 = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)\//);
+  if (match1) {
+    fileId = match1[1];
+  }
+
+  // Format: https://drive.google.com/open?id={FILE_ID}
+  const match2 = url.match(/id=([a-zA-Z0-9-_]+)/);
+  if (!fileId && match2) {
+    fileId = match2[1];
+  }
+
+  if (fileId) {
+    // Return direct playable URL
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+
+  return url; // Return original if FILE_ID not found
+}
+
+/**
+ * Auto-detect and convert Google Drive URLs in Stream URL field
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  const streamUrlInput = document.getElementById('streamUrl');
+
+  if (streamUrlInput) {
+    streamUrlInput.addEventListener('change', function() {
+      const originalUrl = this.value.trim();
+
+      if (originalUrl && originalUrl.includes('drive.google.com')) {
+        const convertedUrl = convertGoogleDriveUrl(originalUrl);
+
+        if (convertedUrl !== originalUrl) {
+          this.value = convertedUrl;
+          console.log('✅ Google Drive URL converted:', convertedUrl);
+          alert('✅ Google Drive URL automatically converted to direct playable link!');
+        }
+      }
+    });
+
+    // Also handle paste event for immediate conversion
+    streamUrlInput.addEventListener('paste', function(e) {
+      setTimeout(() => {
+        const pastedUrl = this.value.trim();
+
+        if (pastedUrl && pastedUrl.includes('drive.google.com')) {
+          const convertedUrl = convertGoogleDriveUrl(pastedUrl);
+
+          if (convertedUrl !== pastedUrl) {
+            this.value = convertedUrl;
+            console.log('✅ Google Drive URL converted:', convertedUrl);
+          }
+        }
+      }, 10);
+    });
+  }
+});

@@ -37,7 +37,7 @@ async function uploadToSupabase(fileBuffer, fileName, bucketName = 'gallery', fo
       // Create bucket if it doesn't exist
       const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
         public: true,
-        fileSizeLimit: 52428800 // 50MB limit per file
+        fileSizeLimit: 5 * 1024 * 1024 * 1024 // 5GB limit per file
       });
 
       if (createError) {
@@ -157,10 +157,10 @@ function validateFileType(fileName, allowedTypes = []) {
 /**
  * Validate file size
  * @param {number} fileSize - File size in bytes
- * @param {number} maxSize - Maximum size in bytes (default: 50MB)
+ * @param {number} maxSize - Maximum size in bytes (default: 5GB)
  * @returns {boolean}
  */
-function validateFileSize(fileSize, maxSize = 52428800) {
+function validateFileSize(fileSize, maxSize = 5 * 1024 * 1024 * 1024) {
   return fileSize <= maxSize;
 }
 

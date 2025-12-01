@@ -188,9 +188,9 @@
       <nav class="hidden md:flex space-x-3 lg:space-x-6 text-xs sm:text-sm font-medium">
         <a href="index.html" class="text-gray-600 hover:text-gray-900">Home</a>
         <a href="news.html" class="text-gray-600 hover:text-gray-900">News</a>
-        <a href="tv.html" class="text-gray-600 hover:text-gray-900">📺 TV</a>
+        <a href="tv.html" class="text-gray-600 hover:text-gray-900">TV</a>
         <a href="videos.html" class="text-gray-600 hover:text-gray-900">Videos</a>
-        <a href="gallery.html" class="text-gray-900 font-bold">🖼️ Gallery</a>
+        <a href="gallery.html" class="text-gray-900 font-bold">Gallery</a>
         <a href="about.html" class="text-gray-600 hover:text-gray-900">About</a>
       </nav>
       <!-- Mobile menu button -->
@@ -205,9 +205,9 @@
       <div class="px-4 py-3 space-y-2">
         <a href="index.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Home</a>
         <a href="news.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">News</a>
-        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">📺 Digital TV</a>
+        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">TV</a>
         <a href="videos.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Videos</a>
-        <a href="gallery.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">🖼️ Gallery</a>
+        <a href="gallery.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Gallery</a>
         <a href="about.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">About</a>
       </div>
     </nav>
@@ -304,6 +304,32 @@
     /**
      * Load gallery data from API
      */
+    /**
+     * Convert Google Drive URLs to playable format
+     */
+    function convertGoogleDriveUrl(url) {
+      if (!url.includes('drive.google.com')) {
+        return url;
+      }
+
+      let fileId = null;
+      const match1 = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)\//);
+      if (match1) {
+        fileId = match1[1];
+      }
+
+      const match2 = url.match(/id=([a-zA-Z0-9-_]+)/);
+      if (!fileId && match2) {
+        fileId = match2[1];
+      }
+
+      if (fileId) {
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      }
+
+      return url;
+    }
+
     async function loadGallery() {
       try {
         const response = await fetch('/api/gallery/categories');
@@ -315,7 +341,12 @@
         for (const category of galleryData.categories) {
           const mediaResponse = await fetch(`/api/gallery/categories/${category.id}/media`);
           const mediaData = await mediaResponse.json();
-          allMedia = allMedia.concat(mediaData.media || []);
+          // Convert Google Drive URLs for all media
+          const convertedMedia = (mediaData.media || []).map(m => ({
+            ...m,
+            url: convertGoogleDriveUrl(m.url)
+          }));
+          allMedia = allMedia.concat(convertedMedia);
         }
 
         filteredMedia = allMedia;

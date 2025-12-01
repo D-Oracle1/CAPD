@@ -19,14 +19,14 @@ app.use(cors({
 }));
 
 // Parse JSON request bodies
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '5gb' }));
+app.use(express.urlencoded({ limit: '5gb', extended: true }));
 
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 52428800 // 50MB
+    fileSize: 5 * 1024 * 1024 * 1024 // 5GB
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.mov', '.mkv', '.webm'];

@@ -689,8 +689,8 @@
       <nav class="hidden md:flex space-x-3 lg:space-x-6 text-xs sm:text-sm font-medium">
         <a href="index.html" class="text-gray-600 hover:text-gray-900">Home</a>
         <a href="news.html" class="text-gray-600 hover:text-gray-900">News</a>
-        <a href="tv.html" class="text-gray-900 font-bold">📺 TV</a>
-        <a href="gallery.html" class="text-gray-600 hover:text-gray-900">🖼️ Gallery</a>
+        <a href="tv.html" class="text-gray-900 font-bold">TV</a>
+        <a href="gallery.html" class="text-gray-600 hover:text-gray-900">Gallery</a>
         <a href="videos.html" class="text-gray-600 hover:text-gray-900">Videos</a>
         <a href="projects.html" class="text-gray-600 hover:text-gray-900">Projects</a>
         <a href="about.html" class="text-gray-600 hover:text-gray-900">About</a>
@@ -707,8 +707,8 @@
       <div class="px-4 py-3 space-y-2">
         <a href="index.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Home</a>
         <a href="news.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">News</a>
-        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">📺 Digital TV</a>
-        <a href="gallery.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">🖼️ Gallery</a>
+        <a href="tv.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">TV</a>
+        <a href="gallery.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Gallery</a>
         <a href="videos.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Videos</a>
         <a href="projects.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">Projects</a>
         <a href="about.html" class="block px-3 py-2 rounded hover:bg-gray-100 transition">About</a>
@@ -1390,10 +1390,39 @@
     }
 
     // Load stream with format detection
+    function convertGoogleDriveUrl(url) {
+      if (!url.includes('drive.google.com')) {
+        return url;
+      }
+
+      let fileId = null;
+      const match1 = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)\//);
+      if (match1) {
+        fileId = match1[1];
+      }
+
+      const match2 = url.match(/id=([a-zA-Z0-9-_]+)/);
+      if (!fileId && match2) {
+        fileId = match2[1];
+      }
+
+      if (fileId) {
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      }
+
+      return url;
+    }
+
     function loadStream(streamUrl) {
       if (!streamUrl) {
         console.log('No stream URL available');
         return;
+      }
+
+      // Convert Google Drive URLs to playable format
+      if (streamUrl.includes('drive.google.com')) {
+        streamUrl = convertGoogleDriveUrl(streamUrl);
+        console.log('✅ Google Drive URL converted:', streamUrl);
       }
 
       // Restore video container to its original state (in case it was replaced with an iframe)
@@ -1419,8 +1448,8 @@
       } else if (streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be')) {
         // YouTube Stream - Direct URL
         loadYouTubeStream(streamUrl);
-      } else if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv'))) {
-        // HTTP Direct Video Stream (MP4, MOV, MKV)
+      } else if (streamUrl.includes('http') && (streamUrl.includes('.mp4') || streamUrl.includes('.mov') || streamUrl.includes('.mkv') || streamUrl.includes('drive.google.com'))) {
+        // HTTP Direct Video Stream (MP4, MOV, MKV) or Google Drive
         loadVideoStream(streamUrl);
       } else {
         // Direct video file or fallback
