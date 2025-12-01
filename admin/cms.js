@@ -209,7 +209,7 @@ async function loadChannels() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/channels'
+      ? 'http://localhost:5001/api/channels'
       : '/api/channels';
 
     console.log('📥 Loading channels from database:', apiUrl);
@@ -301,7 +301,7 @@ async function saveChannel(e) {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/channels'
+      ? 'http://localhost:5001/api/channels'
       : '/api/channels';
 
     // Step 1: Load latest channels from database
@@ -363,7 +363,7 @@ async function deleteChannelById(channelId) {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/channels'
+      ? 'http://localhost:5001/api/channels'
       : '/api/channels';
 
     // Step 1: Load latest channels from database
@@ -420,7 +420,7 @@ async function editChannelById(channelId) {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/channels'
+      ? 'http://localhost:5001/api/channels'
       : '/api/channels';
 
     // Load channels from database (not localStorage)
@@ -763,7 +763,7 @@ function updateArticlesJson(articles) {
 function updateChannelsJson(channels) {
   // Save channels to backend API
   const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3000/api/channels'
+    ? 'http://localhost:5001/api/channels'
     : '/api/channels';
 
   fetch(apiUrl, {
@@ -1432,7 +1432,7 @@ async function saveStreamingSettings() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/settings'
+      ? 'http://localhost:5001/api/settings'
       : '/api/settings';
 
     const settingsToSave = {
@@ -1486,7 +1486,7 @@ async function displaySavedSettings() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/settings'
+      ? 'http://localhost:5001/api/settings'
       : '/api/settings';
 
     // Load settings from database (not localStorage)
@@ -1568,7 +1568,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadSettingsFromServer() {
   try {
     const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:3000/api/settings'
+      ? 'http://localhost:5001/api/settings'
       : '/api/settings';
 
     fetch(apiUrl, { method: 'GET', signal: AbortSignal.timeout(3000) })
@@ -1609,14 +1609,14 @@ function updateStreamUrlPlaceholder() {
   const placeholders = {
     rtmp: 'rtmp://localhost:1935/live/stream_name',
     hls: 'https://example.com/live/stream/index.m3u8',
-    youtube: 'https://youtube.com/live/VIDEO_ID',
+    youtube: 'Paste YouTube URL or Video ID - will auto-parse',
     mp4: 'https://example.com/videos/stream.mp4'
   };
 
   const hints = {
     rtmp: 'Example: rtmp://localhost:1935/live/channel_name',
     hls: 'Example: https://example.com/live/stream/index.m3u8',
-    youtube: 'Example: https://youtube.com/live/dQw4w9WgXcQ',
+    youtube: 'Accepts: https://youtu.be/VIDEO_ID or https://youtube.com/watch?v=VIDEO_ID or just VIDEO_ID',
     mp4: 'Example: https://example.com/videos/livestream.mp4'
   };
 
@@ -1773,12 +1773,6 @@ function handleThumbnailUpload(fileInput) {
   const file = fileInput.files[0];
   if (!file) return;
 
-  // Check file size (max 2MB)
-  if (file.size > 2 * 1024 * 1024) {
-    alert('File size must be less than 2MB');
-    fileInput.value = '';
-    return;
-  }
 
   // Check file type
   if (!file.type.startsWith('image/')) {
@@ -1872,12 +1866,13 @@ let createNewCategoryMode = false;
  */
 async function loadGalleryData() {
   try {
-    const response = await fetch('/api/gallery/categories?admin=true');
+    const apiBase = 'http://localhost:8000';
+    const response = await fetch(`${apiBase}/api/gallery/categories?admin=true`);
     const data = await response.json();
     galleryData.categories = data.categories || [];
 
     // Load all media
-    const mediaResponse = await fetch('/api/gallery/categories?admin=true');
+    const mediaResponse = await fetch(`${apiBase}/api/gallery/categories?admin=true`);
     const mediaData = await mediaResponse.json();
 
     updateCategorySelects();
@@ -2084,7 +2079,7 @@ async function uploadMedia() {
       updateUploadProgress(progress);
     }, 200);
 
-    const response = await fetch('/api/gallery/upload', {
+    const response = await fetch('http://localhost:5001/api/gallery/upload', {
       method: 'POST',
       body: formData
     });
@@ -2164,7 +2159,7 @@ async function createCategory() {
   }
 
   try {
-    const response = await fetch('/api/gallery/categories', {
+    const response = await fetch('http://localhost:5001/api/gallery/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, description, isPublic })
@@ -2191,7 +2186,7 @@ async function createCategory() {
  */
 async function displayCategories() {
   try {
-    const response = await fetch('/api/gallery/categories?admin=true');
+    const response = await fetch('http://localhost:5001/api/gallery/categories?admin=true');
     const data = await response.json();
     galleryData.categories = data.categories || [];
 
@@ -2238,7 +2233,7 @@ async function displayCategories() {
  */
 async function toggleCategoryPublic(categoryId, currentPublic) {
   try {
-    const response = await fetch(`/api/gallery/categories/${categoryId}`, {
+    const response = await fetch(`http://localhost:5001/api/gallery/categories/${categoryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isPublic: !currentPublic })
@@ -2260,7 +2255,7 @@ async function deleteCategory(categoryId) {
   if (!confirm('Delete this category and all its media?')) return;
 
   try {
-    const response = await fetch(`/api/gallery/categories/${categoryId}`, {
+    const response = await fetch(`http://localhost:5001/api/gallery/categories/${categoryId}`, {
       method: 'DELETE'
     });
 
@@ -2278,7 +2273,7 @@ async function deleteCategory(categoryId) {
  */
 async function loadAllMedia() {
   try {
-    const response = await fetch('/api/gallery/categories?admin=true');
+    const response = await fetch('http://localhost:5001/api/gallery/categories?admin=true');
     const data = await response.json();
     galleryData.categories = data.categories || [];
 
@@ -2287,7 +2282,7 @@ async function loadAllMedia() {
 
     let allMedia = [];
     for (const category of galleryData.categories) {
-      const mediaResponse = await fetch(`/api/gallery/categories/${category.id}/media?admin=true`);
+      const mediaResponse = await fetch(`http://localhost:5001/api/gallery/categories/${category.id}/media?admin=true`);
       const mediaData = await mediaResponse.json();
       allMedia = allMedia.concat(mediaData.media || []);
     }
@@ -2342,7 +2337,7 @@ async function filterMediaByCategory() {
       return;
     }
 
-    const response = await fetch(`/api/gallery/categories/${categoryId}/media?admin=true`);
+    const response = await fetch(`http://localhost:5001/api/gallery/categories/${categoryId}/media?admin=true`);
     const data = await response.json();
     const media = data.media || [];
 
@@ -2387,7 +2382,7 @@ async function deleteMedia(mediaId) {
   if (!confirm('Delete this media?')) return;
 
   try {
-    const response = await fetch(`/api/gallery/media/${mediaId}`, {
+    const response = await fetch(`http://localhost:5001/api/gallery/media/${mediaId}`, {
       method: 'DELETE'
     });
 
@@ -2465,11 +2460,6 @@ function handleMp4FileSelect(input) {
     return;
   }
 
-  // Validate file size (50MB max)
-  if (file.size > 52428800) {
-    alert('File size exceeds 50MB limit');
-    return;
-  }
 
   selectedMp4File = file;
 
@@ -2524,7 +2514,7 @@ async function uploadMp4File() {
       updateMp4UploadProgress(progress);
     }, 200);
 
-    const response = await fetch('/api/gallery/upload', {
+    const response = await fetch('http://localhost:5001/api/gallery/upload', {
       method: 'POST',
       body: formData
     });
@@ -2619,6 +2609,40 @@ function convertGoogleDriveUrl(url) {
 }
 
 /**
+ * Extract YouTube video ID from various YouTube URL formats
+ * @param {string} url - YouTube URL
+ * @returns {string|null} - YouTube video ID or null if invalid
+ */
+function extractYouTubeVideoId(url) {
+  if (!url) return null;
+
+  // Format: https://youtu.be/VIDEO_ID or https://youtu.be/VIDEO_ID?t=123
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+  if (shortMatch) {
+    return shortMatch[1];
+  }
+
+  // Format: https://www.youtube.com/watch?v=VIDEO_ID or https://youtube.com/watch?v=VIDEO_ID
+  const longMatch = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/\?v=)([a-zA-Z0-9_-]+)/);
+  if (longMatch) {
+    return longMatch[1];
+  }
+
+  // Format: https://www.youtube.com/live/VIDEO_ID
+  const liveMatch = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/);
+  if (liveMatch) {
+    return liveMatch[1];
+  }
+
+  // If it's already just a video ID (11 characters, alphanumeric + _ -)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
+    return url;
+  }
+
+  return null;
+}
+
+/**
  * Auto-detect and convert Google Drive URLs in Stream URL field
  */
 document.addEventListener('DOMContentLoaded', function() {
@@ -2627,7 +2651,23 @@ document.addEventListener('DOMContentLoaded', function() {
   if (streamUrlInput) {
     streamUrlInput.addEventListener('change', function() {
       const originalUrl = this.value.trim();
+      const streamType = document.getElementById('streamType').value;
 
+      // Handle YouTube URL parsing
+      if (streamType === 'youtube' && originalUrl) {
+        const videoId = extractYouTubeVideoId(originalUrl);
+        if (videoId) {
+          this.value = videoId;
+          console.log('✅ YouTube video ID extracted:', videoId);
+          alert('✅ YouTube URL parsed! Video ID: ' + videoId);
+          return;
+        } else if (originalUrl.includes('youtube') || originalUrl.includes('youtu.be')) {
+          alert('⚠️ Could not extract video ID from YouTube URL. Please check the format.');
+          return;
+        }
+      }
+
+      // Handle Google Drive URLs
       if (originalUrl && originalUrl.includes('drive.google.com')) {
         const convertedUrl = convertGoogleDriveUrl(originalUrl);
 
@@ -2643,7 +2683,18 @@ document.addEventListener('DOMContentLoaded', function() {
     streamUrlInput.addEventListener('paste', function(e) {
       setTimeout(() => {
         const pastedUrl = this.value.trim();
+        const streamType = document.getElementById('streamType').value;
 
+        // Handle YouTube URL parsing
+        if (streamType === 'youtube' && pastedUrl) {
+          const videoId = extractYouTubeVideoId(pastedUrl);
+          if (videoId) {
+            this.value = videoId;
+            console.log('✅ YouTube video ID extracted:', videoId);
+          }
+        }
+
+        // Handle Google Drive URLs
         if (pastedUrl && pastedUrl.includes('drive.google.com')) {
           const convertedUrl = convertGoogleDriveUrl(pastedUrl);
 
