@@ -2431,15 +2431,18 @@ window.updateStreamUrlPlaceholder = function() {
  */
 function toggleMp4Mode(mode) {
   const uploadSection = document.getElementById('mp4FileUploadSection');
+  const externalUrlSection = document.getElementById('mp4ExternalUrlSection');
   const streamUrl = document.getElementById('streamUrl');
 
   if (mode === 'upload') {
     uploadSection.classList.remove('hidden');
+    if (externalUrlSection) externalUrlSection.classList.add('hidden');
     streamUrl.placeholder = 'Will be auto-filled from file upload';
     streamUrl.disabled = true;
   } else {
     uploadSection.classList.add('hidden');
-    streamUrl.placeholder = 'Paste your MP4 URL here';
+    if (externalUrlSection) externalUrlSection.classList.remove('hidden');
+    streamUrl.placeholder = 'Paste your MP4 URL (Google Drive, direct link, etc.)';
     streamUrl.disabled = false;
     streamUrl.value = '';
     clearMp4Upload();
@@ -2672,14 +2675,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
-      // Handle Google Drive URLs
+      // Handle Google Drive URLs (for MP4 and other types)
       if (originalUrl && originalUrl.includes('drive.google.com')) {
         const convertedUrl = convertGoogleDriveUrl(originalUrl);
 
         if (convertedUrl !== originalUrl) {
           this.value = convertedUrl;
           console.log('✅ Google Drive URL converted:', convertedUrl);
-          alert('✅ Google Drive URL automatically converted to direct playable link!');
+
+          // Show appropriate message based on stream type
+          if (streamType === 'mp4') {
+            alert('✅ Google Drive URL automatically converted to direct playable link!\n\nNow you can stream videos directly from Google Drive - perfect for large files!');
+          } else {
+            alert('✅ Google Drive URL automatically converted to direct playable link!');
+          }
         }
       }
     });

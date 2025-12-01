@@ -7,7 +7,7 @@ const fs = require('fs');
 const { uploadToSupabase, deleteFromSupabase, validateFileType, validateFileSize } = require('./supabase-storage');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 
 // Enable CORS for all routes
 app.use(cors({
@@ -69,6 +69,69 @@ app.use('/hls', express.static(path.join(__dirname, 'hls'), {
   }
 }));
 
+// Convert Google Drive sharing URL to direct playable URL
+function convertGoogleDriveUrl(url) {
+  if (!url.includes('drive.google.com')) {
+    return url;
+  }
+
+  let fileId = null;
+
+  // Format: https://drive.google.com/file/d/{FILE_ID}/view
+  const match1 = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)\//);
+  if (match1) {
+    fileId = match1[1];
+  }
+
+  // Format: https://drive.google.com/open?id={FILE_ID}
+  const match2 = url.match(/id=([a-zA-Z0-9-_]+)/);
+  if (!fileId && match2) {
+    fileId = match2[1];
+  }
+
+  if (fileId) {
+    // Return direct playable URL
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+
+  return url;
+}
+
+// Proxy endpoint for Google Drive streams
+// Usage: /api/gdrive/stream?url=<encoded-google-drive-url>
+app.get('/api/gdrive/stream', (req, res) => {
+  const streamUrl = req.query.url;
+
+  if (!streamUrl) {
+    return res.status(400).json({ error: 'Missing url parameter' });
+  }
+
+  try {
+    const decodedUrl = decodeURIComponent(streamUrl);
+    const directUrl = convertGoogleDriveUrl(decodedUrl);
+
+    console.log('🔗 Google Drive stream requested');
+    console.log('Original URL:', decodedUrl.substring(0, 50) + '...');
+    console.log('Direct URL:', directUrl.substring(0, 50) + '...');
+
+    // Create proxy middleware for Google Drive
+    const proxy = createProxyMiddleware({
+      target: directUrl,
+      changeOrigin: true,
+      logLevel: 'warn',
+      onError: (err, req, res) => {
+        console.error('Google Drive proxy error:', err.message);
+        res.status(500).json({ error: 'Failed to stream from Google Drive' });
+      }
+    });
+
+    proxy(req, res);
+  } catch (error) {
+    console.error('Google Drive proxy error:', error);
+    res.status(500).json({ error: 'Invalid Google Drive URL' });
+  }
+});
+
 // Proxy endpoint for streaming URLs
 // Usage: /api/stream?url=<encoded-url>
 app.get('/api/stream', (req, res) => {
@@ -80,6 +143,13 @@ app.get('/api/stream', (req, res) => {
 
   try {
     const decodedUrl = decodeURIComponent(streamUrl);
+
+    // Check if it's a Google Drive URL and handle it
+    if (decodedUrl.includes('drive.google.com')) {
+      const directUrl = convertGoogleDriveUrl(decodedUrl);
+      console.log('📁 Detected Google Drive URL, converting...');
+      return res.redirect(`/api/gdrive/stream?url=${encodeURIComponent(directUrl)}`);
+    }
 
     // Validate URL format
     if (!decodedUrl.match(/^https?:\/\//i)) {
@@ -125,6 +195,46 @@ app.use('/api/proxy', createProxyMiddleware({
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Supabase connectivity check
+app.get('/api/supabase-check', async (req, res) => {
+  try {
+    console.log('🔍 Checking Supabase connectivity...');
+    const { createClient } = require('@supabase/supabase-js');
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = require('./supabase-client.js');
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Try to list buckets
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+
+    if (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Supabase connection failed',
+        error: error.message,
+        details: error
+      });
+    }
+
+    const galleryBucketExists = buckets.some(b => b.name === 'gallery');
+
+    res.json({
+      status: 'ok',
+      supabaseUrl: SUPABASE_URL,
+      bucketsCount: buckets.length,
+      buckets: buckets.map(b => b.name),
+      galleryBucketExists: galleryBucketExists,
+      message: galleryBucketExists ? '✅ Gallery bucket exists' : '⚠️ Gallery bucket not found'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Supabase check failed',
+      error: error.message
+    });
+  }
 });
 
 // Get all channels (from JSON file)
@@ -446,6 +556,7 @@ app.post('/api/gallery/upload', upload.single('file'), async (req, res) => {
     }
 
     // Upload to Supabase
+    console.log(`🔄 Uploading file to Supabase: ${req.file.originalname}`);
     const uploadResult = await uploadToSupabase(
       req.file.buffer,
       req.file.originalname,
@@ -454,7 +565,13 @@ app.post('/api/gallery/upload', upload.single('file'), async (req, res) => {
     );
 
     if (uploadResult.error) {
+      console.error(`❌ Supabase upload failed: ${uploadResult.error}`);
       return res.status(500).json({ error: `Upload failed: ${uploadResult.error}` });
+    }
+
+    if (!uploadResult.url) {
+      console.error('❌ Upload succeeded but no URL returned');
+      return res.status(500).json({ error: 'Upload succeeded but could not generate file URL' });
     }
 
     // Determine media type
