@@ -1,17 +1,24 @@
 {
   "version": 2,
   "buildCommand": "npm install",
-  "outputDirectory": ".",
+  "public": ".",
+  "env": {
+    "NODE_ENV": "production"
+  },
   "functions": {
-    "api/*.js": {
+    "server.js": {
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 60
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "destination": "/server.js"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/server.js"
     },
     {
       "source": "/(.*)",
@@ -49,7 +56,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600"
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     },
