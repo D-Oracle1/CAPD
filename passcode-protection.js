@@ -1,18 +1,23 @@
 /**
  * CAPD Sitewide Passcode Protection
  * Provides centralized passcode management for all pages
+ * Includes Service Worker registration for cache management
  */
 
 class PasscodeProtection {
   constructor() {
     this.sessionKey = 'capd_passcode_verified';
     this.isProtected = false;
+    this.cacheVersion = new Date().toISOString().split('T')[0]; // Daily version
   }
 
   /**
    * Initialize passcode protection on page load
    */
   async init() {
+    // Register service worker for cache management
+    this.registerServiceWorker();
+
     // Check if already verified in this session
     if (sessionStorage.getItem(this.sessionKey) === 'true') {
       this.unlockPage();
@@ -22,6 +27,47 @@ class PasscodeProtection {
     // Show passcode modal and fetch protection status
     this.showPasscodeModal();
     await this.checkProtectionStatus();
+  }
+
+  /**
+   * Register Service Worker for cache management and clearing
+   */
+  async registerServiceWorker() {
+    try {
+      if ('serviceWorker' in navigator) {
+        // Register the service worker with a cache-busting query parameter
+        const swUrl = `/service-worker.js?v=${this.cacheVersion}`;
+        const registration = await navigator.serviceWorker.register(swUrl, {
+          scope: '/',
+          updateViaCache: 'none'  // Always fetch fresh service worker
+        });
+
+        console.log('✅ Service Worker registered successfully', registration);
+
+        // Listen for updates
+        registration.addEventListener('updatefound', () => {
+          console.log('🔄 Service Worker update found, clearing caches...');
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated') {
+              console.log('🗑️ Old caches cleared by new Service Worker');
+              // Force page reload to get fresh content
+              window.location.reload();
+            }
+          });
+        });
+
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update();
+        }, 60000); // Check every minute
+
+        return registration;
+      }
+    } catch (error) {
+      console.warn('⚠️ Service Worker registration failed:', error);
+      // Continue without service worker if registration fails
+    }
   }
 
   /**
