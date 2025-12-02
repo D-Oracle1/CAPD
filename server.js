@@ -7,7 +7,7 @@ const fs = require('fs');
 const { uploadToSupabase, deleteFromSupabase, validateFileType, validateFileSize } = require('./supabase-storage');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 6001;
 
 // Enable CORS for all routes
 app.use(cors({

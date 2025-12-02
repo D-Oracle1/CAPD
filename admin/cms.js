@@ -2756,30 +2756,40 @@ document.addEventListener('DOMContentLoaded', function() {
       const passcodeInput = document.getElementById('passcodeInput');
       const statusDiv = document.getElementById('passcodeSaveStatus');
 
+      if (!enabledCheckbox || !passcodeInput || !statusDiv) {
+        console.error('❌ Required form elements not found');
+        alert('Error: Form elements missing. Please refresh the page.');
+        return;
+      }
+
       const enabled = enabledCheckbox.checked;
       const passcode = passcodeInput.value.trim();
 
+      console.log('🔐 Saving passcode settings:', { enabled, passcodeLength: passcode.length });
+
       // Validation
       if (enabled && !passcode) {
-        statusDiv.innerHTML = '<span class="text-red-600">⚠️ Please enter a passcode</span>';
-        setTimeout(() => statusDiv.innerHTML = '', 3000);
+        statusDiv.innerHTML = '<span class="text-red-600 font-bold">⚠️ Please enter a passcode</span>';
+        setTimeout(() => statusDiv.innerHTML = '', 4000);
         return;
       }
 
       if (enabled && passcode.length < 4) {
-        statusDiv.innerHTML = '<span class="text-red-600">⚠️ Passcode must be at least 4 characters</span>';
-        setTimeout(() => statusDiv.innerHTML = '', 3000);
+        statusDiv.innerHTML = '<span class="text-red-600 font-bold">⚠️ Passcode must be at least 4 characters</span>';
+        setTimeout(() => statusDiv.innerHTML = '', 4000);
         return;
       }
 
-      statusDiv.innerHTML = '<span class="text-blue-600">💾 Saving...</span>';
+      statusDiv.innerHTML = '<span class="text-blue-600 font-bold">💾 Saving...</span>';
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:5001/api/passcode/settings'
+        ? 'http://localhost:6001/api/passcode/settings'
         : '/api/passcode/settings';
+
+      console.log('📡 Sending request to:', apiUrl);
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -2792,27 +2802,39 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       clearTimeout(timeoutId);
 
+      console.log('📥 Response status:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
-        statusDiv.innerHTML = '<span class="text-green-600">✅ Settings saved successfully!</span>';
+        console.log('✅ Success response:', data);
+
+        statusDiv.innerHTML = '<span class="text-green-600 font-bold text-lg">✅ Settings saved successfully!</span>';
         if (enabled) {
-          statusDiv.innerHTML += `<br><span class="text-sm text-green-600">Passcode protection is now ENABLED</span>`;
+          statusDiv.innerHTML += `<br><span class="text-sm text-green-600">🔒 Passcode protection is now ENABLED</span>`;
         } else {
-          statusDiv.innerHTML += `<br><span class="text-sm text-amber-600">Passcode protection is now DISABLED</span>`;
+          statusDiv.innerHTML += `<br><span class="text-sm text-amber-600">🔓 Passcode protection is now DISABLED</span>`;
         }
         setTimeout(() => statusDiv.innerHTML = '', 5000);
       } else {
-        throw new Error('Failed to save settings');
+        const errorData = await response.text();
+        console.error('❌ Error response:', response.status, errorData);
+        throw new Error(`Server error: ${response.status} - ${errorData}`);
       }
     } catch (error) {
       console.error('❌ Error saving passcode settings:', error);
       const statusDiv = document.getElementById('passcodeSaveStatus');
-      statusDiv.innerHTML = '<span class="text-red-600">❌ Error saving settings</span>';
-      setTimeout(() => statusDiv.innerHTML = '', 3000);
+      if (statusDiv) {
+        statusDiv.innerHTML = `<span class="text-red-600 font-bold text-lg">❌ Error: ${error.message}</span>`;
+        setTimeout(() => statusDiv.innerHTML = '', 5000);
+      }
     }
   }
 
   // Load passcode status when page loads
   loadPasscodeStatus();
+
+  // Expose functions to global scope so they can be called from HTML onclick handlers
+  window.savePasscodeSettings = savePasscodeSettings;
+  window.loadPasscodeStatus = loadPasscodeStatus;
 });
 

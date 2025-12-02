@@ -5,35 +5,36 @@
       "name": "CAPD Main Channel",
       "number": 1,
       "description": "Main live broadcast and news",
-      "streamUrl": "https://youtube.com/live/KTxLgi1AkI8?feature=share",
+      "streamUrl": "np1V-h_ABZU",
       "type": "youtube",
       "status": "live",
       "viewers": 1000,
-      "poster": "assets/images/channel-default.jpg"
+      "poster": "assets/images/channel-default.jpg",
+      "thumbnail": null
     },
     {
       "id": "news",
       "name": "CAPD News 24/7",
       "number": 2,
       "description": "Latest news and updates",
-      "streamUrl": "https://www.youtube.com/live/jNQXAC9IVRw",
-      "poster": "assets/images/channel-news.jpg",
-      "status": "online",
-      "viewers": 890,
-      "type": "youtube",
-      "rtmpUrl": "rtmp://localhost:1935/live/news_live"
+      "streamUrl": "https://drive.google.com/drive/folders/1JvMquz0Pfo_eK5eNe4NkvuFQv1i4VBDg",
+      "type": "mp4",
+      "status": "live",
+      "viewers": 2345,
+      "poster": "assets/images/channel-default.jpg",
+      "thumbnail": null
     },
     {
       "id": "community",
       "name": "Community Channel",
       "number": 3,
       "description": "Community events and programs",
-      "streamUrl": "https://commondatastorage.googleapis.com/gtv-videos-library/sample/big_buck_bunny.mp4",
-      "poster": "assets/images/channel-community.jpg",
-      "status": "online",
-      "viewers": 567,
+      "streamUrl": "https://drive.google.com/uc?export=download&id=1nOfegM13u_e0oHDJtNz6-XNeB0yc_Fhw",
       "type": "mp4",
-      "rtmpUrl": "rtmp://localhost:1935/live/community_stream"
+      "status": "offline",
+      "viewers": 567,
+      "poster": "assets/images/channel-default.jpg",
+      "thumbnail": null
     },
     {
       "id": "education",

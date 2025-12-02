@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="passcode-modal.css">
   <style>
     * {
       scrollbar-width: thin;
@@ -683,37 +684,43 @@
 <body class="bg-slate-50 text-slate-800">
 
   <!-- Passcode Protection Modal -->
-  <div id="passcodeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-      <div class="text-center mb-8">
-        <div class="mb-4 text-5xl">🔐</div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Required</h2>
-        <p class="text-gray-600">Please enter the passcode to continue</p>
+  <div id="passcodeModalContainer" class="hidden">
+    <!-- Decorative circles -->
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+
+    <!-- Modal card -->
+    <div class="passcode-modal-card">
+      <div class="passcode-logo">
+        <h2>CAPD</h2>
+        <p>Access Required</p>
       </div>
 
-      <form id="passcodeForm" class="space-y-4">
-        <div>
+      <form id="passcodeForm" onsubmit="handlePasscodeSubmit(event)">
+        <div class="passcode-error" id="passcodeError"></div>
+
+        <div class="passcode-form-group">
           <input
             type="password"
             id="passcodeInput"
+            class="passcode-input password"
             placeholder="Enter passcode"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
             autocomplete="off"
-          >
-          <div id="passcodeError" class="text-red-600 text-sm mt-2 hidden"></div>
+            maxlength="6"
+          />
         </div>
 
-        <button
-          type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition"
-        >
-          Unlock
+        <button type="submit" class="passcode-submit-btn" id="passcodeSubmitBtn">
+          <span>UNLOCK</span>
+          <span>→</span>
         </button>
       </form>
 
-      <p class="text-center text-gray-500 text-xs mt-4">
+      <div class="passcode-footer">
         Protected by CAPD Security
-      </p>
+      </div>
     </div>
   </div>
 
@@ -2035,115 +2042,53 @@
       loadComments();
     };
 
-    // ========== PASSCODE PROTECTION ==========
+    // ========== PASSCODE HANDLER ==========
 
-    // Check and initialize passcode protection
-    async function initializePasscodeProtection() {
+    async function handlePasscodeSubmit(event) {
+      event.preventDefault();
+      const passcode = document.getElementById('passcodeInput').value.trim();
+      const errorDiv = document.getElementById('passcodeError');
+      const submitBtn = document.getElementById('passcodeSubmitBtn');
+
+      if (!passcode) {
+        showPasscodeError(errorDiv, 'Please enter a passcode');
+        return;
+      }
+
+      // Disable button while processing
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
       try {
-        // First, check if passcode is already entered in this session
-        const sessionPasscode = sessionStorage.getItem('capd_passcode_verified');
-        if (sessionPasscode === 'true') {
-          document.getElementById('passcodeModal').classList.add('hidden');
-          return; // User already verified
-        }
+        const verified = await window.passcodeProtection.verifyPasscode(passcode);
 
-        // Load the passcode from server
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-          ? 'http://localhost:5001/api/passcode'
-          : '/api/passcode';
-
-        const response = await fetch(apiUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.enabled === false) {
-            // Passcode protection is disabled
-            document.getElementById('passcodeModal').classList.add('hidden');
-            sessionStorage.setItem('capd_passcode_verified', 'true');
-          } else if (data.enabled === true) {
-            // Passcode protection is enabled - keep modal visible
-            document.getElementById('passcodeModal').classList.remove('hidden');
-            setupPasscodeForm();
-          }
+        if (verified) {
+          errorDiv.classList.remove('show');
+          window.passcodeProtection.unlockPage();
+          document.getElementById('passcodeInput').value = '';
+        } else {
+          showPasscodeError(errorDiv, 'Incorrect passcode. Please try again.');
+          document.getElementById('passcodeInput').value = '';
+          document.getElementById('passcodeInput').focus();
         }
       } catch (error) {
-        console.log('Note: Passcode check failed, showing modal as default');
-        document.getElementById('passcodeModal').classList.remove('hidden');
-        setupPasscodeForm();
+        showPasscodeError(errorDiv, 'Connection error. Please try again.');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
       }
-    }
-
-    // Setup passcode form
-    function setupPasscodeForm() {
-      const form = document.getElementById('passcodeForm');
-      const input = document.getElementById('passcodeInput');
-      const errorDiv = document.getElementById('passcodeError');
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const passcode = input.value.trim();
-
-        if (!passcode) {
-          showPasscodeError(errorDiv, 'Please enter a passcode');
-          return;
-        }
-
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5001/api/passcode/verify'
-            : '/api/passcode/verify';
-
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ passcode }),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.verified === true) {
-              // Passcode correct - hide modal and store verification
-              sessionStorage.setItem('capd_passcode_verified', 'true');
-              document.getElementById('passcodeModal').classList.add('hidden');
-              input.value = '';
-              errorDiv.classList.add('hidden');
-            } else {
-              showPasscodeError(errorDiv, 'Incorrect passcode. Please try again.');
-              input.value = '';
-              input.focus();
-            }
-          } else {
-            showPasscodeError(errorDiv, 'Error verifying passcode. Please try again.');
-          }
-        } catch (error) {
-          showPasscodeError(errorDiv, 'Connection error. Please try again.');
-        }
-      });
-
-      input.focus();
     }
 
     function showPasscodeError(errorDiv, message) {
       errorDiv.textContent = message;
-      errorDiv.classList.remove('hidden');
+      errorDiv.classList.add('show');
       setTimeout(() => {
-        errorDiv.classList.add('hidden');
+        errorDiv.classList.remove('show');
       }, 4000);
     }
 
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize passcode protection first
-      initializePasscodeProtection();
       const mobileMenuBtn = document.getElementById('mobileMenuBtn');
       const mobileMenu = document.getElementById('mobileMenu');
 
@@ -2162,6 +2107,9 @@
       }
     });
   </script>
+
+  <!-- Load passcode protection system -->
+  <script src="passcode-protection.js"></script>
 
 </body>
 </html>

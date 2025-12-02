@@ -5,8 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - CAPD Communications</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="passcode-modal.css">
 </head>
 <body class="bg-gray-50 text-gray-800">
+
+  <!-- Passcode Protection Modal -->
+  <div id="passcodeModalContainer" class="hidden">
+    <!-- Decorative circles -->
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+    <div class="passcode-bubble"></div>
+
+    <!-- Modal card -->
+    <div class="passcode-modal-card">
+      <div class="passcode-logo">
+        <h2>CAPD</h2>
+        <p>Access Required</p>
+      </div>
+
+      <form id="passcodeForm" onsubmit="handlePasscodeSubmit(event)">
+        <div class="passcode-error" id="passcodeError"></div>
+
+        <div class="passcode-form-group">
+          <input
+            type="password"
+            id="passcodeInput"
+            class="passcode-input password"
+            placeholder="Enter passcode"
+            autocomplete="off"
+            maxlength="6"
+          />
+        </div>
+
+        <button type="submit" class="passcode-submit-btn" id="passcodeSubmitBtn">
+          <span>UNLOCK</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div class="passcode-footer">
+        Protected by CAPD Security
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content Wrapper -->
+  <div id="pageContent">
 
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-50">
@@ -177,6 +222,55 @@
       </div>
     </div>
   </footer>
+
+  </div><!-- End pageContent wrapper -->
+
+  <!-- Passcode handler function -->
+  <script>
+    async function handlePasscodeSubmit(event) {
+      event.preventDefault();
+      const passcode = document.getElementById('passcodeInput').value.trim();
+      const errorDiv = document.getElementById('passcodeError');
+      const submitBtn = document.getElementById('passcodeSubmitBtn');
+
+      if (!passcode) {
+        showError(errorDiv, 'Please enter a passcode');
+        return;
+      }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const verified = await window.passcodeProtection.verifyPasscode(passcode);
+        if (verified) {
+          errorDiv.classList.remove('show');
+          window.passcodeProtection.unlockPage();
+          document.getElementById('passcodeInput').value = '';
+        } else {
+          showError(errorDiv, 'Incorrect passcode. Please try again.');
+          document.getElementById('passcodeInput').value = '';
+          document.getElementById('passcodeInput').focus();
+        }
+      } catch (error) {
+        showError(errorDiv, 'Connection error. Please try again.');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    }
+
+    function showError(errorDiv, message) {
+      errorDiv.textContent = message;
+      errorDiv.classList.add('show');
+      setTimeout(() => {
+        errorDiv.classList.remove('show');
+      }, 4000);
+    }
+  </script>
+
+  <!-- Load passcode protection system -->
+  <script src="passcode-protection.js"></script>
 
 </body>
 </html>

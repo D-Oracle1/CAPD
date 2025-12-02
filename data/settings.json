@@ -25,5 +25,10 @@
   "security": {
     "adminUsername": "admin",
     "requireAuth": true
+  },
+  "passcode": {
+    "enabled": true,
+    "code": "CA73",
+    "lastUpdated": "2025-12-02T10:31:15.521Z"
   }
 }

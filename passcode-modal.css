@@ -1,0 +1,325 @@
+/* ========== GRATAFY-STYLE PASSCODE MODAL ========== */
+
+#passcodeModalContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+#passcodeModalContainer.flex {
+  display: flex;
+}
+
+/* Animated background circles */
+#passcodeModalContainer::before,
+#passcodeModalContainer::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+}
+
+#passcodeModalContainer::before {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  animation: float 20s infinite ease-in-out;
+}
+
+#passcodeModalContainer::after {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  right: -50px;
+  animation: float 25s infinite ease-in-out reverse;
+}
+
+/* Floating decoration circles */
+.passcode-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  animation: float 15s infinite ease-in-out;
+}
+
+.passcode-bubble:nth-child(1) {
+  width: 200px;
+  height: 200px;
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.passcode-bubble:nth-child(2) {
+  width: 150px;
+  height: 150px;
+  top: 60%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.passcode-bubble:nth-child(3) {
+  width: 120px;
+  height: 120px;
+  bottom: 20%;
+  left: 30%;
+  animation-delay: 4s;
+}
+
+.passcode-bubble:nth-child(4) {
+  width: 100px;
+  height: 100px;
+  top: 40%;
+  right: 30%;
+  animation-delay: 1s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(20px) translateX(-10px);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateY(-10px) translateX(15px);
+    opacity: 0.7;
+  }
+}
+
+/* Modal card */
+.passcode-modal-card {
+  position: relative;
+  z-index: 10;
+  background: rgba(30, 27, 60, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px 50px;
+  max-width: 420px;
+  width: 100%;
+  margin: 0 20px;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Logo/Title Area */
+.passcode-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.passcode-logo h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.passcode-logo p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+/* Form container */
+.passcode-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Input fields */
+.passcode-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.passcode-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.passcode-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(124, 58, 202, 0.25);
+}
+
+.passcode-input.password {
+  letter-spacing: 3px;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Submit button */
+.passcode-submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: #ffffff;
+  color: #1e1b3c;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.passcode-submit-btn:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+}
+
+.passcode-submit-btn:active {
+  transform: translateY(0);
+}
+
+.passcode-submit-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Error message */
+.passcode-error {
+  display: none;
+  padding: 12px 14px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 13px;
+  margin-bottom: 16px;
+  animation: shake 0.4s ease-in-out;
+}
+
+.passcode-error.show {
+  display: block;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Footer text */
+.passcode-footer {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .passcode-modal-card {
+    padding: 40px 30px;
+    border-radius: 16px;
+  }
+
+  .passcode-logo h2 {
+    font-size: 28px;
+  }
+
+  .passcode-input {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .passcode-submit-btn {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  #passcodeModalContainer {
+    padding: 20px;
+  }
+
+  .passcode-modal-card {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+
+  .passcode-logo h2 {
+    font-size: 24px;
+  }
+
+  .passcode-logo p {
+    font-size: 13px;
+  }
+
+  .passcode-bubble {
+    display: none;
+  }
+
+  #passcodeModalContainer::before,
+  #passcodeModalContainer::after {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+/* Utility: Hide page content while modal is visible */
+#pageContent {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+#pageContent.blocked {
+  opacity: 0;
+  pointer-events: none;
+}

@@ -1,4 +1,37 @@
 {
-  "categories": [],
-  "media": []
+  "categories": [
+    {
+      "id": "cat-1764596357277-e4b7pi",
+      "name": "Test Photos",
+      "description": "Test gallery category",
+      "isPublic": true,
+      "createdAt": "2025-12-01T13:39:17.277Z",
+      "mediaCount": 2,
+      "thumbnail": "https://via.placeholder.com/400x300?text=Test+Gallery"
+    }
+  ],
+  "media": [
+    {
+      "id": "media-1764596400000-abc123",
+      "categoryId": "cat-1764596357277-e4b7pi",
+      "name": "Beautiful Landscape",
+      "description": "A scenic mountain landscape",
+      "type": "photo",
+      "url": "https://via.placeholder.com/600x400?text=Beautiful+Landscape",
+      "fileSize": 250000,
+      "uploadedAt": "2025-12-01T13:39:17.277Z",
+      "uploadedBy": "admin"
+    },
+    {
+      "id": "media-1764596400001-def456",
+      "categoryId": "cat-1764596357277-e4b7pi",
+      "name": "Community Event",
+      "description": "Photos from our community gathering",
+      "type": "photo",
+      "url": "https://via.placeholder.com/600x400?text=Community+Event",
+      "fileSize": 320000,
+      "uploadedAt": "2025-12-01T13:39:17.277Z",
+      "uploadedBy": "admin"
+    }
+  ]
 }
