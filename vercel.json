@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
   "env": {
     "NODE_ENV": "production"
   },
@@ -10,6 +9,12 @@
       "maxDuration": 60
     }
   },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
