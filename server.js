@@ -182,6 +182,94 @@ app.use('/api/proxy', createProxyMiddleware({
   }
 }));
 
+// ========== PASSCODE MANAGEMENT ENDPOINTS ==========
+
+// Get passcode settings
+app.get('/api/passcode', (req, res) => {
+  try {
+    const settingsPath = path.join(__dirname, 'data', 'settings.json');
+    let settings = { passcode: { enabled: false, code: null } };
+
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      settings = JSON.parse(data);
+    }
+
+    res.json({
+      enabled: settings.passcode?.enabled || false,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error loading passcode settings:', error);
+    res.json({ enabled: false });
+  }
+});
+
+// Verify passcode
+app.post('/api/passcode/verify', (req, res) => {
+  try {
+    const { passcode } = req.body;
+
+    if (!passcode) {
+      return res.status(400).json({ verified: false, error: 'Passcode required' });
+    }
+
+    const settingsPath = path.join(__dirname, 'data', 'settings.json');
+    let settings = { passcode: { enabled: false, code: null } };
+
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      settings = JSON.parse(data);
+    }
+
+    if (!settings.passcode?.enabled) {
+      return res.json({ verified: true }); // If not enabled, allow access
+    }
+
+    const correct = settings.passcode?.code === passcode;
+    res.json({ verified: correct });
+  } catch (error) {
+    console.error('Error verifying passcode:', error);
+    res.status(500).json({ verified: false, error: 'Verification failed' });
+  }
+});
+
+// Save passcode settings (Admin only)
+app.post('/api/passcode/settings', (req, res) => {
+  try {
+    const { enabled, passcode } = req.body;
+
+    const settingsPath = path.join(__dirname, 'data', 'settings.json');
+    const dataDir = path.dirname(settingsPath);
+
+    // Create data directory if it doesn't exist
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    let settings = { passcode: { enabled: false, code: null } };
+
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      settings = JSON.parse(data);
+    }
+
+    settings.passcode = {
+      enabled: enabled === true,
+      code: passcode || null,
+      lastUpdated: new Date().toISOString()
+    };
+
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+
+    console.log(`✅ Passcode settings updated - Enabled: ${enabled}`);
+    res.json({ success: true, message: 'Passcode settings updated' });
+  } catch (error) {
+    console.error('Error saving passcode settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to save settings' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

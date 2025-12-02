@@ -682,6 +682,41 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+  <!-- Passcode Protection Modal -->
+  <div id="passcodeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+      <div class="text-center mb-8">
+        <div class="mb-4 text-5xl">🔐</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Required</h2>
+        <p class="text-gray-600">Please enter the passcode to continue</p>
+      </div>
+
+      <form id="passcodeForm" class="space-y-4">
+        <div>
+          <input
+            type="password"
+            id="passcodeInput"
+            placeholder="Enter passcode"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
+            autocomplete="off"
+          >
+          <div id="passcodeError" class="text-red-600 text-sm mt-2 hidden"></div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition"
+        >
+          Unlock
+        </button>
+      </form>
+
+      <p class="text-center text-gray-500 text-xs mt-4">
+        Protected by CAPD Security
+      </p>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -2000,8 +2035,115 @@
       loadComments();
     };
 
+    // ========== PASSCODE PROTECTION ==========
+
+    // Check and initialize passcode protection
+    async function initializePasscodeProtection() {
+      try {
+        // First, check if passcode is already entered in this session
+        const sessionPasscode = sessionStorage.getItem('capd_passcode_verified');
+        if (sessionPasscode === 'true') {
+          document.getElementById('passcodeModal').classList.add('hidden');
+          return; // User already verified
+        }
+
+        // Load the passcode from server
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'http://localhost:5001/api/passcode'
+          : '/api/passcode';
+
+        const response = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.enabled === false) {
+            // Passcode protection is disabled
+            document.getElementById('passcodeModal').classList.add('hidden');
+            sessionStorage.setItem('capd_passcode_verified', 'true');
+          } else if (data.enabled === true) {
+            // Passcode protection is enabled - keep modal visible
+            document.getElementById('passcodeModal').classList.remove('hidden');
+            setupPasscodeForm();
+          }
+        }
+      } catch (error) {
+        console.log('Note: Passcode check failed, showing modal as default');
+        document.getElementById('passcodeModal').classList.remove('hidden');
+        setupPasscodeForm();
+      }
+    }
+
+    // Setup passcode form
+    function setupPasscodeForm() {
+      const form = document.getElementById('passcodeForm');
+      const input = document.getElementById('passcodeInput');
+      const errorDiv = document.getElementById('passcodeError');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const passcode = input.value.trim();
+
+        if (!passcode) {
+          showPasscodeError(errorDiv, 'Please enter a passcode');
+          return;
+        }
+
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5001/api/passcode/verify'
+            : '/api/passcode/verify';
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ passcode }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.verified === true) {
+              // Passcode correct - hide modal and store verification
+              sessionStorage.setItem('capd_passcode_verified', 'true');
+              document.getElementById('passcodeModal').classList.add('hidden');
+              input.value = '';
+              errorDiv.classList.add('hidden');
+            } else {
+              showPasscodeError(errorDiv, 'Incorrect passcode. Please try again.');
+              input.value = '';
+              input.focus();
+            }
+          } else {
+            showPasscodeError(errorDiv, 'Error verifying passcode. Please try again.');
+          }
+        } catch (error) {
+          showPasscodeError(errorDiv, 'Connection error. Please try again.');
+        }
+      });
+
+      input.focus();
+    }
+
+    function showPasscodeError(errorDiv, message) {
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+      setTimeout(() => {
+        errorDiv.classList.add('hidden');
+      }, 4000);
+    }
+
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', () => {
+      // Initialize passcode protection first
+      initializePasscodeProtection();
       const mobileMenuBtn = document.getElementById('mobileMenuBtn');
       const mobileMenu = document.getElementById('mobileMenu');
 
